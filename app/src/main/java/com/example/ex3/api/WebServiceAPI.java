@@ -25,7 +25,7 @@ public interface WebServiceAPI {
     @POST("Tokens")
     Call<String> createToken(@Body NameAndPassword nameAndPassword);
 
-    @GET("AzrieliStore/{storeType}")
+    @GET("AzrieliStore/type/{storeType}")
     Call<Category> getStoresByType(
             @Header("Authorization") String token,
             @Path("storeType") String storeType,
