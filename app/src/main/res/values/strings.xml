@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Chats</string>
+    <string name="loginMsg">Welcome Back!</string>
+    <string name="username">username</string>
+    <string name="password">password</string>
+    <string name="login">LOGIN</string>
+    <string name="register">Join Us!</string>
+    <string name="don_t_have_account">Don\'t have account?</string>
+    <string name="display_name">display name</string>
+    <string name="already_have_an_account">Already have an account?</string>
+    <string name="login_here">Login here</string>
+    <string name="regiater_now">Regiater now</string>
+    <string name="chats">chats</string>
+    <string name="addContact">addContact</string>
+    <string name="profilepic">profilePic</string>
+    <string name="BaseUrl">http://10.0.2.2:12346/</string>
+    <string name="ServerPath">http://10.0.2.2</string>
+    <string name="ServerPort">12346</string>
+    <string name="settings">settings</string>
+    <string name="select_picture" />
+    <string name="channel_name">New message</string>
+    <string name="channel_description">new message</string>
+    <string name="profile_pic_path"> </string>
+    <string name="add_profile_picture">Add profile picture</string>
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

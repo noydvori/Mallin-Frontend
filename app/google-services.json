@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "758511042501",
+    "project_id": "my-project-apex3",
+    "storage_bucket": "my-project-apex3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:758511042501:android:1a8c2315dc8a2545e0d5ac",
+        "android_client_info": {
+          "package_name": "com.example.ex3"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "758511042501-15pub75246ruds246risu6uni4h5j54k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBt82mmNVRjuRmeur0x3CXUMF4vLuXUUDU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "758511042501-15pub75246ruds246risu6uni4h5j54k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

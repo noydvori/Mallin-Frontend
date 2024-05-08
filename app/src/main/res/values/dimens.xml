@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<resources>
+    <dimen name="horizontal_padding_between_categories">16dp</dimen>
+</resources>
