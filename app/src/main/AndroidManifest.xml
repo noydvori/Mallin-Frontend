@@ -33,19 +33,24 @@
             android:exported="false"
             android:theme="@style/AppTheme"
             />
+
+        <activity
+            android:name=".Login"
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            />
         <activity
             android:name=".Register"
             android:exported="false"
             android:theme="@style/AppTheme"
             />
         <activity
-            android:name=".Login"
+            android:name=".DevTool"
             android:exported="true"
             android:theme="@style/AppTheme"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
