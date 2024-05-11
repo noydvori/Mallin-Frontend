@@ -1,5 +1,6 @@
 package com.example.ex3.api;
 
+
 import com.example.ex3.entities.Store;
 import com.example.ex3.objects.Category;
 
@@ -65,6 +66,9 @@ public class CategoryAPI {
                         System.out.println(workingHoures);
                         System.out.println(floorNumber);
                         System.out.println(logoUrl);
+
+                        // Load and display image using Glide
+                        // Glide.with(context).load(logoUrl).into(imageView);
 
                         Store storeItem = new Store(storeName, workingHoures, floorNumber, logoUrl, type);
                         category.addStore(storeItem);
