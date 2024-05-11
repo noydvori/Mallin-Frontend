@@ -5,6 +5,7 @@ public class StoreItem {
     private String floorNumber;
     private String logoUrl;
 
+
     public StoreItem(String storeName, String floorNumber, String logoUrl) {
         this.storeName = storeName;
         this.floorNumber = floorNumber;
