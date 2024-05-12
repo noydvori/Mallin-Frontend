@@ -1,11 +1,9 @@
 package com.example.ex3.adapters;
 import android.content.Context;
-import android.util.Log;
 import android.util.Xml;
 
-import com.example.ex3.R;
-import com.example.ex3.objects.Graph;
-import com.example.ex3.objects.GraphNode;
+import com.example.ex3.objects.graph.Graph;
+import com.example.ex3.objects.graph.GraphNode;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -22,9 +20,9 @@ public class GrapthDataAdapter {
         this.context = context;
     }
 
-    private InputStream getInputStream() {
-        InputStream is = null;
-            is = context.getResources().openRawResource(R.raw.graph_data);
+    private InputStream getInputStream(int resource) {
+        InputStream is;
+            is = context.getResources().openRawResource(resource);
         return is;
     }
 
@@ -91,8 +89,8 @@ public void createNode(XmlPullParser parser) throws XmlPullParserException, IOEx
             graph.addEdge(sourceId, targetId);  // Assuming a method to add edges to the graph
         }
     }
-    public void loadGrapthData() {
-        InputStream is = getInputStream();
+    public Graph loadGrapthData(int resource) {
+        InputStream is = getInputStream(resource);
             try {
                 XmlPullParser parser = Xml.newPullParser();
                 parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -128,6 +126,7 @@ public void createNode(XmlPullParser parser) throws XmlPullParserException, IOEx
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            return graph;
         }
 
     public Graph getGraph() {

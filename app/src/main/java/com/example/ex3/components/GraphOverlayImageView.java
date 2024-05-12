@@ -8,9 +8,12 @@ import android.graphics.PointF;
 import android.util.AttributeSet;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
-import com.example.ex3.objects.Graph;
-import com.example.ex3.objects.GraphEdge;
-import com.example.ex3.objects.GraphNode;
+import com.example.ex3.objects.graph.Graph;
+import com.example.ex3.objects.graph.GraphEdge;
+import com.example.ex3.objects.graph.GraphNode;
+import com.example.ex3.objects.graph.NodeStatus;
+
+import java.util.function.Function;
 
 public class GraphOverlayImageView extends SubsamplingScaleImageView {
         private Graph graph;
@@ -32,10 +35,7 @@ public class GraphOverlayImageView extends SubsamplingScaleImageView {
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
             if (graph == null || graph.getNodes() == null  || graph.getNodes().size() == 0) return;
-
-            // Get the current scale and translation from the image view
             float scale = getScale();
-
             Paint paint = new Paint();
             paint.setColor(Color.RED); // Example color
             paint.setStrokeWidth(5 * scale); // Scale the line width with the image
@@ -57,10 +57,20 @@ public class GraphOverlayImageView extends SubsamplingScaleImageView {
             for (GraphNode node : graph.getNodes()) {
                 PointF center = sourceToViewCoord(node.getX(), node.getY());
                 if (center != null) {
-                    canvas.drawCircle(center.x, center.y, 20 * scale, paint); // Scale node size with the image
+                    if(node.getStatus() == NodeStatus.none) {
+                        paint.setColor(Color.RED);
+
+                        canvas.drawCircle(center.x, center.y, 30 * scale, paint); // Scale node size with the image
+                    }else if(node.getStatus() == NodeStatus.selected){
+                        paint.setColor(Color.YELLOW);
+
+                        canvas.drawCircle(center.x, center.y, 40 * scale, paint); // Scale node size with the image=
+                    }
                 }
             }
         }
+
+
 }
 
 
