@@ -36,4 +36,8 @@ public class Category {
     public void addStore(Store store) {
         this.storesList.add(store);
     }
+
+    public void setStoresList(List<Store> storeList) {
+        this.storesList = storeList;
+    }
 }

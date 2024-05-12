@@ -4,8 +4,13 @@ import com.example.ex3.api.CategoryAPI;
 import com.example.ex3.entities.Store;
 import com.example.ex3.objects.Category;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 public class StoreFetcher {
     public interface FetchStoresCallback {
@@ -25,4 +30,38 @@ public class StoreFetcher {
             return null;
         });
     }
+
+    public void fetchStoresByName(String token, String storeName, FetchStoresCallback callback) {
+        CategoryAPI categoryAPI = CategoryAPI.getInstance();
+
+        CompletableFuture<List<Store>> future = categoryAPI.getStoresByName(token, storeName);
+
+        future.thenAccept(storeList -> {
+            // Create a set to store unique store types
+            Set<String> uniqueStoreTypes = new HashSet<>();
+            for (Store store : storeList) {
+                uniqueStoreTypes.add(store.getStoreType());
+            }
+
+            // Create a list of categories
+            List<Category> categories = new ArrayList<>();
+            for (String storeType : uniqueStoreTypes) {
+                List<Store> storesOfType = storeList.stream()
+                        .filter(store -> storeType.equals(store.getStoreType()))
+                        .collect(Collectors.toList());
+                Category category = new Category(storeType, storesOfType);
+                categories.add(category);
+            }
+
+            // Call onSuccess with the list of categories
+            categories.forEach(callback::onSuccess);
+        }).exceptionally(ex -> {
+            callback.onError(ex);
+            return null;
+        });
+
+
+    }
+
+
 }

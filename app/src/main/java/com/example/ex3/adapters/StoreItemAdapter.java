@@ -13,6 +13,7 @@ import java.util.List;
 import com.example.ex3.R;
 import com.example.ex3.entities.Store;
 import com.example.ex3.viewModels.StoreItem;
+import com.squareup.picasso.Picasso;
 
 public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.StoreItemViewHolder> {
 
@@ -34,10 +35,23 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         Store storeItem = storeItemList.get(position);
         holder.storeNameTextView.setText(storeItem.getStoreName());
         holder.floorNumberTextView.setText(storeItem.getFloor());
-        // Set store logo using Picasso or Glide library if you have image URL
-        // Picasso.get().load(storeItem.getLogoUrl()).into(holder.logoImageView);
+        // Modify the URL to match the desired format
+        String logoUrl = storeItem.getLogoUrl();
+        String modifiedUrl = convertLogoUrl(logoUrl); // Modify the URL here as needed
+        System.out.println(modifiedUrl);
+
+        // Set store logo using Picasso or Glide library with the modified URL
+        Picasso.get().load(modifiedUrl).into(holder.logoImageView);
     }
 
+    private String convertLogoUrl(String logoUrl) {
+        // Assuming base URL is fixed
+        if(logoUrl == null) return null;
+        // Replace the original part of the URL with the new part
+        return logoUrl.replace("public/pictures/", "http://192.168.153.1:5000/pictures/").replace(".png", ".jpg");
+
+
+    }
     @Override
     public int getItemCount() {
         return storeItemList.size();
