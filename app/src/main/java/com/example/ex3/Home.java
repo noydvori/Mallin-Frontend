@@ -154,28 +154,6 @@ public class Home extends AppCompatActivity {
 
 
 
-        // Set the hardcoded chat list to your adapter
-        //adapter = new ChatListAdapter(this, hardcodedChatsLiveData);
-        //RecyclerView lsChats = findViewById(R.id.lsChats);
-        //lsChats.setAdapter(adapter);
-        //lsChats.setBackgroundResource(R.drawable.bg_dark_rounded);
-        //lsChats.setLayoutManager(new LinearLayoutManager(this));
-
-        //chatsViewModel.getChats(me.getUsername()).observe(this, chats -> {
-        //    filteredChats.setValue(chats); // Initialize filteredChats with all chats
-        //    adapter.setChats(chats);
-        //});
-
-        // Settings button
-        //FloatingActionButton settingsButton = findViewById(R.id.settings);
-        //settingsButton.setOnClickListener(new View.OnClickListener() {
-        //    @Override
-        //    public void onClick(View v) {
-         //       openSettingsDialog();
-         //   }
-        //});
-
-
 
         // Handle search
         SearchView searchView = findViewById(R.id.search_view);
