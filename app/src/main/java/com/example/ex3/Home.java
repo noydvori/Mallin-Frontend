@@ -5,6 +5,8 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import android.os.Bundle;
 
 import com.example.ex3.entities.Store;
@@ -84,7 +86,17 @@ public class Home extends AppCompatActivity {
         });
         // Retrieve the token from the Intent extras
         String token = intent.getStringExtra("token");
-        bearerToken = getIntent().getStringExtra("Token");
+        bearerToken = token;
+        SwipeRefreshLayout refreshLayout = findViewById(R.id.refreshLayout);
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // Perform the refresh action here
+                fetchDataFromServer();
+                // Stop the refreshing animation
+                refreshLayout.setRefreshing(false);
+            }
+        });
 
 
         String storeType = "food"; // Example store type
@@ -94,7 +106,9 @@ public class Home extends AppCompatActivity {
         fetchStoresByType(token, "food");
         fetchStoresByType(token, "fashion and sports");
         fetchStoresByType(token, "fashion");
-
+        fetchStoresByType(token, "shoes");
+        fetchStoresByType(token, "electricity");
+        fetchStoresByType(token, "accessories & jewelries");
         //RecyclerView categoriesList = findViewById(R.id.categories);
         //categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
         //adapter = new CategoryAdapter(this);
@@ -110,28 +124,6 @@ public class Home extends AppCompatActivity {
         //    }
         //});
 
-        List<Store> SHITItems = new ArrayList<>();
-        SHITItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-        SHITItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-        SHITItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-        SHITItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-        SHITItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-        SHITItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-
-        List<Category> categories = new ArrayList<>();
-       List<Store> electronicsItems = new ArrayList<>();
-        electronicsItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-        electronicsItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-        electronicsItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-       electronicsItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-
-       categories.add(new Category("Electronics", electronicsItems));
-
-        categories.add(new Category("Electronics", electronicsItems));
-
-        categories.add(new Category("Electronics", electronicsItems));
-        categories.add(new Category("Electronics", electronicsItems));
-       categories.add(new Category("Electronics", SHITItems));
 
        // Add more categories and items as needed...
 
@@ -162,44 +154,89 @@ public class Home extends AppCompatActivity {
 
 
 
-        // Set the hardcoded chat list to your adapter
-        //adapter = new ChatListAdapter(this, hardcodedChatsLiveData);
-        //RecyclerView lsChats = findViewById(R.id.lsChats);
-        //lsChats.setAdapter(adapter);
-        //lsChats.setBackgroundResource(R.drawable.bg_dark_rounded);
-        //lsChats.setLayoutManager(new LinearLayoutManager(this));
-
-        //chatsViewModel.getChats(me.getUsername()).observe(this, chats -> {
-        //    filteredChats.setValue(chats); // Initialize filteredChats with all chats
-        //    adapter.setChats(chats);
-        //});
-
-        // Settings button
-        //FloatingActionButton settingsButton = findViewById(R.id.settings);
-        //settingsButton.setOnClickListener(new View.OnClickListener() {
-        //    @Override
-        //    public void onClick(View v) {
-         //       openSettingsDialog();
-         //   }
-        //});
-
-
 
         // Handle search
         SearchView searchView = findViewById(R.id.search_view);
         searchView.setBackgroundResource(R.drawable.bg_white_rounded);
-        //searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-        //    @Override
-        //    public boolean onQueryTextSubmit(String query) {
-        //        return false;
-        //    }
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
-         //   @Override
-         //   public boolean onQueryTextChange(String newText) {
-         //       filterChats(newText);
-          //      return true;
-         //   }
-        //});
+            @Override
+            public boolean onQueryTextSubmit(String str) {
+                if (str.isEmpty()) {
+                    // Clear the search query and fetch all stores again
+                    categories.clear();
+                    fetchStoresByType(token, "food");
+                    fetchStoresByType(token, "fashion and sports");
+                    fetchStoresByType(token, "fashion");
+                } else {
+                    // Call server endpoint with the search query
+                    fetchStoresByName(token, str);
+                }
+                return true;
+            }
+
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // You can implement live search here if needed
+                // For example, you can filter the list of categories based on the new text
+                // and update the UI accordingly
+
+                if (newText.isEmpty()) {
+                    // If the search query is empty, clear the list and fetch all stores again
+                    categories.clear();
+                    fetchStoresByType(token, "food");
+                    fetchStoresByType(token, "fashion and sports");
+                    fetchStoresByType(token, "fashion");
+                    fetchStoresByType(token, "shoes");
+                    fetchStoresByType(token, "electricity");
+                    fetchStoresByType(token, "accessories & jewelries");
+                } else {
+                    // Call server endpoint with the new search query
+                    fetchStoresByName(token, newText);
+                }
+
+                return true;
+            }
+        });
+
+    }
+    private void fetchDataFromServer() {
+        // Fetch your data from the server
+        // For example, you can re-fetch your store items
+        fetchStoresByType(bearerToken, "food");
+        fetchStoresByType(bearerToken, "fashion and sports");
+        fetchStoresByType(bearerToken, "fashion");
+        fetchStoresByType(bearerToken, "shoes");
+        fetchStoresByType(bearerToken, "electricity");
+        fetchStoresByType(bearerToken, "accessories & jewelries");
+    }
+    private void fetchStoresByName(String token, String str) {
+        // Call the server endpoint to fetch stores by name
+        StoreFetcher storeFetcher = new StoreFetcher();
+        storeFetcher.fetchStoresByName(token, str, new StoreFetcher.FetchStoresCallback() {
+            @Override
+            public void onSuccess(Category category) {
+                // Update UI with the filtered stores
+                List<Category> filteredCategories = new ArrayList<>();
+                filteredCategories.add(category);
+                updateUI(filteredCategories);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                // Handle error
+                Toast.makeText(Home.this, "Error fetching stores by name", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateUI(List<Category> filteredCategories) {
+        RecyclerView categoriesList = findViewById(R.id.categories);
+        categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
+        categoriesList.setLayoutManager(new LinearLayoutManager(this));
+        CategoryAdapter adapter = new CategoryAdapter(this, filteredCategories);
+        categoriesList.setAdapter(adapter);
     }
 
 

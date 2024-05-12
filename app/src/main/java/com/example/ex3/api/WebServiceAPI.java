@@ -1,9 +1,12 @@
 package com.example.ex3.api;
 
+import com.example.ex3.entities.Store;
 import com.example.ex3.objects.Category;
 import com.example.ex3.objects.NameAndPassword;
 import com.example.ex3.objects.User;
 import com.example.ex3.objects.UserInfo;
+
+import java.util.List;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -29,6 +32,12 @@ public interface WebServiceAPI {
     Call<Category> getStoresByType(
             @Header("Authorization") String token,
             @Path("storeType") String storeType,
+            @Query("mallname") String mallname
+    );
+    @GET("AzrieliStore/name/{storeName}")
+    Call<List<Store>> getStoresByName(
+            @Header("Authorization") String token,
+            @Path("storeName") String storeName,
             @Query("mallname") String mallname
     );
 
