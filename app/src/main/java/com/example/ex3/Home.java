@@ -41,7 +41,10 @@ public class Home extends AppCompatActivity {
     private User me;
     String bearerToken;
     private CategoryViewModel viewModel;
+    TextView badgeTextView;
     CategoryAdapter adapter;
+    private List<Store> chosenStores = new ArrayList<>();
+
     private List<Category> categories = new ArrayList<>();
     private int typesToFetch = 3; // Number of types to fetch
 
@@ -64,11 +67,6 @@ public class Home extends AppCompatActivity {
         setContentView(R.layout.activity_stores_list);
         // Retrieve the Intent that started this activity
         Intent intent = getIntent();
-
-
-
-
-
 
         // Extract token & get user details from database
         //SharedPreferences userSharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
@@ -98,10 +96,10 @@ public class Home extends AppCompatActivity {
             }
         });
 
+        // Initialize badgeTextView
+        badgeTextView = findViewById(R.id.locationBadge);
+        updateBadge(); // Update badgeTextView
 
-        String storeType = "food"; // Example store type
-        //StoreFetcher storeFetcher = new StoreFetcher();
-        //storeFetcher.fetchStores(token, storeType);
         // Fetch stores for each store type
         fetchStoresByType(token, "food");
         fetchStoresByType(token, "fashion and sports");
@@ -109,57 +107,11 @@ public class Home extends AppCompatActivity {
         fetchStoresByType(token, "shoes");
         fetchStoresByType(token, "electricity");
         fetchStoresByType(token, "accessories & jewelries");
-        //RecyclerView categoriesList = findViewById(R.id.categories);
-        //categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
-        //adapter = new CategoryAdapter(this);
-        //categoriesList.setAdapter(adapter);
-        //categoriesList.setLayoutManager(new LinearLayoutManager(this));
-        //CategoryViewModelFactory factory = new CategoryViewModelFactory(bearerToken,"food");
-        //viewModel = new ViewModelProvider(this, factory).get(CategoryViewModel.class);
-        //viewModel.reload();
-        //viewModel.getStoresList().observe(this, stores -> {
-        //    // Update UI with the new list of stores
-        //    if (stores != null) {
-        //        adapter.setStoresList(stores);
-        //    }
-        //});
-
-
-       // Add more categories and items as needed...
-
-
-       // Set up RecyclerView with adapter
-       //RecyclerView categoriesList = findViewById(R.id.categories);
-       //categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
-       //categoriesList.setLayoutManager(new LinearLayoutManager(this));
-       //CategoryAdapter adapter = new CategoryAdapter(this, categories);
-       //categoriesList.setAdapter(adapter);
-
-        // Chat item listener
-        //adapter = new ChatListAdapter(this, filteredChats);
-        //adapter.setOnItemClickListener(new ChatListAdapter.OnItemClickListener() {
-        //@Override
-
-            //public void onItemClick(Chat chat) {
-                ;
-            //}
-        //});
-        // In your activity or fragment where you have access to the badge TextView:
-        TextView badgeTextView = findViewById(R.id.locationBadge);
-
-        // Set the desired number dynamically
-        // TODO: badge.
-        int number = 10; // Replace this with your desired number
-        badgeTextView.setText(String.valueOf(number));
-
-
-
 
         // Handle search
         SearchView searchView = findViewById(R.id.search_view);
         searchView.setBackgroundResource(R.drawable.bg_white_rounded);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-
             @Override
             public boolean onQueryTextSubmit(String str) {
                 if (str.isEmpty()) {
@@ -175,13 +127,9 @@ public class Home extends AppCompatActivity {
                 return true;
             }
 
-
             @Override
             public boolean onQueryTextChange(String newText) {
                 // You can implement live search here if needed
-                // For example, you can filter the list of categories based on the new text
-                // and update the UI accordingly
-
                 if (newText.isEmpty()) {
                     // If the search query is empty, clear the list and fetch all stores again
                     categories.clear();
@@ -195,11 +143,9 @@ public class Home extends AppCompatActivity {
                     // Call server endpoint with the new search query
                     fetchStoresByName(token, newText);
                 }
-
                 return true;
             }
         });
-
     }
     private void fetchDataFromServer() {
         // Fetch your data from the server
@@ -230,12 +176,27 @@ public class Home extends AppCompatActivity {
             }
         });
     }
+    // Method to update the badge text based on the number of chosen stores
+    private void updateBadge() {
+        if (badgeTextView != null) {
+            // Update the badge text with the number of chosen stores
+            int numberOfChosenStores = chosenStores.size();
+            if (numberOfChosenStores > 0) {
+                badgeTextView.setVisibility(View.VISIBLE);
+                badgeTextView.setText(String.valueOf(numberOfChosenStores));
+            } else {
+                badgeTextView.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    // Method to add a store to the chosenStores list
 
     private void updateUI(List<Category> filteredCategories) {
         RecyclerView categoriesList = findViewById(R.id.categories);
         categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
         categoriesList.setLayoutManager(new LinearLayoutManager(this));
-        CategoryAdapter adapter = new CategoryAdapter(this, filteredCategories);
+        CategoryAdapter adapter = new CategoryAdapter(this, filteredCategories, chosenStores,badgeTextView); // Pass chosenStores
         categoriesList.setAdapter(adapter);
     }
 
@@ -269,7 +230,7 @@ public class Home extends AppCompatActivity {
         RecyclerView categoriesList = findViewById(R.id.categories);
         categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
         categoriesList.setLayoutManager(new LinearLayoutManager(this));
-        CategoryAdapter adapter = new CategoryAdapter(this, categories);
+        CategoryAdapter adapter = new CategoryAdapter(this, categories, chosenStores,badgeTextView);
         categoriesList.setAdapter(adapter);
     }
     private void openAddContactDialog() {

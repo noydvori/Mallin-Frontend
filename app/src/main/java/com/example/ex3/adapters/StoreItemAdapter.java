@@ -3,6 +3,7 @@ package com.example.ex3.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -12,15 +13,20 @@ import java.util.List;
 
 import com.example.ex3.R;
 import com.example.ex3.entities.Store;
-import com.example.ex3.viewModels.StoreItem;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.squareup.picasso.Picasso;
 
 public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.StoreItemViewHolder> {
 
     private List<Store> storeItemList;
+    private CategoryAdapter.OnAddStoreClickListener addStoreClickListener;
 
     public StoreItemAdapter(List<Store> storeItemList) {
         this.storeItemList = storeItemList;
+    }
+    public StoreItemAdapter(List<Store> storeList, CategoryAdapter.OnAddStoreClickListener listener) {
+        this.storeItemList = storeList;
+        this.addStoreClickListener = listener;
     }
 
     @NonNull
@@ -42,6 +48,43 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
 
         // Set store logo using Picasso or Glide library with the modified URL
         Picasso.get().load(modifiedUrl).into(holder.logoImageView);
+
+        // Set click listener for add store button
+        holder.btnAddStore.setImageResource(storeItem.isAddedToList() ? R.drawable.ic_remove : R.drawable.ic_add);
+        holder.btnAddStore.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (addStoreClickListener != null) {
+                    if (storeItem.isAddedToList()) {
+                        // Remove item from the list
+                        storeItem.setAddedToList(false);
+                        // Update the icon
+                        holder.btnAddStore.setImageResource(R.drawable.ic_add);
+                    } else {
+                        // Add item to the list
+                        storeItem.setAddedToList(true);
+                        // Update the icon
+                        holder.btnAddStore.setImageResource(R.drawable.ic_remove);
+                    }
+                    // Pass the clicked store to the listener
+                    addStoreClickListener.onAddStoreClick(storeItem);
+                }
+            }
+        });
+
+        holder.btnAddStore.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                // Remove item from the list
+                storeItem.setAddedToList(false);
+                // Update the icon
+                holder.btnAddStore.setImageResource(R.drawable.ic_add);
+                // Pass the clicked store to the listener
+                addStoreClickListener.onAddStoreClick(storeItem);
+                // Return true to consume the long click event
+                return true;
+            }
+        });
     }
 
     private String convertLogoUrl(String logoUrl) {
@@ -49,9 +92,8 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         if(logoUrl == null) return null;
         // Replace the original part of the URL with the new part
         return logoUrl.replace("public/pictures/", "http://192.168.153.1:5000/pictures/").replace(".png", ".jpg");
-
-
     }
+
     @Override
     public int getItemCount() {
         return storeItemList.size();
@@ -61,12 +103,14 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         ImageView logoImageView;
         TextView storeNameTextView;
         TextView floorNumberTextView;
+        FloatingActionButton btnAddStore; // Change type to FloatingActionButton
 
         StoreItemViewHolder(@NonNull View itemView) {
             super(itemView);
             logoImageView = itemView.findViewById(R.id.logo);
             storeNameTextView = itemView.findViewById(R.id.store_name);
             floorNumberTextView = itemView.findViewById(R.id.floor_num);
+            btnAddStore = itemView.findViewById(R.id.btnAddStore); // Initialize add store button
         }
     }
 }

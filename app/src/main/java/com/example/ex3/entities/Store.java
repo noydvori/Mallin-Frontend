@@ -29,6 +29,8 @@ public class Store {
 
     private String storeType;
 
+    private boolean isAddedToList;
+
 
     public Store(String storename,String workingHours, String floor, String logoPic,String storeType) {
         this.storename = storename;
@@ -36,6 +38,7 @@ public class Store {
         this.floor = floor;
         this.logoPic =logoPic;
         this.storeType = storeType;
+        this.isAddedToList = false; // Initially set to false
     }
 
     @NonNull
@@ -53,6 +56,13 @@ public class Store {
 
     public String getLogoUrl() {
         return logoPic;
+    }
+    public boolean isAddedToList() {
+        return isAddedToList;
+    }
+
+    public void setAddedToList(boolean addedToList) {
+        isAddedToList = addedToList;
     }
 
     public void setFloor(String floor) {
