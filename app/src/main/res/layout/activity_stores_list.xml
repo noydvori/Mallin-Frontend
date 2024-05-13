@@ -70,7 +70,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
+                android:layout_marginLeft="20dp"
                 android:layout_marginTop="15dp"
                 android:baselineAligned="false"
                 android:text="Choose your desired"
@@ -80,7 +80,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
+                android:layout_marginLeft="20dp"
                 android:baselineAligned="false"
                 android:text="Store"
                 android:textColor="@color/lightPrimary"
@@ -92,12 +92,11 @@
                 android:id="@+id/search_view"
                 android:layout_width="match_parent"
                 android:layout_height="35dp"
-                android:layout_marginLeft="15dp"
+                android:layout_marginLeft="20dp"
                 android:layout_marginTop="20dp"
-                android:layout_marginRight="15dp"
+                android:layout_marginRight="20dp"
                 android:layout_marginBottom="20dp"
-                android:background="@color/lightPrimary"
-
+                android:background="@drawable/bg_white_rounded"
                 />
 
             <androidx.swiperefreshlayout.widget.SwipeRefreshLayout

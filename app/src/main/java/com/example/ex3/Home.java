@@ -214,12 +214,12 @@ public class Home extends AppCompatActivity {
     private void fetchStoresByName(String token, String str) {
         // Call the server endpoint to fetch stores by name
         StoreFetcher storeFetcher = new StoreFetcher();
-        storeFetcher.fetchStoresByName(token, str, new StoreFetcher.FetchStoresCallback() {
+        storeFetcher.fetchStoresByName(token, str, new StoreFetcher.FetchStoresSearchCallback() {
             @Override
-            public void onSuccess(Category category) {
+            public void onSuccess(List<Category> c) {
                 // Update UI with the filtered stores
                 List<Category> filteredCategories = new ArrayList<>();
-                filteredCategories.add(category);
+                filteredCategories.addAll(c);
                 updateUI(filteredCategories);
             }
 
@@ -244,9 +244,9 @@ public class Home extends AppCompatActivity {
         StoreFetcher storeFetcher = new StoreFetcher();
         storeFetcher.fetchStores(token, storeType, new StoreFetcher.FetchStoresCallback() {
             @Override
-            public void onSuccess(Category category) {
+            public void onSuccess(Category c) {
                 // Add fetched category to the list
-                categories.add(category);
+                categories.add(c);
                 // Update UI if all types are fetched
                 if (categories.size() == typesToFetch) {
                     updateUI();
