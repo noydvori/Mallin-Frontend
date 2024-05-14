@@ -5,10 +5,6 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import com.example.ex3.objects.LastMsg;
-import com.example.ex3.objects.UserInfo;
-
-
 @Entity(tableName = "stores")
 public class Store {
     @PrimaryKey
@@ -26,7 +22,6 @@ public class Store {
     private String logoPic;
     @ColumnInfo(name = "storeType")
 
-
     private String storeType;
 
     private boolean isAddedToList;
@@ -38,7 +33,7 @@ public class Store {
         this.floor = floor;
         this.logoPic =logoPic;
         this.storeType = storeType;
-        this.isAddedToList = false; // Initially set to false
+        this.isAddedToList = false;
     }
 
     @NonNull
@@ -63,14 +58,6 @@ public class Store {
 
     public void setAddedToList(boolean addedToList) {
         isAddedToList = addedToList;
-    }
-
-    public void setFloor(String floor) {
-        this.floor = floor;
-    }
-
-    public void setLogoUrl(String logoUrl) {
-        this.logoPic = logoUrl;
     }
 
     public String getLogoPic() {

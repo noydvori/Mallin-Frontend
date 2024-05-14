@@ -2,7 +2,6 @@ package com.example.ex3.entities;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -24,7 +23,6 @@ public class User implements Parcelable {
         this.username = username;
         this.displayName = displayName;
     }
-    // Implement the Parcelable interface methods
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(displayName);
@@ -67,6 +65,4 @@ public class User implements Parcelable {
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
-
-
 }

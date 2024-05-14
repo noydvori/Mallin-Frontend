@@ -6,23 +6,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.ex3.R;
 import com.example.ex3.entities.Store;
 import com.example.ex3.objects.Category;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
 
-    private List<Category> categoryList;
-    private List<Store> chosenStores;
-    private OnAddStoreClickListener addStoreClickListener;
-    private TextView badgeTextView;
+    private final List<Category> categoryList;
+    private final List<Store> chosenStores;
+    private final TextView badgeTextView;
 
     public interface OnAddStoreClickListener {
         void onAddStoreClick(Store store);
@@ -33,6 +28,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         this.chosenStores = chosenStores; // Assign the list of chosen stores
         this.badgeTextView = badgeTextView;
     }
+
     private void updateBadge() {
         if (badgeTextView != null) {
             // Update the badge text with the number of chosen stores
@@ -45,6 +41,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             }
         }
     }
+
     @NonNull
     @Override
     public CategoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -59,12 +56,12 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         StoreItemAdapter storeItemAdapter = new StoreItemAdapter(category.getStoresList(), new CategoryAdapter.OnAddStoreClickListener() {
             @Override
             public void onAddStoreClick(Store store) {
+                // Remove or add to the chosen list
                 if (chosenStores.contains(store)) {
                     chosenStores.remove(store);
                 } else {
                     chosenStores.add(store);
                 }
-
                 // Update the badge after adding or removing a store
                 updateBadge();
             }
@@ -77,7 +74,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         return categoryList.size();
     }
 
-    static class CategoryViewHolder extends RecyclerView.ViewHolder {
+    public static class CategoryViewHolder extends RecyclerView.ViewHolder { // Changed to public static
         TextView categoryNameTextView;
         RecyclerView storeItemRecyclerView;
         Button btnAddStore;
