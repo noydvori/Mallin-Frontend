@@ -15,6 +15,7 @@ import java.util.List;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
 
+    private final Context context;
     private final List<Category> categoryList;
     private final List<Store> chosenStores;
     private final TextView badgeTextView;
@@ -24,8 +25,9 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     }
 
     public CategoryAdapter(Context context, List<Category> categoryList, List<Store> chosenStores, TextView badgeTextView) {
+        this.context = context;
         this.categoryList = categoryList;
-        this.chosenStores = chosenStores; // Assign the list of chosen stores
+        this.chosenStores = chosenStores;
         this.badgeTextView = badgeTextView;
     }
 
@@ -53,7 +55,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position) {
         Category category = categoryList.get(position);
         holder.categoryNameTextView.setText(category.getCategoryName());
-        StoreItemAdapter storeItemAdapter = new StoreItemAdapter(category.getStoresList(), new CategoryAdapter.OnAddStoreClickListener() {
+        StoreItemAdapter storeItemAdapter = new StoreItemAdapter(context, category.getStoresList(), new OnAddStoreClickListener() {
             @Override
             public void onAddStoreClick(Store store) {
                 // Remove or add to the chosen list
@@ -74,7 +76,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         return categoryList.size();
     }
 
-    public static class CategoryViewHolder extends RecyclerView.ViewHolder { // Changed to public static
+    public static class CategoryViewHolder extends RecyclerView.ViewHolder {
         TextView categoryNameTextView;
         RecyclerView storeItemRecyclerView;
         Button btnAddStore;
