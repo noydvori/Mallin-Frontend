@@ -40,18 +40,19 @@
             android:layout_marginTop="4dp"/>
 
         <TextView
-            android:id="@+id/popup_working_hours"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"/>
-
-        <TextView
             android:id="@+id/popup_floor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="16dp"
             />
+
+
+        <TextView
+            android:id="@+id/popup_working_hours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"/>
 
         <!-- Horizontal LinearLayout for buttons -->
         <LinearLayout

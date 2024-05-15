@@ -30,11 +30,12 @@ public class Home extends AppCompatActivity {
     String bearerToken;
     TextView badgeTextView;
     private final List<Store> chosenStores = new ArrayList<>();
-
     private final List<Category> categories = new ArrayList<>();
-
+    private String currentSearchQuery = "";
+    private final List<String> storeTypes = new ArrayList<>();
 
     BottomNavigationView bottomNavigationView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // Retrieve the saved theme preference
@@ -81,6 +82,14 @@ public class Home extends AppCompatActivity {
         badgeTextView = findViewById(R.id.locationBadge);
         updateBadge(); // Update badgeTextView
 
+        // Initialize store types
+        storeTypes.add("food");
+        storeTypes.add("fashion and sports");
+        storeTypes.add("fashion");
+        storeTypes.add("shoes");
+        storeTypes.add("electricity");
+        storeTypes.add("accessories & jewelries");
+
         // Fetch stores for each store type
         fetchDataFromServer();
 
@@ -92,10 +101,11 @@ public class Home extends AppCompatActivity {
             public boolean onQueryTextSubmit(String str) {
                 if (str.isEmpty()) {
                     // Clear the search query and fetch all stores again
-                    categories.clear();
+                    currentSearchQuery = "";
                     fetchDataFromServer();
                 } else {
                     // Call server endpoint with the search query
+                    currentSearchQuery = str;
                     fetchStoresByName(bearerToken, str);
                 }
                 return true;
@@ -106,24 +116,29 @@ public class Home extends AppCompatActivity {
                 // You can implement live search here if needed
                 if (newText.isEmpty()) {
                     // If the search query is empty, clear the list and fetch all stores again
-                    categories.clear();
+                    currentSearchQuery = "";
                     fetchDataFromServer();
                 } else {
                     // Call server endpoint with the new search query
+                    currentSearchQuery = newText;
                     fetchStoresByName(bearerToken, newText);
                 }
                 return true;
             }
         });
     }
+
     private void fetchDataFromServer() {
-        // Fetch your data from the server
-        fetchStoresByType(bearerToken, "food");
-        fetchStoresByType(bearerToken, "fashion and sports");
-        fetchStoresByType(bearerToken, "fashion");
-        fetchStoresByType(bearerToken, "shoes");
-        fetchStoresByType(bearerToken, "electricity");
-        fetchStoresByType(bearerToken, "accessories & jewelries");
+        categories.clear();
+        if (currentSearchQuery.isEmpty()) {
+            // Fetch stores by type if no search query is present
+            for (String type : storeTypes) {
+                fetchStoresByType(bearerToken, type);
+            }
+        } else {
+            // Fetch stores by name if there is a search query
+            fetchStoresByName(bearerToken, currentSearchQuery);
+        }
     }
 
     private void fetchStoresByName(String token, String str) {
@@ -133,8 +148,9 @@ public class Home extends AppCompatActivity {
             @Override
             public void onSuccess(List<Category> c) {
                 // Update UI with the filtered stores
-                List<Category> filteredCategories = new ArrayList<>(c);
-                updateUI(filteredCategories);
+                categories.clear();
+                categories.addAll(c);
+                updateUI();
             }
 
             @Override
@@ -144,6 +160,7 @@ public class Home extends AppCompatActivity {
             }
         });
     }
+
     // Method to update the badge text based on the number of chosen stores
     private void updateBadge() {
         if (badgeTextView != null) {
@@ -158,14 +175,13 @@ public class Home extends AppCompatActivity {
         }
     }
 
-    private void updateUI(List<Category> filteredCategories) {
+    private void updateUI() {
         RecyclerView categoriesList = findViewById(R.id.categories);
         categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
         categoriesList.setLayoutManager(new LinearLayoutManager(this));
-        CategoryAdapter adapter = new CategoryAdapter(this, filteredCategories, chosenStores,badgeTextView); // Pass chosenStores
+        CategoryAdapter adapter = new CategoryAdapter(this, categories, chosenStores, badgeTextView);
         categoriesList.setAdapter(adapter);
     }
-
 
     private void fetchStoresByType(String token, String storeType) {
         StoreFetcher storeFetcher = new StoreFetcher();
@@ -184,14 +200,6 @@ public class Home extends AppCompatActivity {
                 updateUI();
             }
         });
-    }
-
-    private void updateUI() {
-        RecyclerView categoriesList = findViewById(R.id.categories);
-        categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
-        categoriesList.setLayoutManager(new LinearLayoutManager(this));
-        CategoryAdapter adapter = new CategoryAdapter(this, categories, chosenStores,badgeTextView);
-        categoriesList.setAdapter(adapter);
     }
 
     // TODO: revert this to intent...
@@ -221,31 +229,6 @@ public class Home extends AppCompatActivity {
                 Intent intent = new Intent(Home.this, Home.class);
                 finish();
                 startActivity(intent);
-            }
-        });
-
-        // Save button listener
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @SuppressLint("StringFormatInvalid")
-            @Override
-            public void onClick(View v) {
-                // Get the entered server path
-                //String serverPort = serverPortEditText.getText().toString().trim();
-
-                // Save server path and port preferences
-                //SharedPreferences.Editor editor = sharedPreferences.edit();
-                //editor.putString("ServerPort", serverPort);
-                //.apply();
-
-                // Update the BaseUrl value
-                //tring newBaseUrl = getString(R.string.ServerPath) + ":" + getString(R.string.ServerPort) + "/";
-                //MyApplication.context.getResources().getString(R.string.BaseUrl, newBaseUrl);
-
-                // Restart the activity to apply the theme changes
-                //Intent intent = new Intent(ChatsList.this, MainActivity.class);
-
-                //finish();
-                //startActivity(intent);
             }
         });
 

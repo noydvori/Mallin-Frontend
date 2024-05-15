@@ -33,7 +33,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
     private void updateBadge() {
         if (badgeTextView != null) {
-            // Update the badge text with the number of chosen stores
             int numberOfChosenStores = chosenStores.size();
             if (numberOfChosenStores > 0) {
                 badgeTextView.setVisibility(View.VISIBLE);
@@ -55,16 +54,22 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position) {
         Category category = categoryList.get(position);
         holder.categoryNameTextView.setText(category.getCategoryName());
-        StoreItemAdapter storeItemAdapter = new StoreItemAdapter(context, category.getStoresList(), new OnAddStoreClickListener() {
+
+        // Check if the category is selected
+        boolean isSelected = chosenStores.containsAll(category.getStoresList());
+        holder.selectionBackground.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+
+        StoreItemAdapter storeItemAdapter = new StoreItemAdapter(context, category.getStoresList(), new StoreItemAdapter.OnStoreInteractionListener() {
             @Override
-            public void onAddStoreClick(Store store) {
-                // Remove or add to the chosen list
+            public void onStoreAddedToList(Store store) {
                 if (chosenStores.contains(store)) {
                     chosenStores.remove(store);
                 } else {
                     chosenStores.add(store);
                 }
-                // Update the badge after adding or removing a store
+                // Update the visibility of the selection background based on category selection
+                boolean isSelected = chosenStores.containsAll(category.getStoresList());
+                holder.selectionBackground.setVisibility(isSelected ? View.VISIBLE : View.GONE);
                 updateBadge();
             }
         });
@@ -79,13 +84,13 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     public static class CategoryViewHolder extends RecyclerView.ViewHolder {
         TextView categoryNameTextView;
         RecyclerView storeItemRecyclerView;
-        Button btnAddStore;
+        View selectionBackground;
 
         public CategoryViewHolder(@NonNull View itemView) {
             super(itemView);
             categoryNameTextView = itemView.findViewById(R.id.tvCategoryHeader);
             storeItemRecyclerView = itemView.findViewById(R.id.rvStoreItems);
-            btnAddStore = itemView.findViewById(R.id.btnAddStore);
+            selectionBackground = itemView.findViewById(R.id.selection_background);
         }
     }
 }
