@@ -15,6 +15,13 @@ import java.util.stream.Collectors;
 public class StoreFetcher {
     public interface FetchStoresCallback {
         void onSuccess(Category category);
+
+        void onError(Throwable throwable);
+    }
+
+    public interface FetchSearchStoresCallback {
+        void onSuccess(List<Category> category);
+
         void onError(Throwable throwable);
     }
 
@@ -31,7 +38,7 @@ public class StoreFetcher {
         });
     }
 
-    public void fetchStoresByName(String token, String storeName, FetchStoresCallback callback) {
+    public void fetchStoresByName(String token, String storeName, FetchSearchStoresCallback callback) {
         CategoryAPI categoryAPI = CategoryAPI.getInstance();
 
         CompletableFuture<List<Store>> future = categoryAPI.getStoresByName(token, storeName);
@@ -54,14 +61,12 @@ public class StoreFetcher {
             }
 
             // Call onSuccess with the list of categories
-            categories.forEach(callback::onSuccess);
+            callback.onSuccess(categories);
         }).exceptionally(ex -> {
             callback.onError(ex);
             return null;
         });
-
-
     }
-
-
 }
+
+

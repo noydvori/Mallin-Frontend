@@ -22,7 +22,4 @@ public interface StoreDao {
 
     @Query("DELETE FROM stores")
     void clear();
-
-    //@Query("DELETE FROM contacts WHERE id=:id")
-    //void delete(int id);
 }

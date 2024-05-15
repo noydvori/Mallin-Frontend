@@ -1,7 +1,7 @@
 package com.example.ex3.repositories;
 
 
-import static com.example.ex3.repositories.MyApplication.context;
+import static com.example.ex3.viewModels.MyApplication.context;
 
 import android.widget.Toast;
 
@@ -47,7 +47,6 @@ public class CategoryRepository {
 
         @Override
         protected void onActive() {
-
             super.onActive();
             new Thread(()->{
                 storesListData.postValue(dao.getAll());
@@ -61,7 +60,6 @@ public class CategoryRepository {
             for (Store c : category.getStoresList()) {
                 dao.insert(c);
             }
-//            List<Contact> contactsTemp = dao.getAll();
             storesListData.setValue(category.getStoresList());
         }).exceptionally(error -> {
             Toast.makeText(context, error.getCause().getMessage(), Toast.LENGTH_SHORT).show();
@@ -73,5 +71,4 @@ public class CategoryRepository {
         //extract the contacts from the room
         return storesListData;
     }
-
 }

@@ -5,10 +5,7 @@ import com.example.ex3.objects.Category;
 import com.example.ex3.objects.NameAndPassword;
 import com.example.ex3.objects.User;
 import com.example.ex3.objects.UserInfo;
-
 import java.util.List;
-
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -16,7 +13,6 @@ import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
-import retrofit2.http.Url;
 
 public interface WebServiceAPI {
     @GET("Users")
