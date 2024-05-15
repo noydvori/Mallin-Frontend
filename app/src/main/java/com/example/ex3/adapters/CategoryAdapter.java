@@ -57,7 +57,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
         // Check if the category is selected
         boolean isSelected = chosenStores.containsAll(category.getStoresList());
-        holder.selectionBackground.setVisibility(isSelected ? View.VISIBLE : View.GONE);
 
         StoreItemAdapter storeItemAdapter = new StoreItemAdapter(context, category.getStoresList(), new StoreItemAdapter.OnStoreInteractionListener() {
             @Override
@@ -69,7 +68,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                 }
                 // Update the visibility of the selection background based on category selection
                 boolean isSelected = chosenStores.containsAll(category.getStoresList());
-                holder.selectionBackground.setVisibility(isSelected ? View.VISIBLE : View.GONE);
                 updateBadge();
             }
         });

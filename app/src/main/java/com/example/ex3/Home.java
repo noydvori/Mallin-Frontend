@@ -67,16 +67,16 @@ public class Home extends AppCompatActivity {
         });
         // Retrieve the token from the Intent extras
         bearerToken = intent.getStringExtra("token");
-        SwipeRefreshLayout refreshLayout = findViewById(R.id.refreshLayout);
-        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                // Perform the refresh action here
-                fetchDataFromServer();
-                // Stop the refreshing animation
-                refreshLayout.setRefreshing(false);
-            }
-        });
+        //SwipeRefreshLayout refreshLayout = findViewById(R.id.refreshLayout);
+        //refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        //    @Override
+        //    public void onRefresh() {
+        //        // Perform the refresh action here
+        //        fetchDataFromServer();
+        //        // Stop the refreshing animation
+        //        refreshLayout.setRefreshing(false);
+        //    }
+        //});
 
         // Initialize badgeTextView
         badgeTextView = findViewById(R.id.locationBadge);
