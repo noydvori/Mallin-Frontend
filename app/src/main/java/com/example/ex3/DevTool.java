@@ -1,20 +1,28 @@
 package com.example.ex3;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.example.ex3.adapters.GrapthDataAdapter;
 import com.example.ex3.components.GraphOverlayImageView;
+import com.example.ex3.devtool.CustomBluetoothManager;
+import com.example.ex3.devtool.CustomWifiManager;
 import com.example.ex3.devtool.MapScalingHandler;
 import com.example.ex3.devtool.MapTappingHandler;
 import com.example.ex3.objects.graph.GraphNode;
@@ -24,38 +32,34 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 public class DevTool extends AppCompatActivity {
+
+
     private static final String mapActivity = "MapActivity";
     private DevToolViewModel devToolViewModel;
-    private  MaterialToolbar mToolBar;
+    private MaterialToolbar mToolBar;
     private BottomSheetBehavior<View> bottomSheetBehavior;
+    private CustomWifiManager customWifiManager;
+    private Handler handler = new Handler(Looper.getMainLooper());
+    private Button mSaveButton;
+    private CustomBluetoothManager customBluetoothManager;
+
+    private ProgressBar mProgressBar;
+
+    private final int SCAN_INTERVAL = 30000; // 30 seconds
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.acitivty_map);
-         mToolBar = findViewById(R.id.devtool_toolbar);
+        mToolBar = findViewById(R.id.devtool_toolbar);
         setSupportActionBar(mToolBar);
         devToolViewModel = new ViewModelProvider(this, new DevToolViewModelFactory(new GrapthDataAdapter(this))).get(DevToolViewModel.class);
-        GraphOverlayImageView imageView = (GraphOverlayImageView)findViewById(R.id.devtool_map);
+        GraphOverlayImageView imageView = findViewById(R.id.devtool_map);
         imageView.setImage(ImageSource.resource(R.drawable.floor_1));
         Log.d(mapActivity, "start this app");
 
-
         initiateBottomSheet();
 
-
-        GrapthDataAdapter dataAdapter = new GrapthDataAdapter(this);
-//        Thread thread = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-////                dataAdapter.loadGrapthData();
-////                imageView.setGraph(dataAdapter.getGraph());
-//                imageView.setOnImageEventListener(new MapScalingHandler(imageView));
-//
-//            }
-//        }
-//                );
-//        thread.start();
         devToolViewModel.getTitle().observe(this, new Observer<String>() {
             @Override
             public void onChanged(String s) {
@@ -66,18 +70,18 @@ public class DevTool extends AppCompatActivity {
         devToolViewModel.getSelectedNode().observe(this, new Observer<GraphNode>() {
             @Override
             public void onChanged(GraphNode graphNode) {
-                if(graphNode != null) {
+                if (graphNode != null) {
                     TextView tvNodeName = findViewById(R.id.tvNodeName);
                     tvNodeName.setText(graphNode.getName());
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                }else{
-                    Log.d("DEVTOOL","trying to collaps bottom sheet");
-                  bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                } else {
+                    Log.d("DEVTOOL", "trying to collaps bottom sheet");
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
                 }
                 imageView.invalidate();
-
             }
         });
+
         devToolViewModel.getFloorImage().observe(this, new Observer<Integer>() {
             @Override
             public void onChanged(Integer integer) {
@@ -94,9 +98,57 @@ public class DevTool extends AppCompatActivity {
             }
         });
 
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
+        } else {
+            initializeWifiManager();
+        }
 
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
+        } else {
+            initializeBluetoothManager();
+        }
 
+        devToolViewModel.getIsScanLocked().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean isLocked) {
+                mSaveButton.setActivated(!isLocked);
+                if(isLocked) {
+                    mProgressBar.setVisibility(View.VISIBLE);
+                }else {
+                    mProgressBar.setVisibility(View.GONE);
+                }
+            }
+        });
+        // Register broadcast receiver to get scan results
         setFloor(2, "Floor 3");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 2) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                initializeWifiManager();
+                initializeBluetoothManager();
+            } else {
+                // Handle the case where the user denies the permission
+            }
+        }
+    }
+
+
+    private void initializeWifiManager() {
+        customWifiManager = new CustomWifiManager(this);
+        customWifiManager.startInitialScan();
+    }
+
+    private void initializeBluetoothManager() {
+        customBluetoothManager = new CustomBluetoothManager(this);
+        // customBluetoothManager.startInitialScan();
     }
 
     private void initiateBottomSheet() {
@@ -104,19 +156,17 @@ public class DevTool extends AppCompatActivity {
         bottomSheet.setVisibility(View.VISIBLE);
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
         bottomSheetBehavior.setHideable(true);
+        mProgressBar = bottomSheet.findViewById(R.id.save_area_stats_loading_bar);
 
         bottomSheet.post(new Runnable() {
             @Override
             public void run() {
                 bottomSheet.setVisibility(View.VISIBLE);
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-
             }
         });
-
-        Button btnSave = bottomSheet.findViewById(R.id.btnSave);
-        btnSave.setOnClickListener(view -> {
-            // Handle the save action
+       mSaveButton = bottomSheet.findViewById(R.id.button_save);
+        mSaveButton.setOnClickListener(view -> {
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         });
     }
@@ -145,30 +195,25 @@ public class DevTool extends AppCompatActivity {
         if (id == R.id.action_toggle_lock) {
             devToolViewModel.setIsLocked(!devToolViewModel.isLocked());
             invalidateMenu();
-
-        }else if(id == R.id.floor_0) {
-            setFloor(0,item.getTitle());
-        }else if(id == R.id.floor_1) {
+        } else if (id == R.id.floor_0) {
+            setFloor(0, item.getTitle());
+        } else if (id == R.id.floor_1) {
             setFloor(1, item.getTitle());
-
-        }else if(id == R.id.floor_2) {
+        } else if (id == R.id.floor_2) {
             setFloor(2, item.getTitle());
-
-        }else if(id == R.id.floor_3) {
+        } else if (id == R.id.floor_3) {
             setFloor(3, item.getTitle());
-
         }
 
         return super.onOptionsItemSelected(item);
     }
 
     private void setFloor(int i, CharSequence title) {
-        if(title != null){
+        if (title != null) {
             devToolViewModel.setTitle(title.toString());
         }
         devToolViewModel.setSelectedFloor(i);
         devToolViewModel.setFloorImage(getFloorResource(i));
-
     }
 
     @Override
@@ -182,5 +227,4 @@ public class DevTool extends AppCompatActivity {
         }
         return true;
     }
-
 }

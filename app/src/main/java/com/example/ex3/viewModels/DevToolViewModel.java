@@ -10,6 +10,7 @@ import com.example.ex3.objects.graph.GraphNode;
 import com.example.ex3.objects.graph.NodeStatus;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class DevToolViewModel extends ViewModel {
     private MutableLiveData<ArrayList<Graph>> mGraphs = new MutableLiveData<>();
@@ -21,9 +22,20 @@ public class DevToolViewModel extends ViewModel {
 
     private MutableLiveData<String> title = new MutableLiveData<>();
 
+    public static final String BLUETOOTH_LOCK =  "BLUETOOTH_LOCK";
+    public static final String WIFI_LOCK =  "WIFI_LOCK";
+
+    private HashMap<String, Boolean> scanLocks = new HashMap<>();
+
+    private MutableLiveData<Boolean> isScanLocked = new MutableLiveData<>();
+
+
     private boolean isLocked = true;
     public DevToolViewModel(GrapthDataAdapter dataAdapter) {
         selectedFloor.setValue(3);
+        scanLocks.put(BLUETOOTH_LOCK,false);
+        scanLocks.put(WIFI_LOCK, false);
+        isScanLocked.setValue(false);
         title.setValue("Floor 0");
         Graph floor_0 = dataAdapter.loadGrapthData(R.raw.graph_data);
         ArrayList<Graph> graphs = new ArrayList<>();
@@ -90,6 +102,14 @@ public class DevToolViewModel extends ViewModel {
             this.selectedNode.setValue(node);
         }
 
+    }
+
+    public void  setScanLock(String lock,Boolean isLocked) {
+        this.scanLocks.put(lock,isLocked);
+    }
+
+    public MutableLiveData<Boolean> getIsScanLocked() {
+        return this.isScanLocked;
     }
 
     public MutableLiveData<GraphNode> getSelectedNode () {

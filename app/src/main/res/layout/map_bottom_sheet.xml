@@ -21,14 +21,14 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
         <ProgressBar
-            android:id="@+id/progressBar"
+            android:id="@+id/save_area_stats_loading_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:indeterminate="true"
             android:visibility="visible" />
 
         <Button
-            android:id="@+id/btnSave"
+            android:id="@+id/button_save"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Save"
