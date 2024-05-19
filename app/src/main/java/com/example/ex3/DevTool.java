@@ -33,19 +33,18 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 public class DevTool extends AppCompatActivity {
 
-
+    private Handler handler = new Handler(Looper.getMainLooper());
+    private static final int SCAN_INTERVAL = 15000; // 15 seconds
     private static final String mapActivity = "MapActivity";
     private DevToolViewModel devToolViewModel;
     private MaterialToolbar mToolBar;
     private BottomSheetBehavior<View> bottomSheetBehavior;
     private CustomWifiManager customWifiManager;
-    private Handler handler = new Handler(Looper.getMainLooper());
     private Button mSaveButton;
     private CustomBluetoothManager customBluetoothManager;
 
     private ProgressBar mProgressBar;
 
-    private final int SCAN_INTERVAL = 30000; // 30 seconds
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +114,8 @@ public class DevTool extends AppCompatActivity {
         devToolViewModel.getIsScanLocked().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean isLocked) {
-                mSaveButton.setActivated(!isLocked);
+                Log.d("DEV_TOOL", "isLocked: "  + isLocked);
+                mSaveButton.setEnabled(!isLocked);
                 if(isLocked) {
                     mProgressBar.setVisibility(View.VISIBLE);
                 }else {
@@ -142,12 +142,12 @@ public class DevTool extends AppCompatActivity {
 
 
     private void initializeWifiManager() {
-        customWifiManager = new CustomWifiManager(this);
-        customWifiManager.startInitialScan();
+        customWifiManager = new CustomWifiManager(this, devToolViewModel);
+       // customWifiManager.startScan();
     }
 
     private void initializeBluetoothManager() {
-        customBluetoothManager = new CustomBluetoothManager(this);
+        customBluetoothManager = new CustomBluetoothManager(this,devToolViewModel);
         // customBluetoothManager.startInitialScan();
     }
 
@@ -168,7 +168,20 @@ public class DevTool extends AppCompatActivity {
        mSaveButton = bottomSheet.findViewById(R.id.button_save);
         mSaveButton.setOnClickListener(view -> {
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            initiateFullScan();
         });
+    }
+
+    private void initiateFullScan() {
+        devToolViewModel.setIsLocked(true);
+        devToolViewModel.setAllScanLocked(true);
+         new Thread(() -> {
+             customBluetoothManager.startScan();
+             customWifiManager.startScan();
+         }).start();
+
+        handler.postDelayed(()->devToolViewModel.setIsScanLocked(false), SCAN_INTERVAL);
+
     }
 
     public int getFloorResource(Integer floor) {

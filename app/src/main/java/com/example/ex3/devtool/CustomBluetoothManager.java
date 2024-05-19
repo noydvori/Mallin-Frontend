@@ -15,6 +15,9 @@ import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
+import com.example.ex3.interfaces.BluetoothCallBack;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class CustomBluetoothManager {
@@ -22,11 +25,14 @@ public class CustomBluetoothManager {
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner bluetoothLeScanner;
     private Handler handler = new Handler(Looper.getMainLooper());
+
+    private BluetoothCallBack mOnScanCallBack;
     private static final int SCAN_INTERVAL = 30000; // 30 seconds
     private Context context;
 
-    public CustomBluetoothManager(Context context) {
+    public CustomBluetoothManager(Context context, BluetoothCallBack callBack) {
         this.context = context;
+        this.mOnScanCallBack = callBack;
         BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
@@ -36,27 +42,41 @@ public class CustomBluetoothManager {
         }
     }
 
-    public void startInitialScan() {
-        startScan();
-    }
 
-    private void startScan() {
+
+    public void startScan() {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.e(TAG, "Location permission not granted");
             return;
         }
 
-        bluetoothLeScanner.startScan(leScanCallback);
-        handler.postDelayed(() -> {
-            bluetoothLeScanner.stopScan(leScanCallback);
-            startScan();
-        }, SCAN_INTERVAL);
+        if (bluetoothLeScanner == null) {
+            Log.e(TAG, "BluetoothLeScanner is null");
+            return;
+        }
+
+        // Ensure the previous scan is stopped
+        bluetoothLeScanner.stopScan(leScanCallback);
+
+        try {
+            bluetoothLeScanner.startScan(leScanCallback);
+//            handler.postDelayed(() -> {
+//                bluetoothLeScanner.stopScan(leScanCallback);
+//                startScan(); // Restart the scan after the interval
+//            }, SCAN_INTERVAL);
+        } catch (Exception e) {
+            Log.e(TAG, "Exception during Bluetooth scan", e);
+        }
     }
 
+
+
     private final ScanCallback leScanCallback = new ScanCallback() {
+
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             BluetoothDevice device = result.getDevice();
+
             int rssi = result.getRssi();
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
@@ -69,6 +89,7 @@ public class CustomBluetoothManager {
                 return;
             }
             Log.d(TAG, "Bluetooth Device: " + device.getName() + " - " + device.getAddress() + " RSSI: " + rssi);
+            mOnScanCallBack.onBluetoothCallBack(new ArrayList<>());
             // Add logic to use the scan results
         }
 
@@ -90,10 +111,15 @@ public class CustomBluetoothManager {
                 Log.d(TAG, "Bluetooth Device: " + device.getName() + " - " + device.getAddress() + " RSSI: " + rssi);
                 // Add logic to use the scan results
             }
+            mOnScanCallBack.onBluetoothCallBack(results);
+
         }
+
+
 
         @Override
         public void onScanFailed(int errorCode) {
+            mOnScanCallBack.onBluetoothCallBack(new ArrayList<>());
             Log.e(TAG, "Bluetooth scan failed with error code: " + errorCode);
         }
     };
