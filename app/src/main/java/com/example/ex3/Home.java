@@ -5,8 +5,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.os.Bundle;
+
+import com.example.ex3.adapters.TagsAdapter;
+import com.example.ex3.api.TagAPI;
 import com.example.ex3.entities.Store;
 import com.example.ex3.fetchers.StoreFetcher;
+import com.example.ex3.fetchers.TagFetcher;
 import com.example.ex3.objects.Category;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import android.annotation.SuppressLint;import android.app.Dialog;
@@ -33,6 +37,9 @@ public class Home extends AppCompatActivity {
     private final List<Category> categories = new ArrayList<>();
     private String currentSearchQuery = "";
     private final List<String> storeTypes = new ArrayList<>();
+    private RecyclerView tagsRecyclerView;
+    private TagsAdapter tagsAdapter;
+    private final List<String> tags = new ArrayList<>();
 
     BottomNavigationView bottomNavigationView;
 
@@ -57,6 +64,16 @@ public class Home extends AppCompatActivity {
         // TODO: fetch the details of the user
         String myName = "Noy";
 
+        // Initialize RecyclerView for tags
+        tagsRecyclerView = findViewById(R.id.tags);
+        tagsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        tagsAdapter = new TagsAdapter(tags);
+        tagsRecyclerView.setAdapter(tagsAdapter);
+
+
+
+
+
         // Add contact button
         FloatingActionButton addContactButton = findViewById(R.id.addContact);
         addContactButton.setOnClickListener(new View.OnClickListener() {
@@ -67,6 +84,7 @@ public class Home extends AppCompatActivity {
         });
         // Retrieve the token from the Intent extras
         bearerToken = intent.getStringExtra("token");
+        fetchTypes(bearerToken,"Azrieli TLV");
         //SwipeRefreshLayout refreshLayout = findViewById(R.id.refreshLayout);
         //refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
         //    @Override
@@ -90,6 +108,14 @@ public class Home extends AppCompatActivity {
         storeTypes.add("electricity");
         storeTypes.add("accessories & jewelries");
 
+
+        tagsAdapter.setOnTagClickListener(new TagsAdapter.OnTagClickListener() {
+            @Override
+            public void onTagClick(String tag) {
+                // Handle tag click
+                fetchCategoryForTag(tag);
+            }
+        });
         // Fetch stores for each store type
         fetchDataFromServer();
 
@@ -174,7 +200,25 @@ public class Home extends AppCompatActivity {
             }
         }
     }
+    private void fetchCategoryForTag(String tag) {
+        // Call the server endpoint to fetch category based on tag
+        StoreFetcher storeFetcher = new StoreFetcher();
+        storeFetcher.fetchStores(bearerToken, tag, new StoreFetcher.FetchStoresCallback() {
+            @Override
+            public void onSuccess(Category category) {
+                // Clear existing categories and add the fetched category
+                categories.clear();
+                categories.add(category);
+                updateUI();
+            }
 
+            @Override
+            public void onError(Throwable throwable) {
+                // Handle error
+                Toast.makeText(Home.this, "Error fetching category for tag", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
     private void updateUI() {
         RecyclerView categoriesList = findViewById(R.id.categories);
         categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
@@ -197,6 +241,33 @@ public class Home extends AppCompatActivity {
             public void onError(Throwable throwable) {
                 // Handle error
                 Toast.makeText(Home.this, "Error fetching " + storeType + " stores", Toast.LENGTH_SHORT).show();
+                updateUI();
+            }
+        });
+    }
+    private void fetchTypes(String token, String mallname) {
+        System.out.println("1");
+        TagFetcher tagFetcher = new TagFetcher();
+        tagFetcher.fetchTags(token, new TagFetcher.FetchTagsCallback() {
+            @Override
+            public void onSuccess(List<String> c) {
+                // show tags
+                tags.addAll(c);
+                tags.add("noy");
+                tags.add("noy");
+                tags.add("noy");
+                tags.add("noy");
+                tags.add("noy");
+                tags.add("noy");
+                tags.add("noy");
+                tags.add("noy");
+                tagsAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                // Handle error
+                Toast.makeText(Home.this, "Error fetching types", Toast.LENGTH_SHORT).show();
                 updateUI();
             }
         });
