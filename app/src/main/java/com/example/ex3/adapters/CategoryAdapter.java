@@ -4,7 +4,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -55,9 +54,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         Category category = categoryList.get(position);
         holder.categoryNameTextView.setText(category.getCategoryName());
 
-        // Check if the category is selected
-        boolean isSelected = chosenStores.containsAll(category.getStoresList());
-
         StoreItemAdapter storeItemAdapter = new StoreItemAdapter(context, category.getStoresList(), new StoreItemAdapter.OnStoreInteractionListener() {
             @Override
             public void onStoreAddedToList(Store store) {
@@ -66,9 +62,13 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                 } else {
                     chosenStores.add(store);
                 }
-                // Update the visibility of the selection background based on category selection
-                boolean isSelected = chosenStores.containsAll(category.getStoresList());
                 updateBadge();
+            }
+
+            @Override
+            public void onStoreAddedToFavorites(Store store) {
+                // Handle adding to favorites
+                // Example: if there's a favorites list, add/remove store from it
             }
         });
         holder.storeItemRecyclerView.setAdapter(storeItemAdapter);

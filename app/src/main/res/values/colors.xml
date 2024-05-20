@@ -11,4 +11,6 @@
     <color name="colorPrimaryDarkT">#3F51B5</color>
     <color name="colorAccent">#361275</color>
     <color name="colorAccentDark">#361275</color>
+    <color name="added_to_list_color">#75E6E6E6</color>
+
 </resources>

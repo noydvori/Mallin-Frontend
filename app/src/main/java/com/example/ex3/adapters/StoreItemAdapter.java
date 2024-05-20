@@ -1,31 +1,36 @@
 package com.example.ex3.adapters;
 
-import android.annotation.SuppressLint;
-import android.app.AlertDialog;
+import static com.example.ex3.MyApplication.context;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
-import java.util.List;
 import com.example.ex3.R;
 import com.example.ex3.entities.Store;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.squareup.picasso.Picasso;
+import java.util.List;
 
 public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.StoreItemViewHolder> {
     private final List<Store> storeItemList;
     private final OnStoreInteractionListener storeInteractionListener;
 
+    public interface OnStoreInteractionListener {
+        void onStoreAddedToList(Store store);
+        void onStoreAddedToFavorites(Store store);
+    }
 
     public StoreItemAdapter(Context context, List<Store> storeList, OnStoreInteractionListener listener) {
         this.storeItemList = storeList;
         this.storeInteractionListener = listener;
     }
+
     @NonNull
     @Override
     public StoreItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -37,25 +42,50 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
     public void onBindViewHolder(@NonNull StoreItemViewHolder holder, int position) {
         Store storeItem = storeItemList.get(position);
         holder.storeNameTextView.setText(storeItem.getStoreName());
-        String logoUrl = storeItem.getLogoUrl();
+        holder.categoryFloorTextView.setText(storeItem.getStoreType() + " • Floor number " + storeItem.getFloor());
 
-        // Set store logo using Picasso or Glide library with the modified URL
+        String logoUrl = storeItem.getLogoUrl();
         String modifiedUrl = convertLogoUrl(logoUrl);
         Picasso.get().load(modifiedUrl).into(holder.logoImageView);
 
-        // Set store state icon
-        holder.itemView.setBackgroundColor(storeItem.isAddedToList() ? 0xFFE0E0E0 : 0xFFFFFFFF); // Change background color if added to the list
+        // Set open/closed status
+        if (storeItem.isOpen()) {
+            holder.openStatusTextView.setText("Open");
+            holder.openStatusTextView.setBackgroundResource(R.drawable.bg_green_rounded);
+        } else {
+            holder.openStatusTextView.setText("Closed");
+            holder.openStatusTextView.setBackgroundResource(R.drawable.bg_red_rounded);
+        }
 
-        // Set click listeners
-        holder.itemView.setOnClickListener(v -> {
+        // Update icons based on store's state
+        updateButtonIcons(holder, storeItem);
+
+        // Set background color based on whether the item is added to the list
+        if (storeItem.isAddedToList()) {
+            holder.itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.added_to_list_color));
+        } else {
+            holder.itemView.setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
+        }
+
+        // Add to List Button Click Listener
+        holder.btnAddToList.setOnClickListener(v -> {
             storeItem.setAddedToList(!storeItem.isAddedToList());
             notifyItemChanged(holder.getAdapterPosition());
             storeInteractionListener.onStoreAddedToList(storeItem);
+
+            // Update background color after state change
+            if (storeItem.isAddedToList()) {
+                holder.itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.added_to_list_color));
+            } else {
+                holder.itemView.setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
+            }
         });
 
-        holder.itemView.setOnLongClickListener(v -> {
-            showStoreDetailsPopup(v.getContext(), storeItem, holder);
-            return true;
+        // Add to Favorites Button Click Listener
+        holder.btnAddToFavorites.setOnClickListener(v -> {
+            storeItem.setFavorite(!storeItem.isFavorite());
+            notifyItemChanged(holder.getAdapterPosition());
+            storeInteractionListener.onStoreAddedToFavorites(storeItem);
         });
     }
 
@@ -64,62 +94,41 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         return storeItemList.size();
     }
 
-    static class StoreItemViewHolder extends RecyclerView.ViewHolder {
-        ImageView logoImageView;
-        TextView storeNameTextView;
+    private void updateButtonIcons(StoreItemViewHolder holder, Store storeItem) {
+        if (storeItem.isAddedToList()) {
+            holder.btnAddToList.setImageResource(R.drawable.ic_remove);
+        } else {
+            holder.btnAddToList.setImageResource(R.drawable.ic_add_circle);
+        }
 
-        StoreItemViewHolder(@NonNull View itemView) {
-            super(itemView);
-            logoImageView = itemView.findViewById(R.id.logo);
-            storeNameTextView = itemView.findViewById(R.id.store_name);
+        if (storeItem.isFavorite()) {
+            holder.btnAddToFavorites.setImageResource(R.drawable.ic_favorites);
+        } else {
+            holder.btnAddToFavorites.setImageResource(R.drawable.ic_favorite_border);
         }
     }
 
     private String convertLogoUrl(String logoUrl) {
         if (logoUrl == null) return null;
-        return logoUrl.replace("public/pictures/", "http://192.168.153.1:5000/pictures/").replace(".png", ".jpg");
+        return logoUrl.replace("pictures/", "http://192.168.153.1:5000/pictures/");
     }
 
-    @SuppressLint("SetTextI18n")
-    private void showStoreDetailsPopup(Context context, Store store, StoreItemViewHolder holder) {
-        View popupView = LayoutInflater.from(context).inflate(R.layout.popup_store_details, null);
+    static class StoreItemViewHolder extends RecyclerView.ViewHolder {
+        ImageView logoImageView;
+        TextView storeNameTextView;
+        TextView categoryFloorTextView;
+        TextView openStatusTextView;
+        ImageButton btnAddToList;
+        ImageButton btnAddToFavorites;
 
-        ImageView logoImageView = popupView.findViewById(R.id.popup_logo);
-        TextView storeNameTextView = popupView.findViewById(R.id.popup_store_name);
-        TextView workingHoursTextView = popupView.findViewById(R.id.popup_working_hours);
-        TextView floorTextView = popupView.findViewById(R.id.popup_floor);
-        TextView storeTypeTextView = popupView.findViewById(R.id.popup_store_type);
-        Button btnAddToChosen = popupView.findViewById(R.id.btn_add_to_chosen);
-        Button btnQuickNavigate = popupView.findViewById(R.id.btn_quick_navigate);
-
-        storeNameTextView.setText(store.getStoreName());
-        workingHoursTextView.setText("Working hours: " + store.getWorkingHours());
-        floorTextView.setText("Floor number: " + store.getFloor());
-        storeTypeTextView.setText("Category: " + store.getStoreType());
-        String modifiedUrl = convertLogoUrl(store.getLogoUrl());
-        Picasso.get().load(modifiedUrl).into(logoImageView);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setView(popupView);
-        AlertDialog dialog = builder.create();
-        dialog.show();
-
-        btnAddToChosen.setText(store.isAddedToList() ? "Remove from Chosen List" : "Add to Chosen List");
-
-        btnAddToChosen.setOnClickListener(v -> {
-            store.setAddedToList(!store.isAddedToList());
-            notifyItemChanged(holder.getAdapterPosition());
-            storeInteractionListener.onStoreAddedToList(store);
-            dialog.dismiss();
-        });
-
-        btnQuickNavigate.setOnClickListener(v -> {
-            // Handle quick navigate action
-            dialog.dismiss();
-        });
-    }
-
-    public interface OnStoreInteractionListener {
-        void onStoreAddedToList(Store store);
+        StoreItemViewHolder(@NonNull View itemView) {
+            super(itemView);
+            logoImageView = itemView.findViewById(R.id.logo);
+            storeNameTextView = itemView.findViewById(R.id.store_name);
+            categoryFloorTextView = itemView.findViewById(R.id.category_floor);
+            openStatusTextView = itemView.findViewById(R.id.open_status);
+            btnAddToList = itemView.findViewById(R.id.btn_add_to_list);
+            btnAddToFavorites = itemView.findViewById(R.id.btn_add_to_favorites);
+        }
     }
 }

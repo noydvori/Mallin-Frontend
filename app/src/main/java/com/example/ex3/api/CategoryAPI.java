@@ -46,7 +46,8 @@ public class CategoryAPI {
                         String workingHours = responseStore.getWorkingHours();
                         String floorNumber = responseStore.getFloor();
                         String logoUrl = responseStore.getLogoUrl();
-                        Store storeItem = new Store(storeName, workingHours, floorNumber, logoUrl, type);
+                        //String isFav = ...
+                        Store storeItem = new Store(storeName, workingHours, floorNumber, logoUrl, type,false);
                         category.addStore(storeItem);
                     }
                     future.complete(category);
