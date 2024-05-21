@@ -3,6 +3,7 @@ package com.example.ex3.adapters;
 import static com.example.ex3.MyApplication.context;
 
 import android.content.Context;
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,15 +68,17 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
             holder.itemView.setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
         }
 
+
         // Add to List Button Click Listener
         holder.btnAddToList.setOnClickListener(v -> {
             storeItem.setAddedToList(!storeItem.isAddedToList());
             notifyItemChanged(holder.getAdapterPosition());
             storeInteractionListener.onStoreAddedToList(storeItem);
 
-            // Update background color after state change
             if (storeItem.isAddedToList()) {
-                holder.itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.added_to_list_color));
+                GradientDrawable outline = new GradientDrawable();
+                outline.setStroke(1, ContextCompat.getColor(context, R.color.added_to_list_color)); // Outline color and width
+                holder.itemView.setBackground(outline);
             } else {
                 holder.itemView.setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
             }
@@ -129,6 +132,7 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
             openStatusTextView = itemView.findViewById(R.id.open_status);
             btnAddToList = itemView.findViewById(R.id.btn_add_to_list);
             btnAddToFavorites = itemView.findViewById(R.id.btn_add_to_favorites);
-        }
+}
+
     }
 }

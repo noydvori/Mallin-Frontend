@@ -76,7 +76,6 @@ public class Home extends AppCompatActivity {
 
         badgeTextView = findViewById(R.id.locationBadge);
         updateBadge();
-        storeTypes.add("All");
 
         tagsAdapter.setOnTagClickListener(new TagsAdapter.OnTagClickListener() {
             @Override
@@ -119,9 +118,9 @@ public class Home extends AppCompatActivity {
         tagsRecyclerView.post(new Runnable() {
             @Override
             public void run() {
-                if (tags.contains("All")) {
-                    tagsAdapter.selectTag("All");
-                    fetchCategoryForTag("All");
+                if (tags.contains("all")) {
+                    tagsAdapter.selectTag("all");
+                    fetchCategoryForTag("all");
                 }
             }
         });
@@ -216,9 +215,9 @@ public class Home extends AppCompatActivity {
                 tags.addAll(c);
                 tagsAdapter.notifyDataSetChanged();
                 // Ensure the "All" tag is selected if it's in the list
-                if (tags.contains("All")) {
-                    tagsAdapter.selectTag("All");
-                    fetchCategoryForTag("All");
+                if (tags.contains("all")) { // Assuming "All" is the correct case
+                    tagsAdapter.selectTag("all");
+                    fetchCategoryForTag("all");
                 }
             }
 

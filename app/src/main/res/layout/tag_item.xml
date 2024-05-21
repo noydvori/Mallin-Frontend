@@ -4,8 +4,6 @@
     android:text="category"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:textColor="#535353"
-    android:backgroundTint="#DFDFDF"
     android:textSize="17sp"
     android:textStyle="bold"
     android:layout_marginEnd="8dp"

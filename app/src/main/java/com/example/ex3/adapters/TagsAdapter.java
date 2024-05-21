@@ -1,12 +1,16 @@
 package com.example.ex3.adapters;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import com.google.android.material.chip.Chip;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.ex3.R;
+import com.google.android.material.chip.Chip;
+
 import java.util.List;
 
 public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder> {
@@ -27,10 +31,25 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         String tag = tags.get(position);
         holder.chip.setText(tag);
-        holder.chip.setChecked(position == selectedPosition);  // Set the chip checked state based on selection
+
+        if (position == selectedPosition) {
+            holder.chip.setChipBackgroundColorResource(R.color.selected_tag_background);
+            holder.chip.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.selected_tag_text));
+        } else {
+            holder.chip.setChipBackgroundColorResource(R.color.unselected_tag_background);
+            holder.chip.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.unselected_tag_text));
+        }
+
+        holder.chip.setOnClickListener(v -> {
+            if (listener != null) {
+                selectedPosition = position;
+                notifyDataSetChanged();
+                listener.onTagClick(tag);
+            }
+        });
     }
 
     @Override
@@ -54,24 +73,12 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder> {
         }
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
         Chip chip;
 
         ViewHolder(View itemView) {
             super(itemView);
             chip = itemView.findViewById(R.id.chip);
-
-            chip.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION && listener != null) {
-                        selectedPosition = position;
-                        notifyDataSetChanged();  // Update the UI to reflect the selected tag
-                        listener.onTagClick(tags.get(position));
-                    }
-                }
-            });
-        }
-    }
+}
+}
 }
