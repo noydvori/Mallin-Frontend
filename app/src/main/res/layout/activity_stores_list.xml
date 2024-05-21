@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/background"
     tools:context=".Home" >
 
     <ImageView
@@ -79,7 +79,8 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginRight="20dp"
                 android:layout_marginBottom="20dp"
-                android:background="@drawable/bg_white_rounded"
+
+                android:background="@color/background"
                 android:queryHint="Search here" />
 
 

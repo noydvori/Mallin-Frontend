@@ -27,25 +27,31 @@ public class NavigateActivity extends AppCompatActivity {
         bottomNavigationView.getMenu().findItem(R.id.menu_navigate).setChecked(true);
 
         // Set up the item selected listener
+        // Get the token from the intent extras
+        String token = getIntent().getStringExtra("token");
+
+        // Initialize the BottomNavigationView
+        bottomNavigationView = findViewById(R.id.bottom_nav_menu);
+
+        // Set up the item selected listener
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                Intent intent;
                 switch (item.getItemId()) {
                     case R.id.menu_home:
-                        // Navigate to Home activity and pass the token
-                        Intent homeIntent = new Intent(NavigateActivity.this, Home.class);
-                        homeIntent.putExtra("token", token);
-                        startActivity(homeIntent);
+                        intent = new Intent(NavigateActivity.this, Home.class);
+                        intent.putExtra("token", token); // Ensure token is passed
+                        startActivity(intent);
                         finish(); // Close current activity
                         return true;
                     case R.id.menu_navigate:
-                        // Already on the Navigate screen, do nothing
+                        // Current activity
                         return true;
                     case R.id.menu_settings:
-                        // Navigate to Settings activity and pass the token
-                        Intent settingsIntent = new Intent(NavigateActivity.this, SettingsActivity.class);
-                        settingsIntent.putExtra("token", token);
-                        startActivity(settingsIntent);
+                        intent = new Intent(NavigateActivity.this, SettingsActivity.class);
+                        intent.putExtra("token", token); // Ensure token is passed
+                        startActivity(intent);
                         finish(); // Close current activity
                         return true;
                 }

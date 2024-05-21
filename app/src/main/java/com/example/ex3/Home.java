@@ -148,8 +148,6 @@ public class Home extends AppCompatActivity {
                         Intent settingsIntent = new Intent(Home.this, SettingsActivity.class);
                         settingsIntent.putExtra("token", bearerToken); // Assuming bearerToken is your token variable
                         startActivity(settingsIntent);
-                        // Set the "Settings" item as checked in the bottom navigation view
-                        bottomNavigationView.getMenu().findItem(R.id.menu_settings).setChecked(true);
                         return true;
                 }
                 return false;
@@ -161,9 +159,15 @@ public class Home extends AppCompatActivity {
     private void fetchDataFromServer() {
         categories.clear();
         if (currentSearchQuery.isEmpty()) {
-            for (String type : storeTypes) {
-                fetchStoresByType(bearerToken, type);
-            }
+            tagsRecyclerView.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (tags.contains("all")) {
+                        tagsAdapter.selectTag("all");
+                        fetchCategoryForTag("all");
+                    }
+                }
+            });
         } else {
             fetchStoresByName(bearerToken, currentSearchQuery);
         }
