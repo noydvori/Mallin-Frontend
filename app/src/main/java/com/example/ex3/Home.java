@@ -1,13 +1,14 @@
 package com.example.ex3;
-
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Dialog;
-import android.os.Bundle;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -25,9 +26,9 @@ import com.example.ex3.objects.Category;
 import com.example.ex3.entities.Store;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class Home extends AppCompatActivity {
     private User me;
@@ -124,6 +125,37 @@ public class Home extends AppCompatActivity {
                 }
             }
         });
+
+        // Initialize the BottomNavigationView
+        bottomNavigationView = findViewById(R.id.bottom_nav_menu);
+
+        // Set up the item selected listener
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.menu_home:
+                        // Already on the Home screen, do nothing
+                        return true;
+                    case R.id.menu_navigate:
+                        // Navigate to NavigateActivity and pass the token
+                        Intent navigateIntent = new Intent(Home.this, NavigateActivity.class);
+                        navigateIntent.putExtra("token", bearerToken); // Assuming bearerToken is your token variable
+                        startActivity(navigateIntent);
+                        return true;
+                    case R.id.menu_settings:
+                        // Navigate to SettingsActivity and pass the token
+                        Intent settingsIntent = new Intent(Home.this, SettingsActivity.class);
+                        settingsIntent.putExtra("token", bearerToken); // Assuming bearerToken is your token variable
+                        startActivity(settingsIntent);
+                        // Set the "Settings" item as checked in the bottom navigation view
+                        bottomNavigationView.getMenu().findItem(R.id.menu_settings).setChecked(true);
+                        return true;
+                }
+                return false;
+            }
+        });
+
     }
 
     private void fetchDataFromServer() {
@@ -207,6 +239,7 @@ public class Home extends AppCompatActivity {
             }
         });
     }
+
     private void fetchTypes(String token) {
         TagFetcher tagFetcher = new TagFetcher();
         tagFetcher.fetchTags(token, new TagFetcher.FetchTagsCallback() {

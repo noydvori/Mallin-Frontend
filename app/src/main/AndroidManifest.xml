@@ -34,6 +34,17 @@
             android:theme="@style/AppTheme"
             />
         <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            />
+        <activity
+            android:name=".NavigateActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            />
+
+        <activity
             android:name=".Register"
             android:exported="false"
             android:theme="@style/AppTheme"
