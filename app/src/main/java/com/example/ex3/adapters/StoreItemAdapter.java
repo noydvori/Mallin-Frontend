@@ -21,14 +21,18 @@ import java.util.List;
 public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.StoreItemViewHolder> {
     private final List<Store> storeItemList;
     private final OnStoreInteractionListener storeInteractionListener;
+    private final List<Store> chosenStores;
+    private final Context context;
 
     public interface OnStoreInteractionListener {
         void onStoreAddedToList(Store store);
         void onStoreAddedToFavorites(Store store);
     }
 
-    public StoreItemAdapter(Context context, List<Store> storeList, OnStoreInteractionListener listener) {
-        this.storeItemList = storeList;
+    public StoreItemAdapter(Context context, List<Store> storeItemList, List<Store> chosenStores, OnStoreInteractionListener listener) {
+        this.context = context;
+        this.storeItemList = storeItemList;
+        this.chosenStores = chosenStores;
         this.storeInteractionListener = listener;
     }
 
@@ -44,6 +48,23 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         Store storeItem = storeItemList.get(position);
         holder.storeNameTextView.setText(storeItem.getStoreName());
         holder.categoryFloorTextView.setText(storeItem.getStoreType() + " • Floor number " + storeItem.getFloor());
+boolean f = chosenStores.contains(storeItem);
+        // Highlight chosen stores
+        if (chosenStores.contains(storeItem)) {
+            holder.itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.added_to_list_color));
+        } else {
+            holder.itemView.setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
+        }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (chosenStores.contains(storeItem)) {
+                chosenStores.remove(storeItem);
+            } else {
+                chosenStores.add(storeItem);
+            }
+            storeInteractionListener.onStoreAddedToList(storeItem);
+            notifyDataSetChanged(); // Refresh the item to update the background
+        });
 
         String logoUrl = storeItem.getLogoUrl();
         String modifiedUrl = convertLogoUrl(logoUrl);
@@ -61,27 +82,17 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         // Update icons based on store's state
         updateButtonIcons(holder, storeItem);
 
-        // Set background color based on whether the item is added to the list
-        if (storeItem.isAddedToList()) {
-            holder.itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.added_to_list_color));
-        } else {
-            holder.itemView.setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
-        }
-
-
         // Add to List Button Click Listener
         holder.btnAddToList.setOnClickListener(v -> {
-            storeItem.setAddedToList(!storeItem.isAddedToList());
-            notifyItemChanged(holder.getAdapterPosition());
-            storeInteractionListener.onStoreAddedToList(storeItem);
+            if (!chosenStores.contains(storeItem)) {
+                holder.itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.added_to_list_color));
 
-            if (storeItem.isAddedToList()) {
-                GradientDrawable outline = new GradientDrawable();
-                outline.setStroke(1, ContextCompat.getColor(context, R.color.added_to_list_color)); // Outline color and width
-                holder.itemView.setBackground(outline);
             } else {
                 holder.itemView.setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
+
             }
+            notifyItemChanged(holder.getAdapterPosition());
+            storeInteractionListener.onStoreAddedToList(storeItem);
         });
 
         // Add to Favorites Button Click Listener
@@ -98,7 +109,7 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
     }
 
     private void updateButtonIcons(StoreItemViewHolder holder, Store storeItem) {
-        if (storeItem.isAddedToList()) {
+        if (chosenStores.contains(storeItem)) {
             holder.btnAddToList.setImageResource(R.drawable.ic_remove);
         } else {
             holder.btnAddToList.setImageResource(R.drawable.ic_add_circle);
@@ -132,7 +143,6 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
             openStatusTextView = itemView.findViewById(R.id.open_status);
             btnAddToList = itemView.findViewById(R.id.btn_add_to_list);
             btnAddToFavorites = itemView.findViewById(R.id.btn_add_to_favorites);
-}
-
+        }
     }
 }

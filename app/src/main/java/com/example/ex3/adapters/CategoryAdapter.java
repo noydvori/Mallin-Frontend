@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.ex3.R;
 import com.example.ex3.entities.Store;
-import com.example.ex3.objects.Category;
+import com.example.ex3.entities.Category;
 import java.util.List;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
@@ -54,7 +54,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         Category category = categoryList.get(position);
         holder.categoryNameTextView.setText(category.getCategoryName());
 
-        StoreItemAdapter storeItemAdapter = new StoreItemAdapter(context, category.getStoresList(), new StoreItemAdapter.OnStoreInteractionListener() {
+        StoreItemAdapter storeItemAdapter = new StoreItemAdapter(context, category.getStoresList(), chosenStores, new StoreItemAdapter.OnStoreInteractionListener() {
             @Override
             public void onStoreAddedToList(Store store) {
                 if (chosenStores.contains(store)) {
@@ -63,12 +63,12 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                     chosenStores.add(store);
                 }
                 updateBadge();
+                notifyDataSetChanged(); // Refresh the adapter to update the UI
             }
 
             @Override
             public void onStoreAddedToFavorites(Store store) {
                 // Handle adding to favorites
-                // Example: if there's a favorites list, add/remove store from it
             }
         });
         holder.storeItemRecyclerView.setAdapter(storeItemAdapter);
@@ -82,13 +82,11 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     public static class CategoryViewHolder extends RecyclerView.ViewHolder {
         TextView categoryNameTextView;
         RecyclerView storeItemRecyclerView;
-        View selectionBackground;
 
         public CategoryViewHolder(@NonNull View itemView) {
             super(itemView);
             categoryNameTextView = itemView.findViewById(R.id.tvCategoryHeader);
             storeItemRecyclerView = itemView.findViewById(R.id.rvStoreItems);
-            selectionBackground = itemView.findViewById(R.id.selection_background);
         }
     }
 }

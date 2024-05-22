@@ -3,18 +3,20 @@ package com.example.ex3.localDB;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.room.TypeConverters;
 
 import com.example.ex3.MyApplication;
 import com.example.ex3.daos.CategoryDao;
 import com.example.ex3.daos.StoreDao;
 import com.example.ex3.daos.TokenDao;
 import com.example.ex3.daos.UserDao;
+import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
 import com.example.ex3.entities.Token;
 import com.example.ex3.entities.User;
-import com.example.ex3.entities.Category;
 
-@Database(entities = {Token.class, User.class, Store.class, Category.class}, version = 6, exportSchema = false)
+@Database(entities = {Category.class, Token.class, Store.class, User.class}, version = 1)
+@TypeConverters({StoreListConverter.class})
 public abstract class AppDB extends RoomDatabase {
     private static AppDB instance;
 

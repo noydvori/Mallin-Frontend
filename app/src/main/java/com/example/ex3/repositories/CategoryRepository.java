@@ -11,7 +11,7 @@ import com.example.ex3.api.CategoryAPI;
 import com.example.ex3.daos.StoreDao;
 import com.example.ex3.entities.Store;
 import com.example.ex3.localDB.AppDB;
-import com.example.ex3.objects.Category;
+import com.example.ex3.entities.Category;
 
 import java.util.LinkedList;
 import java.util.List;

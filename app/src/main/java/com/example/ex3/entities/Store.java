@@ -6,11 +6,9 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "stores",
-        foreignKeys = @ForeignKey(entity = Category.class,
-                parentColumns = "id",
-                childColumns = "categoryId",
-                onDelete = ForeignKey.CASCADE))
+import java.util.Objects;
+
+@Entity(tableName = "stores")
 public class Store {
     @PrimaryKey
     @NonNull
@@ -103,5 +101,16 @@ public class Store {
 
     public void setFavorite(boolean favorite) {
         isFavorite = favorite;
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Store store = (Store) o;
+        return Objects.equals(storename, store.storename);
+    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(storename);
     }
 }

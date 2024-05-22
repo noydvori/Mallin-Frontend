@@ -29,7 +29,7 @@ import com.example.ex3.entities.User;
 import com.example.ex3.fetchers.StoreFetcher;
 import com.example.ex3.fetchers.TagFetcher;
 import com.example.ex3.localDB.AppDB;
-import com.example.ex3.objects.Category;
+import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Home extends AppCompatActivity {
+    private RecyclerView categoriesList;
     private User me;
     String bearerToken;
     TextView badgeTextView;
@@ -57,6 +58,7 @@ public class Home extends AppCompatActivity {
     private AppDB database;
     private StoreDao storeDao;
     private CategoryDao categoryDao;
+    private CategoryAdapter categoryAdapter;
 
 
     @Override
@@ -162,7 +164,11 @@ public class Home extends AppCompatActivity {
             }
         });
 
-
+        categoriesList = findViewById(R.id.categories);
+        categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
+        categoriesList.setLayoutManager(new LinearLayoutManager(this));
+        categoryAdapter= new CategoryAdapter(this, categories, chosenStores, badgeTextView);
+        categoriesList.setAdapter(categoryAdapter);
 
 
         // Initialize the BottomNavigationView
@@ -249,8 +255,8 @@ public class Home extends AppCompatActivity {
             public void onSuccess(Category category) {
                 categories.clear();
                 categories.add(category);
-                categoryDao.insert(new com.example.ex3.entities.Category(category.getCategoryName(),category.getStoresList()));
                 updateUI();
+
             }
 
             @Override
@@ -261,11 +267,11 @@ public class Home extends AppCompatActivity {
     }
 
     private void updateUI() {
-        RecyclerView categoriesList = findViewById(R.id.categories);
+        categoriesList = findViewById(R.id.categories);
         categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
         categoriesList.setLayoutManager(new LinearLayoutManager(this));
-        CategoryAdapter adapter = new CategoryAdapter(this, categories, chosenStores, badgeTextView);
-        categoriesList.setAdapter(adapter);
+        categoryAdapter= new CategoryAdapter(this, categories, chosenStores, badgeTextView);
+        categoriesList.setAdapter(categoryAdapter);
     }
 
     private void fetchStoresByType(String token, String storeType) {
@@ -337,5 +343,6 @@ public class Home extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        categoryAdapter.notifyDataSetChanged();
     }
 }

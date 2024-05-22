@@ -7,7 +7,7 @@ import androidx.room.Insert;
 import androidx.room.Query;
 
 
-import com.example.ex3.objects.Category;
+import com.example.ex3.entities.Category;
 
 import java.util.List;
 
@@ -17,8 +17,9 @@ public interface CategoryDao {
     @Insert
     void insert(Category category);
 
-    @Query("SELECT * FROM categories")
-    List<ULocale.Category> getAllCategories();
+
+    @Query("SELECT * FROM categories WHERE categoryName = :tag LIMIT 1")
+    Category getCategory(String tag);
 
     // Add more queries as needed, such as getting category by name or ID
 }
