@@ -59,7 +59,6 @@ public class StoreFetcher {
                 Category category = new Category(storeType, storesOfType);
                 categories.add(category);
             }
-
             // Call onSuccess with the list of categories
             callback.onSuccess(categories);
         }).exceptionally(ex -> {

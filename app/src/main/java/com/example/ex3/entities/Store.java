@@ -26,14 +26,16 @@ public class Store {
 
     private boolean isAddedToList;
 
+    private boolean isFavorite;
 
-    public Store(String storename,String workingHours, String floor, String logoPic,String storeType) {
+    public Store(String storename,String workingHours, String floor, String logoPic,String storeType,boolean isFavorite) {
         this.storename = storename;
         this.workingHours = workingHours;
         this.floor = floor;
         this.logoPic =logoPic;
         this.storeType = storeType;
         this.isAddedToList = false;
+        this.isFavorite = isFavorite;
     }
 
     @NonNull
@@ -75,5 +77,15 @@ public class Store {
 
     public String getWorkingHours() {
         return workingHours;
+    }
+    public boolean isOpen(){
+        return true;
+    }
+    public boolean isFavorite(){
+        return this.isFavorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        isFavorite = favorite;
     }
 }

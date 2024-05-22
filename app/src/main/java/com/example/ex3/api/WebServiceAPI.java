@@ -37,4 +37,10 @@ public interface WebServiceAPI {
             @Query("mallname") String mallname
     );
 
+    @GET("AzrieliStore/mallname/{mallname}")
+    Call<List<String>> getTypes(
+            @Header("Authorization") String token,
+            @Path("mallname") String mallname
+    );
+
 }

@@ -29,15 +29,15 @@ public class CategoryAPI {
         return instance;
     }
 
-    public CompletableFuture<Category> getStoresByType(String token,String type) {
-        Call<Category> call = this.webServiceAPI.getStoresByType(token,type,"Azrieli TLV");
+    public CompletableFuture<Category> getStoresByType(String token,String storeType) {
+        Call<Category> call = this.webServiceAPI.getStoresByType(token,storeType,"Azrieli TLV");
         CompletableFuture<Category> future = new CompletableFuture<>();
 
         call.enqueue(new Callback<Category>() {
             @Override
             public void onResponse(Call<Category> call, Response<Category> response) {
                 if (response.isSuccessful()) {
-                    Category category = new Category(type);
+                    Category category = new Category(storeType);
                     Category responseList = response.body();
                     assert responseList != null;
                     List<Store> storesList = responseList.getStoresList();
@@ -46,7 +46,8 @@ public class CategoryAPI {
                         String workingHours = responseStore.getWorkingHours();
                         String floorNumber = responseStore.getFloor();
                         String logoUrl = responseStore.getLogoUrl();
-                        Store storeItem = new Store(storeName, workingHours, floorNumber, logoUrl, type);
+                        //String isFav = ...
+                        Store storeItem = new Store(storeName, workingHours, floorNumber, logoUrl, storeType,false);
                         category.addStore(storeItem);
                     }
                     future.complete(category);
