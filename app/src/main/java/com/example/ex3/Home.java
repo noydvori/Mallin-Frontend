@@ -1,6 +1,8 @@
 package com.example.ex3;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -8,6 +10,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -18,10 +21,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.ex3.adapters.CategoryAdapter;
+import com.example.ex3.adapters.ChosenStoresAdapter;
 import com.example.ex3.adapters.TagsAdapter;
+import com.example.ex3.daos.StoreDao;
 import com.example.ex3.entities.User;
 import com.example.ex3.fetchers.StoreFetcher;
 import com.example.ex3.fetchers.TagFetcher;
+import com.example.ex3.localDB.AppDB;
 import com.example.ex3.objects.Category;
 import com.example.ex3.entities.Store;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -41,8 +47,14 @@ public class Home extends AppCompatActivity {
     private RecyclerView tagsRecyclerView;
     private TagsAdapter tagsAdapter;
     private final List<String> tags = new ArrayList<>();
+    private DrawerLayout drawerLayout;
+    private RecyclerView chosenStoresRecyclerView;
+    private ChosenStoresAdapter chosenStoresAdapter;
 
     BottomNavigationView bottomNavigationView;
+
+    private AppDB database;
+    private StoreDao storeDao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +70,27 @@ public class Home extends AppCompatActivity {
         setContentView(R.layout.activity_stores_list);
         Intent intent = getIntent();
         String myName = "Noy";
+
+
+
+        drawerLayout = findViewById(R.id.drawer_layout);
+        chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
+        chosenStoresRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        chosenStoresAdapter = new ChosenStoresAdapter(chosenStores);
+        chosenStoresRecyclerView.setAdapter(chosenStoresAdapter);
+
+        findViewById(R.id.locationIcon).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (drawerLayout.isDrawerOpen(Gravity.END)) {
+                    drawerLayout.closeDrawer(Gravity.END);
+                } else {
+                    chosenStoresAdapter.notifyDataSetChanged();
+                    drawerLayout.openDrawer(Gravity.END);
+                }
+            }
+        });
+
 
         tagsRecyclerView = findViewById(R.id.tags);
         tagsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -126,6 +159,9 @@ public class Home extends AppCompatActivity {
             }
         });
 
+
+
+
         // Initialize the BottomNavigationView
         bottomNavigationView = findViewById(R.id.bottom_nav_menu);
 
@@ -189,6 +225,7 @@ public class Home extends AppCompatActivity {
             }
         });
     }
+
 
     private void updateBadge() {
         if (badgeTextView != null) {
