@@ -1,21 +1,22 @@
 package com.example.ex3.objects;
 
-import com.example.ex3.entities.Store;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
-import java.util.ArrayList;
-import java.util.List;
-
+@Entity(tableName = "categories")
 public class Category {
+    @PrimaryKey(autoGenerate = true)
+    private int id;
     private String categoryName;
-    private List<Store> storesList;
 
-    public Category(String categoryName, List<Store> storesList) {
-        this.categoryName = categoryName;
-        this.storesList = storesList;
+    // Getters and setters
+
+    public int getId() {
+        return id;
     }
-    public Category(String categoryName) {
-        this.categoryName = categoryName;
-        this.storesList = new ArrayList<>();
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getCategoryName() {
@@ -24,20 +25,5 @@ public class Category {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
-    }
-
-    public List<Store> getStoresList() {
-        return storesList;
-    }
-
-    public void setStoreItemList(List<Store> storeItemList) {
-        this.storesList = storeItemList;
-    }
-    public void addStore(Store store) {
-        this.storesList.add(store);
-    }
-
-    public void setStoresList(List<Store> storeList) {
-        this.storesList = storeList;
     }
 }

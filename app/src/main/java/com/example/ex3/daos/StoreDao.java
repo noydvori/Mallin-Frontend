@@ -22,4 +22,6 @@ public interface StoreDao {
 
     @Query("DELETE FROM stores")
     void clear();
+    @Query("SELECT * FROM stores WHERE categoryId = :categoryId")
+    List<Store> getStoresByCategory(int categoryId);
 }

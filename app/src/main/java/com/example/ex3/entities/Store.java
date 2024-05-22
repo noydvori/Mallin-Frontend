@@ -3,9 +3,14 @@ package com.example.ex3.entities;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "stores")
+@Entity(tableName = "stores",
+        foreignKeys = @ForeignKey(entity = Category.class,
+                parentColumns = "id",
+                childColumns = "categoryId",
+                onDelete = ForeignKey.CASCADE))
 public class Store {
     @PrimaryKey
     @NonNull
@@ -23,6 +28,9 @@ public class Store {
     @ColumnInfo(name = "storeType")
 
     private String storeType;
+    @ColumnInfo(name = "categoryId")
+    private int categoryId;
+
 
     private boolean isAddedToList;
 
@@ -41,6 +49,14 @@ public class Store {
     @NonNull
     public String getStoreName() {
         return this.storename;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
     }
 
     public void setName(@NonNull String name) {

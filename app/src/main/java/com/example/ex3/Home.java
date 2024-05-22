@@ -1,10 +1,10 @@
 package com.example.ex3;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
 
 import android.app.Dialog;
 import android.content.Intent;
@@ -23,6 +23,7 @@ import android.widget.Toast;
 import com.example.ex3.adapters.CategoryAdapter;
 import com.example.ex3.adapters.ChosenStoresAdapter;
 import com.example.ex3.adapters.TagsAdapter;
+import com.example.ex3.daos.CategoryDao;
 import com.example.ex3.daos.StoreDao;
 import com.example.ex3.entities.User;
 import com.example.ex3.fetchers.StoreFetcher;
@@ -55,6 +56,8 @@ public class Home extends AppCompatActivity {
 
     private AppDB database;
     private StoreDao storeDao;
+    private CategoryDao categoryDao;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,8 +74,8 @@ public class Home extends AppCompatActivity {
         Intent intent = getIntent();
         String myName = "Noy";
 
-
-
+        database = Room.databaseBuilder(getApplicationContext(),AppDB.class,"DB").build();
+        categoryDao = database.categoryDao();
         drawerLayout = findViewById(R.id.drawer_layout);
         chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
         chosenStoresRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -246,6 +249,7 @@ public class Home extends AppCompatActivity {
             public void onSuccess(Category category) {
                 categories.clear();
                 categories.add(category);
+                categoryDao.insert(new com.example.ex3.entities.Category(category.getCategoryName(),category.getStoresList()));
                 updateUI();
             }
 
