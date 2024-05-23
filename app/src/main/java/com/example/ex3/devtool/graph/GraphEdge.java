@@ -1,4 +1,4 @@
-package com.example.ex3.objects.graph;
+package com.example.ex3.devtool.graph;
 
 public class GraphEdge {
     private GraphNode source;

@@ -1,4 +1,4 @@
-package com.example.ex3.devtool;
+package com.example.ex3.devtool.managers;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -14,7 +14,7 @@ import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
-import com.example.ex3.interfaces.WifiCallBack;
+import com.example.ex3.devtool.interfaces.WifiCallBack;
 
 import java.util.List;
 

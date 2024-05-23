@@ -1,4 +1,4 @@
-package com.example.ex3.interfaces;
+package com.example.ex3.devtool.interfaces;
 
 import android.bluetooth.le.ScanResult;
 

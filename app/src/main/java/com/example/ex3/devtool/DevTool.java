@@ -1,4 +1,4 @@
-package com.example.ex3;
+package com.example.ex3.devtool;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -19,15 +19,17 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import com.davemorrissey.labs.subscaleview.ImageSource;
-import com.example.ex3.adapters.GrapthDataAdapter;
+import com.example.ex3.R;
 import com.example.ex3.components.GraphOverlayImageView;
-import com.example.ex3.devtool.CustomBluetoothManager;
-import com.example.ex3.devtool.CustomWifiManager;
-import com.example.ex3.devtool.MapScalingHandler;
-import com.example.ex3.devtool.MapTappingHandler;
-import com.example.ex3.objects.graph.GraphNode;
-import com.example.ex3.viewModels.DevToolViewModel;
-import com.example.ex3.viewModels.DevToolViewModelFactory;
+import com.example.ex3.devtool.managers.CustomAccelerometerManager;
+import com.example.ex3.devtool.managers.CustomBluetoothManager;
+import com.example.ex3.devtool.managers.CustomMagneticFieldManager;
+import com.example.ex3.devtool.managers.CustomWifiManager;
+import com.example.ex3.devtool.handlers.MapScalingHandler;
+import com.example.ex3.devtool.handlers.MapTappingHandler;
+import com.example.ex3.devtool.graph.GraphNode;
+import com.example.ex3.devtool.viewmodels.DevToolViewModel;
+import com.example.ex3.devtool.viewmodels.DevToolViewModelFactory;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
@@ -42,6 +44,10 @@ public class DevTool extends AppCompatActivity {
     private CustomWifiManager customWifiManager;
     private Button mSaveButton;
     private CustomBluetoothManager customBluetoothManager;
+    private CustomMagneticFieldManager customMagneticFieldManager;
+    private CustomAccelerometerManager customAccelerometerManager;
+
+
 
     private ProgressBar mProgressBar;
 
@@ -52,10 +58,12 @@ public class DevTool extends AppCompatActivity {
         setContentView(R.layout.acitivty_map);
         mToolBar = findViewById(R.id.devtool_toolbar);
         setSupportActionBar(mToolBar);
-        devToolViewModel = new ViewModelProvider(this, new DevToolViewModelFactory(new GrapthDataAdapter(this))).get(DevToolViewModel.class);
+        devToolViewModel = new ViewModelProvider(this, new DevToolViewModelFactory()).get(DevToolViewModel.class);
         GraphOverlayImageView imageView = findViewById(R.id.devtool_map);
         imageView.setImage(ImageSource.resource(R.drawable.floor_1));
         Log.d(mapActivity, "start this app");
+        customMagneticFieldManager = new CustomMagneticFieldManager(this,devToolViewModel);
+        customAccelerometerManager = new CustomAccelerometerManager(this);
 
         initiateBottomSheet();
 
@@ -143,12 +151,10 @@ public class DevTool extends AppCompatActivity {
 
     private void initializeWifiManager() {
         customWifiManager = new CustomWifiManager(this, devToolViewModel);
-       // customWifiManager.startScan();
     }
 
     private void initializeBluetoothManager() {
         customBluetoothManager = new CustomBluetoothManager(this,devToolViewModel);
-        // customBluetoothManager.startInitialScan();
     }
 
     private void initiateBottomSheet() {
@@ -178,6 +184,8 @@ public class DevTool extends AppCompatActivity {
          new Thread(() -> {
              customBluetoothManager.startScan();
              customWifiManager.startScan();
+             customMagneticFieldManager.startInitialScan();
+             customAccelerometerManager.start();
          }).start();
 
         handler.postDelayed(()->devToolViewModel.setIsScanLocked(false), SCAN_INTERVAL);

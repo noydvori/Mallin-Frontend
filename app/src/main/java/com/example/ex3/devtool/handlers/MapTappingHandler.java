@@ -1,4 +1,4 @@
-package com.example.ex3.devtool;
+package com.example.ex3.devtool.handlers;
 
 import android.graphics.PointF;
 import android.util.Log;
@@ -6,9 +6,9 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.example.ex3.components.GraphOverlayImageView;
-import com.example.ex3.objects.graph.Graph;
-import com.example.ex3.objects.graph.GraphNode;
-import com.example.ex3.viewModels.DevToolViewModel;
+import com.example.ex3.devtool.graph.Graph;
+import com.example.ex3.devtool.graph.GraphNode;
+import com.example.ex3.devtool.viewmodels.DevToolViewModel;
 
 import java.util.function.BiFunction;
 

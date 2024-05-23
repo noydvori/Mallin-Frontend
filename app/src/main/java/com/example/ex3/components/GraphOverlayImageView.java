@@ -8,12 +8,10 @@ import android.graphics.PointF;
 import android.util.AttributeSet;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
-import com.example.ex3.objects.graph.Graph;
-import com.example.ex3.objects.graph.GraphEdge;
-import com.example.ex3.objects.graph.GraphNode;
-import com.example.ex3.objects.graph.NodeStatus;
-
-import java.util.function.Function;
+import com.example.ex3.devtool.graph.Graph;
+import com.example.ex3.devtool.graph.GraphEdge;
+import com.example.ex3.devtool.graph.GraphNode;
+import com.example.ex3.devtool.graph.NodeStatus;
 
 public class GraphOverlayImageView extends SubsamplingScaleImageView {
         private Graph graph;

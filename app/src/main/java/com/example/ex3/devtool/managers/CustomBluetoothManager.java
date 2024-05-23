@@ -1,4 +1,4 @@
-package com.example.ex3.devtool;
+package com.example.ex3.devtool.managers;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
@@ -15,7 +15,7 @@ import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
-import com.example.ex3.interfaces.BluetoothCallBack;
+import com.example.ex3.devtool.interfaces.BluetoothCallBack;
 
 import java.util.ArrayList;
 import java.util.List;
