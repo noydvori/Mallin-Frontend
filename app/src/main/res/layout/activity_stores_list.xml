@@ -106,7 +106,7 @@
         </FrameLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/addContact"
+            android:id="@+id/navigate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="30dp"

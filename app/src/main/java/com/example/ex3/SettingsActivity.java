@@ -10,11 +10,17 @@ import android.widget.Switch;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.ex3.entities.Store;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SettingsActivity extends AppCompatActivity {
     BottomNavigationView bottomNavigationView;
     private Switch themeSwitch;
+    private List<Store> chosenStores;
+
     private String token;
     private SharedPreferences sharedPreferencesSettings;
 
@@ -24,6 +30,8 @@ public class SettingsActivity extends AppCompatActivity {
         // Get the token from the intent extras
         sharedPreferencesSettings = getSharedPreferences("Settings", MODE_PRIVATE);
         token = getIntent().getStringExtra("token");
+        chosenStores = getIntent().getParcelableArrayListExtra("chosenStores");
+
 
 
         super.onCreate(savedInstanceState);
@@ -42,6 +50,8 @@ public class SettingsActivity extends AppCompatActivity {
                         // Navigate to Home activity
                         Intent homeIntent = new Intent(SettingsActivity.this, Home.class);
                         homeIntent.putExtra("token", token);
+                        homeIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+
                         startActivity(homeIntent);
                         finish(); // Close current activity
                         return true;
@@ -50,6 +60,8 @@ public class SettingsActivity extends AppCompatActivity {
                         // Navigate to Home activity
                         Intent navIntent = new Intent(SettingsActivity.this, NavigateActivity.class);
                         navIntent.putExtra("token", token);
+                        navIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+
                         startActivity(navIntent);
                         finish(); // Close current activity
                         return true;

@@ -34,6 +34,16 @@
             android:theme="@style/AppTheme"
             />
         <activity
+            android:name=".ConfirmPath"
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            />
+        <activity
+            android:name=".CurrentLocation"
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            />
+        <activity
             android:name=".SettingsActivity"
             android:exported="false"
             android:theme="@style/AppTheme"

@@ -1,5 +1,8 @@
 package com.example.ex3.entities;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -9,7 +12,7 @@ import androidx.room.PrimaryKey;
 import java.util.Objects;
 
 @Entity(tableName = "stores")
-public class Store {
+public class Store implements Parcelable{
     @PrimaryKey
     @NonNull
     @ColumnInfo(name = "storename")
@@ -112,5 +115,39 @@ public class Store {
     @Override
     public int hashCode() {
         return Objects.hash(storename);
+    }
+
+    protected Store(Parcel in) {
+        storename = in.readString();
+        storeType = in.readString();
+        floor = in.readString();
+        logoPic = in.readString();
+        isFavorite = in.readByte() != 0;
+    }
+
+    public static final Parcelable.Creator<Store> CREATOR = new Parcelable.Creator<Store>() {
+        @Override
+        public Store createFromParcel(Parcel in) {
+            return new Store(in);
+        }
+
+        @Override
+        public Store[] newArray(int size) {
+            return new Store[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(storename);
+        dest.writeString(storeType);
+        dest.writeString(floor);
+        dest.writeString(logoPic);
+        dest.writeByte((byte) (isFavorite ? 1 : 0));
     }
 }
