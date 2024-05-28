@@ -23,6 +23,8 @@ public class ConfirmPath extends AppCompatActivity {
     private ConfirmPathAdapter adapter;
     private List<Store> chosenStores;
     private String token;
+    private List<Store> favoriteStores;
+
 
     BottomNavigationView bottomNavigationView;
 
@@ -36,6 +38,8 @@ public class ConfirmPath extends AppCompatActivity {
         if (chosenStores == null) {
             chosenStores = new ArrayList<>();
         }
+        favoriteStores = getIntent().getParcelableArrayListExtra("favoriteStores");
+
 
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -62,15 +66,21 @@ public class ConfirmPath extends AppCompatActivity {
 
         Button buttonConfirm = findViewById(R.id.button_confirm);
         buttonConfirm.setOnClickListener(v -> {
-            Toast.makeText(ConfirmPath.this, "Path Confirmed", Toast.LENGTH_SHORT).show();
             List<Store> reorderedStores = adapter.getChosenStores();
-            // Send reorderedStores to the server or handle as needed
+            Intent intent = new Intent(ConfirmPath.this, NavigateActivity.class);
+            intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+            intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+
+            intent.putExtra("token", token); // Assuming bearerToken is your token variable
+            startActivity(intent);
         });
 
         Button buttonBack = findViewById(R.id.button_back);
         buttonBack.setOnClickListener(v -> {
             Intent intent = new Intent(ConfirmPath.this, CurrentLocation.class);
             intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+            intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+
 
             intent.putExtra("token", token);
             startActivity(intent);
@@ -91,13 +101,22 @@ public class ConfirmPath extends AppCompatActivity {
                         // Navigate to NavigateActivity and pass the token
                         Intent navigateIntent = new Intent(ConfirmPath.this, NavigateActivity.class);
                         navigateIntent.putExtra("token", token); // Assuming bearerToken is your token variable
+                        navigateIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+                        navigateIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+
+
                         startActivity(navigateIntent);
                         return true;
-                    case R.id.menu_settings:
+                    case R.id.menu_favorites:
                         // Navigate to SettingsActivity and pass the token
-                        Intent settingsIntent = new Intent(ConfirmPath.this, SettingsActivity.class);
-                        settingsIntent.putExtra("token", token); // Assuming bearerToken is your token variable
-                        startActivity(settingsIntent);
+                        Intent favoritesIntent = new Intent(ConfirmPath.this, Favorites.class);
+                        favoritesIntent.putExtra("token", token);
+                        favoritesIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+                        favoritesIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+
+
+                        // Assuming bearerToken is your token variable
+                        startActivity(favoritesIntent);
                         return true;
                 }
                 return false;

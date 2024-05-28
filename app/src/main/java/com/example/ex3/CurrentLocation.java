@@ -3,6 +3,8 @@ package com.example.ex3;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -35,6 +37,8 @@ public class CurrentLocation extends AppCompatActivity {
     private String token;
     private WebServiceAPI webServiceAPI;
     private List<Store> chosenStores;
+    private List<Store> favoriteStores;
+
 
     BottomNavigationView bottomNavigationView;
 
@@ -48,6 +52,8 @@ public class CurrentLocation extends AppCompatActivity {
         if (chosenStores == null) {
             chosenStores = new ArrayList<>();
         }
+        favoriteStores = getIntent().getParcelableArrayListExtra("favoriteStores");
+
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://192.168.153.1:5000/api/")
@@ -75,6 +81,25 @@ public class CurrentLocation extends AppCompatActivity {
                 actv.setThreshold(1);
                 actv.setAdapter(adapter);
                 actv.setTextColor(Color.RED);
+
+                // Set up listener to update button state when text changes
+                actv.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                        // Not needed
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        // Update button state when text changes
+                        updateButtonState(s.toString());
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        // Not needed
+                    }
+                });
             });
         }).exceptionally(throwable -> {
             runOnUiThread(() ->
@@ -84,20 +109,43 @@ public class CurrentLocation extends AppCompatActivity {
 
         buttonConfirm = findViewById(R.id.button_confirm);
         buttonConfirm.setOnClickListener(v -> {
-            Intent intent = new Intent(CurrentLocation.this, ConfirmPath.class);
-            intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-            intent.putExtra("token", token); // Assuming bearerToken is your token variable
-            startActivity(intent);
+            // Get the text from the AutoCompleteTextView
+            AutoCompleteTextView autoCompleteTextView = findViewById(R.id.autoCompleteTextView);
+            String location = autoCompleteTextView.getText().toString();
+
+            // Check if location is correct before proceeding
+            if (isLocationCorrect(location)) {
+                if(chosenStores.size() == 1) {
+                    Intent intent = new Intent(CurrentLocation.this, NavigateActivity.class);
+                    intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+                    intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+
+                    intent.putExtra("token", token); // Assuming bearerToken is your token variable
+                    startActivity(intent);
+                } else {
+                    Intent intent = new Intent(CurrentLocation.this, ConfirmPath.class);
+                    intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+                    intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+
+                    intent.putExtra("token", token); // Assuming bearerToken is your token variable
+                    startActivity(intent);
+                }
+            } else {
+                Toast.makeText(CurrentLocation.this, "Location is not correct", Toast.LENGTH_SHORT).show();
+            }
         });
+
+        updateButtonState("");
         Button buttonBack = findViewById(R.id.button_back);
         buttonBack.setOnClickListener(v -> {
             Intent intent = new Intent(CurrentLocation.this, Home.class);
             intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+            intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+
 
             intent.putExtra("token", token);
             startActivity(intent);
         });
-
 
         // Initialize the BottomNavigationView
         bottomNavigationView = findViewById(R.id.bottom_nav_menu);
@@ -114,19 +162,40 @@ public class CurrentLocation extends AppCompatActivity {
                         // Navigate to NavigateActivity and pass the token
                         Intent navigateIntent = new Intent(CurrentLocation.this, NavigateActivity.class);
                         navigateIntent.putExtra("token", token); // Assuming bearerToken is your token variable
+                        navigateIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+                        navigateIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+
+
                         startActivity(navigateIntent);
                         return true;
-                    case R.id.menu_settings:
+                    case R.id.menu_favorites:
                         // Navigate to SettingsActivity and pass the token
-                        Intent settingsIntent = new Intent(CurrentLocation.this, SettingsActivity.class);
-                        settingsIntent.putExtra("token", token);
+                        Intent favoritesIntent = new Intent(CurrentLocation.this, Favorites.class);
+                        favoritesIntent.putExtra("token", token);
+                        favoritesIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+                        favoritesIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+
+
                         // Assuming bearerToken is your token variable
-                        startActivity(settingsIntent);
+                        startActivity(favoritesIntent);
                         return true;
                 }
                 return false;
             }
         });
+    }
+
+    // Method to check if the location is correct
+    private boolean isLocationCorrect(String v) {
+        if(stringsStoresList.contains(v)){
+            return true;
+        }
+        return false;
+    }
+
+    // Method to update the state of the confirm button
+    private void updateButtonState(String v) {
+        buttonConfirm.setEnabled(isLocationCorrect(v));
     }
 
     public CompletableFuture<Category> fetchStoresAsync(String token, String storeType) {

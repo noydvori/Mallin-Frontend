@@ -110,7 +110,7 @@ public class Favorites extends AppCompatActivity {
                         Intent homeIntent = new Intent(Favorites.this, Home.class);
                         homeIntent.putExtra("token", token);
                         homeIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-                        homeIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(chosenStores));
+                        homeIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
                         startActivity(homeIntent);
                         finish(); // Close current activity
                         return true;
@@ -120,11 +120,11 @@ public class Favorites extends AppCompatActivity {
                         Intent navIntent = new Intent(Favorites.this, NavigateActivity.class);
                         navIntent.putExtra("token", token);
                         navIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-                        navIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(chosenStores));
+                        navIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
                         startActivity(navIntent);
                         finish(); // Close current activity
                         return true;
-                    case R.id.menu_settings:
+                    case R.id.menu_favorites:
                         return true;
                 }
                 return false;
@@ -148,22 +148,28 @@ public class Favorites extends AppCompatActivity {
 
             @Override
             public void onStoreAddedToFavorites(Store store) {
-                // Handle adding to favorites
-            }
+                if (favoriteStores.contains(store)) {
+                    favoriteStores.remove(store);
+                } else {
+                    favoriteStores.add(store);
+                }
+                StoreItemAdapter.notifyDataSetChanged(); // Refresh the adapter to update the UI
+            }//         }
+
         });
         favoritesList.setAdapter(StoreItemAdapter);
 
         // Mark the Settings menu item as checked
-        bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
         Button buttonBack = findViewById(R.id.button_back);
         buttonBack.setOnClickListener(v -> {
             Intent intent = new Intent(Favorites.this, Home.class);
             intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-            intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(chosenStores));
+            intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
 
             intent.putExtra("token", token);
             startActivity(intent);
         });
+        bottomNavigationView.getMenu().findItem(R.id.menu_favorites).setChecked(true);
 
     }
     private void filter(String query) {

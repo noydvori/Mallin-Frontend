@@ -4,12 +4,13 @@
         android:id="@+id/menu_home"
         android:title="Home"
         android:icon="@drawable/ic_home" />
+
+    <item
+        android:id="@+id/menu_favorites"
+        android:title="Favorites"
+        android:icon="@drawable/ic_favorite_border" />
     <item
         android:id="@+id/menu_navigate"
         android:title="Navigate"
         android:icon="@drawable/ic_navigate" />
-    <item
-        android:id="@+id/menu_settings"
-        android:title="Settings"
-        android:icon="@drawable/ic_settings" />
 </menu>

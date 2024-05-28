@@ -102,11 +102,11 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
 
         // Add to Favorites Button Click Listener
         holder.btnAddToFavorites.setOnClickListener(v -> {
-            storeItem.setFavorite(!storeItem.isFavorite());
             notifyItemChanged(holder.getAdapterPosition());
             storeInteractionListener.onStoreAddedToFavorites(storeItem);
         });
     }
+
 
     @Override
     public int getItemCount() {

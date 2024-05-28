@@ -35,6 +35,7 @@ import com.example.ex3.localDB.AppDB;
 import com.example.ex3.entities.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,6 +97,10 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         if (chosenStores == null) {
             chosenStores = new ArrayList<>();
         }
+        favoriteStores = getIntent().getParcelableArrayListExtra("favoriteStores");
+        if (favoriteStores == null) {
+            favoriteStores = new ArrayList<>();
+        }
 
         // Initialize the database
         database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "DB").fallbackToDestructiveMigration().build();
@@ -143,10 +148,17 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         navigateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent navigateIntent = new Intent(Home.this, CurrentLocation.class);
-                navigateIntent.putExtra("token", bearerToken);
-                navigateIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-                startActivity(navigateIntent);
+                // Check if the chosen list is empty
+                if (!chosenStores.isEmpty()) {
+                    Intent navigateIntent = new Intent(Home.this, CurrentLocation.class);
+                    navigateIntent.putExtra("token", bearerToken);
+                    navigateIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+                    navigateIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+                    startActivity(navigateIntent);
+                } else {
+                    // Show a message or handle the case where chosen list is empty
+                    Snackbar.make(findViewById(android.R.id.content), "Chosen list is empty. Add stores to continue navigate", Snackbar.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -205,14 +217,17 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
                         intent = new Intent(Home.this, NavigateActivity.class);
                         intent.putExtra("token", bearerToken);
                         intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+                        intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+
                         startActivity(intent);
                         return true;
-                    case R.id.menu_settings:
-                        intent = new Intent(Home.this, SettingsActivity.class);
-                        intent.putExtra("token", bearerToken);
-                        intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-                        startActivity(intent);
-                        return true;
+                    case R.id.menu_favorites:
+                        Intent favIntent = new Intent(Home.this, Favorites.class);
+                        favIntent.putExtra("token", bearerToken);
+                        favIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+                        favIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+
+                        startActivity(favIntent);
                 }
                 return false;
             }
