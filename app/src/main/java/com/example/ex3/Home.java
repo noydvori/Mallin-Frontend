@@ -61,6 +61,7 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
     private BottomNavigationView bottomNavigationView;
     private TagsAdapter tagsAdapter;
     private List<Category> categoriesFromDB = new ArrayList<>();
+    private List<Store> favoriteStores = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +90,7 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stores_list);
 
+
         bearerToken = getIntent().getStringExtra("token");
         chosenStores = getIntent().getParcelableArrayListExtra("chosenStores");
         if (chosenStores == null) {
@@ -96,7 +98,7 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         }
 
         // Initialize the database
-        database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "DB").build();
+        database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "DB").fallbackToDestructiveMigration().build();
         categoryDao = database.categoryDao();
 
         // Initialize drawer layout and chosen stores recycler view
@@ -117,6 +119,18 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
                 }
             }
         });
+        findViewById(R.id.favorites_icon).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent favIntent = new Intent(Home.this, Favorites.class);
+                favIntent.putExtra("token", bearerToken);
+                favIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+                favIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+
+                startActivity(favIntent);
+            }
+        });
+
 
         tagsRecyclerView = findViewById(R.id.tags);
         tagsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -171,7 +185,7 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         categoriesList = findViewById(R.id.categories);
         categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
         categoriesList.setLayoutManager(new LinearLayoutManager(this));
-        categoryAdapter = new CategoryAdapter(this, categories, chosenStores, badgeTextView);
+        categoryAdapter = new CategoryAdapter(this, categories, chosenStores, favoriteStores,badgeTextView);
         categoriesList.setAdapter(categoryAdapter);
 
         // Initialize the BottomNavigationView

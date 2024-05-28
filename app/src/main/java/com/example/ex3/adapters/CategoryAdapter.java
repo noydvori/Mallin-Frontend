@@ -17,17 +17,19 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     private final Context context;
     private final List<Category> categoryList;
     private final List<Store> chosenStores;
+    private final List<Store> favStores;
     private final TextView badgeTextView;
 
     public interface OnAddStoreClickListener {
         void onAddStoreClick(Store store);
     }
 
-    public CategoryAdapter(Context context, List<Category> categoryList, List<Store> chosenStores, TextView badgeTextView) {
+    public CategoryAdapter(Context context, List<Category> categoryList, List<Store> chosenStores,List<Store> favStores, TextView badgeTextView) {
         this.context = context;
         this.categoryList = categoryList;
         this.chosenStores = chosenStores;
         this.badgeTextView = badgeTextView;
+        this.favStores = favStores;
     }
 
     private void updateBadge() {
@@ -54,7 +56,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         Category category = categoryList.get(position);
         holder.categoryNameTextView.setText(category.getCategoryName());
 
-        StoreItemAdapter storeItemAdapter = new StoreItemAdapter(context, category.getStoresList(), chosenStores, new StoreItemAdapter.OnStoreInteractionListener() {
+        StoreItemAdapter storeItemAdapter = new StoreItemAdapter(context, category.getStoresList(), chosenStores,favStores, new StoreItemAdapter.OnStoreInteractionListener() {
             @Override
             public void onStoreAddedToList(Store store) {
                 if (chosenStores.contains(store)) {
@@ -68,7 +70,12 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
             @Override
             public void onStoreAddedToFavorites(Store store) {
-                // Handle adding to favorites
+                if (favStores.contains(store)) {
+                    favStores.remove(store);
+                } else {
+                    favStores.add(store);
+                }
+                notifyDataSetChanged(); // Refresh the adapter to update the UI
             }
         });
         holder.storeItemRecyclerView.setAdapter(storeItemAdapter);

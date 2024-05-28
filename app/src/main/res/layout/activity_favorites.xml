@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    tools:context=".Home">
+    tools:context=".Favorites">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -37,15 +37,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/favorites_icon"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="70dp"
-            android:layout_marginTop="20dp"
-            android:src="@drawable/ic_favorites"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
         <FrameLayout
             android:id="@+id/flFragment"
@@ -58,20 +49,35 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
-                android:id="@+id/linearLayout3"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
-
+                android:orientation="vertical">>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginTop="20dp"
+                    android:layout_marginLeft="60dp"
+                    android:layout_marginTop="16dp"
+
                     android:text="Mallin"
                     android:textColor="@color/black"
                     android:textSize="30sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toEndOf="@id/button_back"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <Button
+                    android:id="@+id/button_back"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/ic_back"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <SearchView
                     android:id="@+id/search_view"
@@ -84,24 +90,16 @@
                     android:background="@color/background_search"
                     android:queryHint="Search here" />
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/tags"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="20dp"
-                    android:nestedScrollingEnabled="false"
-                    android:orientation="horizontal"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:listitem="@layout/tag_item" />
+
 
                 <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/categories"
+                    android:id="@+id/stores"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="#E8E8E8"
                     android:orientation="vertical"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:listitem="@layout/category_layout" />
+                    tools:listitem="@layout/single_store_item" />
             </LinearLayout>
         </FrameLayout>
 
@@ -132,31 +130,5 @@
             app:menu="@menu/bottom_nav_menu" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <LinearLayout
-        android:layout_width="300dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="end"
-        android:background="@android:color/white"
-        android:orientation="vertical"
-        android:padding="16dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="16dp"
-            android:text="Your List"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/chosenStoresRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
-    </LinearLayout>
 
 </androidx.drawerlayout.widget.DrawerLayout>

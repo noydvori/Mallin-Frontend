@@ -39,6 +39,11 @@
             android:theme="@style/AppTheme"
             />
         <activity
+            android:name=".Favorites"
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            />
+        <activity
             android:name=".CurrentLocation"
             android:exported="false"
             android:theme="@style/AppTheme"

@@ -7,15 +7,17 @@ import androidx.room.TypeConverters;
 
 import com.example.ex3.MyApplication;
 import com.example.ex3.daos.CategoryDao;
+import com.example.ex3.daos.FavoriteStoreDao;
 import com.example.ex3.daos.StoreDao;
 import com.example.ex3.daos.TokenDao;
 import com.example.ex3.daos.UserDao;
 import com.example.ex3.entities.Category;
+import com.example.ex3.entities.FavoriteStore;
 import com.example.ex3.entities.Store;
 import com.example.ex3.entities.Token;
 import com.example.ex3.entities.User;
 
-@Database(entities = {Category.class, Token.class, Store.class, User.class}, version = 1)
+@Database(entities = {Category.class, Token.class, Store.class, User.class}, version = 2)
 @TypeConverters({StoreListConverter.class})
 public abstract class AppDB extends RoomDatabase {
     private static AppDB instance;
