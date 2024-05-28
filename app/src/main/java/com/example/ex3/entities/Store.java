@@ -11,7 +11,7 @@ import androidx.room.PrimaryKey;
 
 import java.util.Objects;
 
-@Entity(tableName = "stores")
+@Entity(tableName = "store")
 public class Store implements Parcelable{
     @PrimaryKey
     @NonNull

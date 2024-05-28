@@ -43,7 +43,7 @@ public class ChosenStoresAdapter extends RecyclerView.Adapter<ChosenStoresAdapte
         holder.removeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                removeClickListener.onRemoveClick(position);
+                removeClickListener.onRemoveClick(holder.getAdapterPosition());
             }
         });
     }

@@ -6,18 +6,19 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
+import androidx.room.RoomDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
-import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.SearchView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +38,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRemoveClickListener {
     private RecyclerView categoriesList;
@@ -51,17 +54,36 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
     private RecyclerView chosenStoresRecyclerView;
     private ChosenStoresAdapter chosenStoresAdapter;
     private AppDB database;
-    private StoreDao storeDao;
     private CategoryDao categoryDao;
+    private List<Category> categoryList;
     private CategoryAdapter categoryAdapter;
     private RecyclerView tagsRecyclerView;
     private BottomNavigationView bottomNavigationView;
     private TagsAdapter tagsAdapter;
+    private List<Category> categoriesFromDB = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences sharedPreferencesSettings = getSharedPreferences("Settings", MODE_PRIVATE);
         boolean isDarkThemeEnabled = sharedPreferencesSettings.getBoolean("DarkTheme", false);
+
+        RoomDatabase.Callback myCallBack = new RoomDatabase.Callback() {
+            @Override
+            public void onCreate(@NonNull SupportSQLiteDatabase db) {
+                super.onCreate(db);
+            }
+
+            @Override
+            public void onOpen(@NonNull SupportSQLiteDatabase db) {
+                super.onOpen(db);
+            }
+        };
+
+
+
+
+        database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "localDB").addCallback(myCallBack).build();
+
         setTheme(isDarkThemeEnabled ? R.style.DarkTheme : R.style.AppTheme);
 
         super.onCreate(savedInstanceState);
@@ -100,6 +122,8 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         tagsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         tagsAdapter = new TagsAdapter(tags);
         tagsRecyclerView.setAdapter(tagsAdapter);
+        tagsAdapter.selectTag("all");
+        fetchCategoryForTag("all");
 
         FloatingActionButton navigateButton = findViewById(R.id.navigate);
         navigateButton.setOnClickListener(new View.OnClickListener() {
@@ -141,17 +165,6 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
                 currentSearchQuery = newText.isEmpty() ? "" : newText;
                 fetchDataFromServer();
                 return true;
-            }
-        });
-
-        // Ensure the "All" tag is selected if it's in the list
-        tagsRecyclerView.post(new Runnable() {
-            @Override
-            public void run() {
-                if (tags.contains("all")) {
-                    tagsAdapter.selectTag("all");
-                    fetchCategoryForTag("all");
-                }
             }
         });
 
@@ -239,11 +252,16 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
     }
 
     private void fetchCategoryForTag(String tag) {
+        categories.clear();
+        getCategoryInBackground(tag);
+    }
+
+    private void fetchCategoryFromServer(String tag) {
         StoreFetcher storeFetcher = new StoreFetcher();
         storeFetcher.fetchStores(bearerToken, tag, new StoreFetcher.FetchStoresCallback() {
             @Override
             public void onSuccess(Category category) {
-                categories.clear();
+                addCategoryInBackground(category);
                 categories.add(category);
                 updateUI();
             }
@@ -255,24 +273,38 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         });
     }
 
-    private void updateUI() {
-        categoriesList.setLayoutManager(new LinearLayoutManager(this));
-        categoryAdapter.notifyDataSetChanged();
+    public void addCategoryInBackground(Category category) {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                categoryDao.insert(category);
+                Log.d("DAO", "Inserted category: " + category.getCategoryName()+ category.getStoresList());
+            }
+        });
     }
 
-    private void fetchStoresByType(String token, String storeType) {
-        StoreFetcher storeFetcher = new StoreFetcher();
-        storeFetcher.fetchStores(token, storeType, new StoreFetcher.FetchStoresCallback() {
+    public void getCategoryInBackground(String tag) {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        executorService.execute(new Runnable() {
             @Override
-            public void onSuccess(Category c) {
-                categories.add(c);
-                updateUI();
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                Toast.makeText(Home.this, "Error fetching " + storeType + " stores", Toast.LENGTH_SHORT).show();
-                updateUI();
+            public void run() {
+                Category category = database.categoryDao().getCategory(tag);
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (category != null) {
+                            Log.d("DAO", "Fetched category from DB: " + category.getCategoryName() + category.getStoresList());
+                            categories.add(category);
+                            updateUI();
+                        } else {
+                            Log.d("DAO", "No category found for tag: " + tag);
+                            fetchCategoryFromServer(tag);
+                        }
+                    }
+                });
             }
         });
     }
@@ -284,24 +316,25 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
             public void onSuccess(List<String> c) {
                 tags.addAll(c);
                 tagsAdapter.notifyDataSetChanged();
-                if (tags.contains("all")) {
-                    tagsAdapter.selectTag("all");
-                    fetchCategoryForTag("all");
-                }
             }
 
             @Override
             public void onError(Throwable throwable) {
                 Toast.makeText(Home.this, "Error fetching types", Toast.LENGTH_SHORT).show();
-                updateUI();
             }
         });
     }
+
+    private void updateUI() {
+        categoryAdapter.notifyDataSetChanged();
+    }
+
 
     @Override
     public void onRemoveClick(int position) {
         chosenStores.remove(position);
         chosenStoresAdapter.notifyItemRemoved(position);
+        chosenStoresAdapter.notifyItemRangeChanged(position, chosenStores.size());
         updateBadge();
         categoryAdapter.notifyDataSetChanged();
     }

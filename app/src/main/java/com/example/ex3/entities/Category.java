@@ -1,6 +1,8 @@
 package com.example.ex3.entities;
 
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import com.example.ex3.entities.Store;
@@ -8,13 +10,18 @@ import com.example.ex3.entities.Store;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity(tableName = "categories")
+@Entity(tableName = "category")
 public class Category {
+    @ColumnInfo(name = "category_id")
     @PrimaryKey(autoGenerate = true)
     private int id;
-    private String categoryName;
-    private List<Store> storesList;
+    @ColumnInfo(name = "category_name")
 
+    private String categoryName;
+    @ColumnInfo(name = "category_stores_list")
+
+    private List<Store> storesList;
+    @Ignore
     public Category() {
         storesList = new ArrayList<>();
     }
