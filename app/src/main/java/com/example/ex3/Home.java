@@ -66,9 +66,6 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SharedPreferences sharedPreferencesSettings = getSharedPreferences("Settings", MODE_PRIVATE);
-        boolean isDarkThemeEnabled = sharedPreferencesSettings.getBoolean("DarkTheme", false);
-
         RoomDatabase.Callback myCallBack = new RoomDatabase.Callback() {
             @Override
             public void onCreate(@NonNull SupportSQLiteDatabase db) {
@@ -80,17 +77,9 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
                 super.onOpen(db);
             }
         };
-
-
-
-
-        database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "localDB").addCallback(myCallBack).build();
-
-        setTheme(isDarkThemeEnabled ? R.style.DarkTheme : R.style.AppTheme);
-
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_stores_list);
-
+        database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "DB").fallbackToDestructiveMigration().build();
+        categoryDao = database.categoryDao();
 
         bearerToken = getIntent().getStringExtra("token");
         chosenStores = getIntent().getParcelableArrayListExtra("chosenStores");
@@ -101,12 +90,7 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         if (favoriteStores == null) {
             favoriteStores = new ArrayList<>();
         }
-
-        // Initialize the database
-        database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "DB").fallbackToDestructiveMigration().build();
-        categoryDao = database.categoryDao();
-
-        // Initialize drawer layout and chosen stores recycler view
+        setContentView(R.layout.activity_stores_list);
         drawerLayout = findViewById(R.id.drawer_layout);
         chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
         chosenStoresRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -263,7 +247,7 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
 
             @Override
             public void onError(Throwable throwable) {
-                Toast.makeText(Home.this, "Error fetching stores by name", Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(android.R.id.content), "Error fetching stores by name", Snackbar.LENGTH_SHORT).show();
             }
         });
     }
@@ -297,7 +281,7 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
 
             @Override
             public void onError(Throwable throwable) {
-                Toast.makeText(Home.this, "Error fetching category for tag", Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(android.R.id.content), "Error fetching category for tag", Snackbar.LENGTH_SHORT).show();
             }
         });
     }
@@ -349,7 +333,7 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
 
             @Override
             public void onError(Throwable throwable) {
-                Toast.makeText(Home.this, "Error fetching types", Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(android.R.id.content), "Error fetching types", Snackbar.LENGTH_SHORT).show();
             }
         });
     }

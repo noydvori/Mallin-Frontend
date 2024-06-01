@@ -69,6 +69,7 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder> {
         int position = tags.indexOf(tag);
         if (position >= 0) {
             selectedPosition = position;
+            listener.onTagClick(tag);
             notifyDataSetChanged();
         }
     }

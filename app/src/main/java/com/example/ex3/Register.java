@@ -17,6 +17,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import com.example.ex3.api.UserAPI;
+import com.google.android.material.snackbar.Snackbar;
+
 import java.io.ByteArrayOutputStream;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
@@ -63,19 +65,23 @@ public class Register extends AppCompatActivity {
         String displayName = displayNameEditText.getText().toString().trim();
 
         if (TextUtils.isEmpty(username)) {
-            showToast("Please enter a username");
+            Snackbar.make(findViewById(android.R.id.content), "Please enter a username", Snackbar.LENGTH_SHORT).show();
+
             return;
         }
         if (TextUtils.isEmpty(password)) {
-            showToast("Please enter a password");
+            Snackbar.make(findViewById(android.R.id.content), "Please enter a password", Snackbar.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (TextUtils.isEmpty(displayName)) {
+            Snackbar.make(findViewById(android.R.id.content), "Please enter your name", Snackbar.LENGTH_SHORT).show();
             return;
         }
         if (!isValidPassword(password)) {
-            showToast("Password should have at least one numerical digit(0-9). Password's length should be in between 8 to 15 characters. Password should have at least one lowercase letter(a-z). Password should have at least one uppercase letter(A-Z)");
-            return;
-        }
-        if (TextUtils.isEmpty(displayName)) {
-            showToast("Please enter a display name");
+            Snackbar.make(findViewById(android.R.id.content), "Password should have at least one numerical digit(0-9). Password's length should be in between 8 to 15 characters. Password should have at least one lowercase letter(a-z). Password should have at least one uppercase letter(A-Z)", Snackbar.LENGTH_SHORT).show();
+
+
             return;
         }
         // All fields are valid
@@ -127,7 +133,9 @@ public class Register extends AppCompatActivity {
                     showToast(status);
                 }
             }).exceptionally(ex -> {
-                showToast("An error occurred: " + ex.getMessage());
+                Snackbar.make(findViewById(android.R.id.content), "An error occurred", Snackbar.LENGTH_SHORT).show();
+
+
                 return null;
             });
 

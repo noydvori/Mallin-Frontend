@@ -112,7 +112,6 @@ public class Favorites extends AppCompatActivity {
                         homeIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
                         homeIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
                         startActivity(homeIntent);
-                        finish(); // Close current activity
                         return true;
                     case R.id.menu_navigate:
                         // Navigate to NavigateActivity
@@ -122,7 +121,6 @@ public class Favorites extends AppCompatActivity {
                         navIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
                         navIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
                         startActivity(navIntent);
-                        finish(); // Close current activity
                         return true;
                     case R.id.menu_favorites:
                         return true;

@@ -122,9 +122,9 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
     }
     private void updateButtonIcons(StoreItemViewHolder holder, Store storeItem) {
         if (chosenStores.contains(storeItem)) {
-            holder.btnAddToList.setImageResource(R.drawable.ic_remove);
+            holder.btnAddToList.setImageResource(R.drawable.baseline_remove);
         } else {
-            holder.btnAddToList.setImageResource(R.drawable.ic_add_circle);
+            holder.btnAddToList.setImageResource(R.drawable.baseline_add);
         }
 
         if (favStores.contains(storeItem)) {

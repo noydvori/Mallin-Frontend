@@ -6,6 +6,8 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorOnBackground">#404040</item>
+        <item name="android:fontFamily">@font/poppins_regular</item>
+
 
 
     </style>
@@ -24,6 +26,8 @@
     <style name="OutLinedEditTextStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">@font/poppins_regular</item>
+
 
         <item name="boxBackgroundMode">outline</item>
         <item name="boxBackgroundColor">@color/gray</item>
@@ -44,6 +48,8 @@
 
 
     <style name="OutLinedEditTextStyle.Spinner">
+        <item name="android:fontFamily">@font/poppins_regular</item>
+
         <item name="materialThemeOverlay">@style/ThemeOverlay.MaterialComponents.AutoCompleteTextView.FilledBox</item>
         <item name="endIconMode">custom</item>
         <item name="endIconDrawable">@drawable/ic_back</item>

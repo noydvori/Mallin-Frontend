@@ -17,7 +17,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:padding="20dp"
+        android:padding="25dp"
         app:layout_constraintVertical_bias="0.301"
         android:background="@drawable/bg_white_rounded">
 
@@ -26,49 +26,104 @@
             android:id="@+id/loginMsg"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_semibold"
             android:text="Sign Up"
-            android:textAlignment="center"
             android:textColor="@color/colorPrimary"
-            android:textSize="36sp"
+            android:textSize="32sp"
             android:textStyle="bold" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:fontFamily="@font/poppins_semibold"
+            android:text="Username"
+            android:textColor="#c2c2c2"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
 
         <EditText
             android:id="@+id/usernameEditText"
             android:layout_width="match_parent"
             android:layout_height="45dp"
-            android:layout_marginTop="40dp"
-            android:background="@drawable/custom_edittext"
-
+            android:layout_marginTop="16dp"
             android:drawablePadding="8dp"
-            android:hint="Username"
+            android:fontFamily="@font/poppins_semibold"
+            android:maxLines="1"
             android:padding="8dp"
             android:textColor="@color/black"
-            android:textColorHighlight="@color/cardview_dark_background" />
+            android:textColorHighlight="@color/cardview_dark_background"
+            android:textCursorDrawable="@drawable/grey_cursor_color"
+            android:textSize="15sp" />
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:layout_marginBottom="6dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginRight="44dp"
+            android:background="#d5d5d5" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:fontFamily="@font/poppins_semibold"
+            android:text="Display Name"
+            android:textColor="#c2c2c2"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
         <EditText
             android:id="@+id/displayNameEditText"
             android:layout_width="match_parent"
             android:layout_height="45dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/custom_edittext"
+            android:layout_marginTop="16dp"
             android:drawablePadding="8dp"
-            android:hint="Display Name"
+            android:fontFamily="@font/poppins_semibold"
+            android:maxLines="1"
             android:padding="8dp"
             android:textColor="@color/black"
-            android:textColorHighlight="@color/cardview_dark_background" />
+            android:textColorHighlight="@color/cardview_dark_background"
+            android:textCursorDrawable="@drawable/grey_cursor_color"
+            android:textSize="15sp" />
 
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:layout_marginBottom="6dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginRight="44dp"
+            android:background="#d5d5d5" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:fontFamily="@font/poppins_semibold"
+            android:text="Password"
+            android:textColor="#c2c2c2"
+            android:textSize="13sp"
+            android:textStyle="bold" />
         <EditText
             android:id="@+id/passwordEditText"
             android:layout_width="match_parent"
             android:layout_height="45dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/custom_edittext"
+            android:layout_marginTop="16dp"
             android:drawablePadding="8dp"
-            android:hint="Password"
+            android:fontFamily="@font/poppins_semibold"
             android:inputType="textPassword"
+            android:maxLines="1"
             android:padding="8dp"
             android:textColor="@color/black"
-            android:textColorHighlight="@color/cardview_dark_background" />
+            android:textColorHighlight="@color/cardview_dark_background"
+            android:textCursorDrawable="@drawable/grey_cursor_color"
+            android:textSize="15sp" />
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:layout_marginBottom="6dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginRight="44dp"
+            android:background="#d5d5d5" />
 
         <!-- Profile picture field -->
         <LinearLayout
@@ -107,10 +162,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="28dp"
+        android:layout_marginTop="20dp"
         android:background="@android:color/transparent"
+        android:fontFamily="@font/poppins_semibold"
         android:text="Already have an account? Login here"
         android:textAllCaps="false"
+        android:textSize="12sp"
         android:textColor="@color/lightPrimary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
