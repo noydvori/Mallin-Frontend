@@ -7,6 +7,7 @@ import static androidx.core.content.ContextCompat.startActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -16,10 +17,12 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ex3.adapters.CategoryAdapter;
+import com.example.ex3.adapters.ChosenStoresAdapter;
 import com.example.ex3.adapters.StoreItemAdapter;
 import com.example.ex3.entities.FavoriteStore;
 import com.example.ex3.entities.Store;
@@ -28,7 +31,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Favorites extends AppCompatActivity {
+public class Favorites extends AppCompatActivity implements ChosenStoresAdapter.OnRemoveClickListener{
     private StoreItemAdapter StoreItemAdapter;
 
     BottomNavigationView bottomNavigationView;
@@ -37,6 +40,10 @@ public class Favorites extends AppCompatActivity {
     private List<Store> favoriteStores;
     private RecyclerView favoritesList;
     private TextView badgeTextView;
+    private DrawerLayout drawerLayout;
+    private RecyclerView chosenStoresRecyclerView;
+    private ChosenStoresAdapter chosenStoresAdapter;
+
 
 
 
@@ -47,10 +54,22 @@ public class Favorites extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        token = getIntent().getStringExtra("token");
+        favoriteStores = getIntent().getParcelableArrayListExtra("favoriteStores");
+        chosenStores = getIntent().getParcelableArrayListExtra("chosenStores");
         setContentView(R.layout.activity_favorites); // Inflate the layout first
 
         // Initialize badgeTextView
+
+        bottomNavigationView = findViewById(R.id.bottom_nav_menu);
         badgeTextView = findViewById(R.id.locationBadge);
+        drawerLayout = findViewById(R.id.drawer_layout);
+        chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
+        chosenStoresRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        chosenStoresAdapter = new ChosenStoresAdapter(chosenStores, this);
+        chosenStoresRecyclerView.setAdapter(chosenStoresAdapter);
         // Initialize searchView
         SearchView searchView = findViewById(R.id.search_view);
         searchView.setBackgroundResource(R.drawable.bg_white_rounded);
@@ -69,10 +88,6 @@ public class Favorites extends AppCompatActivity {
             }
         });
 
-        token = getIntent().getStringExtra("token");
-        favoriteStores = getIntent().getParcelableArrayListExtra("favoriteStores");
-        chosenStores = getIntent().getParcelableArrayListExtra("chosenStores");
-
         updateBadge();
 
         // Set up search functionality
@@ -88,17 +103,7 @@ public class Favorites extends AppCompatActivity {
                 return true;
             }
         });
-
-        updateBadge();
-
-        // Other code...
-
-        // Call updateBadge() after badgeTextView is initialized
-        updateBadge();
-
-
         // Initialize the BottomNavigationView
-        bottomNavigationView = findViewById(R.id.bottom_nav_menu);
 
         // Set up the item selected listener
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -112,6 +117,7 @@ public class Favorites extends AppCompatActivity {
                         homeIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
                         homeIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
                         startActivity(homeIntent);
+                        finish(); // Close current activity
                         return true;
                     case R.id.menu_navigate:
                         // Navigate to NavigateActivity
@@ -121,6 +127,7 @@ public class Favorites extends AppCompatActivity {
                         navIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
                         navIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
                         startActivity(navIntent);
+                        finish(); // Close current activity
                         return true;
                     case R.id.menu_favorites:
                         return true;
@@ -156,7 +163,17 @@ public class Favorites extends AppCompatActivity {
 
         });
         favoritesList.setAdapter(StoreItemAdapter);
-
+        findViewById(R.id.locationIcon).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (drawerLayout.isDrawerOpen(Gravity.END)) {
+                    drawerLayout.closeDrawer(Gravity.END);
+                } else {
+                    chosenStoresAdapter.notifyDataSetChanged();
+                    drawerLayout.openDrawer(Gravity.END);
+                }
+            }
+        });
         // Mark the Settings menu item as checked
         Button buttonBack = findViewById(R.id.button_back);
         buttonBack.setOnClickListener(v -> {
@@ -189,5 +206,13 @@ public class Favorites extends AppCompatActivity {
                 badgeTextView.setVisibility(View.GONE);
             }
         }
+    }
+    @Override
+    public void onRemoveClick(int position) {
+        chosenStores.remove(position);
+        chosenStoresAdapter.notifyItemRemoved(position);
+        chosenStoresAdapter.notifyItemRangeChanged(position, chosenStores.size());
+        updateBadge();
+        StoreItemAdapter.notifyDataSetChanged();
     }
 }

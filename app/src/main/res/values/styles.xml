@@ -11,6 +11,9 @@
 
 
     </style>
+    <style name="TagsTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="android:fontFamily">@font/poppins_semibold</item>
+    </style>
 
     <!-- DarkTheme -->
     <style name="DarkTheme" parent="Theme.AppCompat">

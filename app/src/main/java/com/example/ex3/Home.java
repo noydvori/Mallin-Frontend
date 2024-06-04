@@ -308,7 +308,7 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (category != null) {
+                        if (category != null && category.getStoresList().equals("[]")) {
                             Log.d("DAO", "Fetched category from DB: " + category.getCategoryName() + category.getStoresList());
                             categories.add(category);
                             updateUI();

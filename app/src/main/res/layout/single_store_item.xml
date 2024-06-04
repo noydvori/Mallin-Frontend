@@ -12,11 +12,14 @@
         android:id="@+id/card_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="3dp"
+android:clickable="true"
+        android:checkable="true"
+        android:focusable="true"
+        android:padding="4dp"
+        app:cardCornerRadius="7dp"
         app:cardElevation="3dp"
-
+        app:cardBackgroundColor="@color/white"
         app:cardUseCompatPadding="true"
-        android:background="@color/white"
         tools:ignore="MissingConstraints">
 
         <androidx.constraintlayout.widget.ConstraintLayout

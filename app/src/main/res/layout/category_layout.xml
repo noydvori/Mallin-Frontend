@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#F3F3F3"
     android:paddingTop="10dp">
     <TextView
         android:id="@+id/tvCategoryHeader"
@@ -28,16 +27,5 @@
         app:layout_constraintTop_toBottomOf="@+id/tvCategoryHeader"
         tools:listitem="@layout/single_store_item" />
 
-    <!-- Background color to indicate selection -->
-    <View
-        android:id="@+id/selection_background"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@color/lightPrimary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

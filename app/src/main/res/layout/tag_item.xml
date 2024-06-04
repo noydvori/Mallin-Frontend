@@ -5,8 +5,9 @@
     android:text="category"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:textSize="17sp"
+    android:textSize="15sp"
     android:layout_marginEnd="8dp"
     android:layout_marginBottom="4dp"
     android:fontFamily="@font/poppins_regular"
+    android:textAppearance="@style/TagsTheme"
     />

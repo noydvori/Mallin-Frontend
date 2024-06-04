@@ -17,9 +17,9 @@
     <color name="background">#FFFFFF</color>
     <color name="backgroundDark">#515151</color>
 
-    <color name="selected_tag_background">@color/colorPrimary</color>
+    <color name="selected_tag_background">@color/lightPrimary</color>
     <color name="unselected_tag_background">#DCDCDC</color>
-    <color name="selected_tag_text">@color/lightPrimary</color>
-    <color name="unselected_tag_text">#404040</color>
+    <color name="selected_tag_text">@color/colorPrimary</color>
+    <color name="unselected_tag_text">#787878</color>
 
 </resources>

@@ -80,7 +80,7 @@
                     android:layout_marginLeft="20dp"
                     android:layout_marginTop="16dp"
                     android:layout_marginRight="20dp"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginBottom="16dp"
                     android:background="@color/background_search"
                     android:queryHint="Search here" />
 
@@ -97,11 +97,18 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/categories"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="#E8E8E8"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_dark_rounded"
                     android:orientation="vertical"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/category_layout" />
+                <ProgressBar
+                    android:id="@+id/idPBLoading"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"/>
+
             </LinearLayout>
         </FrameLayout>
 
@@ -145,7 +152,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="16dp"
-            android:text="Your List"
+            android:text="My Stores List"
             android:textSize="20sp"
             android:textStyle="bold" />
 
