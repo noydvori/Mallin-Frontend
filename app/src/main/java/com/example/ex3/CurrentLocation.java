@@ -1,10 +1,15 @@
 package com.example.ex3;
+import android.Manifest;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Base64;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -12,33 +17,74 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Base64;
+import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
+import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.ex3.api.WebServiceAPI;
 import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import retrofit2.Call;
 import retrofit2.Callback;
-import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import com.example.ex3.api.WebServiceAPI;
+import com.example.ex3.entities.Category;
+import com.example.ex3.entities.Store;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CurrentLocation extends AppCompatActivity {
 
     private Button buttonConfirm;
+    private static final int REQUEST_CAMERA_PERMISSION = 100;
+
     private List<Store> storesList = new ArrayList<>();
     private List<String> stringsStoresList = new ArrayList<>();
     private String token;
     private WebServiceAPI webServiceAPI;
     private List<Store> chosenStores;
     private List<Store> favoriteStores;
-
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
+    private Button buttonCapture;
 
     BottomNavigationView bottomNavigationView;
 
@@ -183,6 +229,81 @@ public class CurrentLocation extends AppCompatActivity {
                 return false;
             }
         });
+        buttonCapture = findViewById(R.id.button_capture);
+        buttonCapture.setOnClickListener(v -> checkCameraPermission());
+    }
+    private void checkCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+        } else {
+            dispatchTakePictureIntent();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CAMERA_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                dispatchTakePictureIntent();
+            } else {
+                Toast.makeText(this, "Camera permission is required to take a photo", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            detectLogo(imageBitmap);
+        }
+    }
+
+
+    private void detectLogo(Bitmap bitmap) {
+        // Convert bitmap to base64
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+        String encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+        // Send base64 image to server
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = "http://your-server-url/upload";
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                response -> {
+                    // Display the response
+                    Toast.makeText(this, "Logo: " + response, Toast.LENGTH_LONG).show();
+                },
+                error -> {
+                    // Handle error
+                    Log.e("Volley", error.toString());
+                    Toast.makeText(this, "Error: " + error.toString(), Toast.LENGTH_SHORT).show();
+                }) {
+            @Override
+            public byte[] getBody() {
+                return encodedImage.getBytes();
+            }
+
+            @Override
+            public String getBodyContentType() {
+                return "application/json";
+            }
+        };
+
+        queue.add(stringRequest);
     }
 
     // Method to check if the location is correct
@@ -203,8 +324,9 @@ public class CurrentLocation extends AppCompatActivity {
         CompletableFuture<Category> future = new CompletableFuture<>();
 
         call.enqueue(new Callback<Category>() {
+
             @Override
-            public void onResponse(Call<Category> call, Response<Category> response) {
+            public void onResponse(Call<Category> call, retrofit2.Response<Category> response) {
                 if (response.isSuccessful()) {
                     Category responseCategory = response.body();
                     if (responseCategory != null) {

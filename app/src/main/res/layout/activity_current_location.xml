@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".CurrentLocation">
+
     <Button
         android:id="@+id/button_back"
         android:layout_width="40dp"
@@ -30,7 +31,6 @@
 
     <TextView
         android:id="@+id/heading"
-
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
@@ -41,7 +41,6 @@
         android:textSize="17sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
 
     <AutoCompleteTextView
         android:id="@+id/autoCompleteTextView"
@@ -67,6 +66,36 @@
         android:layout_marginHorizontal="100dp"
         android:layout_marginTop="23dp"
         android:text="Confirm" />
+
+    <TextView
+        android:id="@+id/or"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button_confirm"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="197dp"
+        android:layout_marginTop="22dp"
+        android:layout_marginEnd="196dp"
+        android:text="or"
+        android:fontFamily="@font/poppins_semibold"
+        android:textColor="@color/black"
+        android:textSize="17sp"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+    <Button
+        android:id="@+id/button_capture"
+        android:layout_width="wrap_content"
+        android:layout_height="91dp"
+
+        android:layout_below="@+id/or"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="155dp"
+        android:layout_marginTop="17dp"
+        android:layout_marginEnd="152dp"
+        android:background="@drawable/baseline_photo_camera_24" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav_menu"
