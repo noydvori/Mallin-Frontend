@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET"/>
-
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="true"/>
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
@@ -34,7 +35,17 @@
             android:theme="@style/AppTheme"
             />
         <activity
-            android:name=".SettingsActivity"
+            android:name=".ConfirmPath"
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            />
+        <activity
+            android:name=".Favorites"
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            />
+        <activity
+            android:name=".CurrentLocation"
             android:exported="false"
             android:theme="@style/AppTheme"
             />

@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.ex3.R;
 import com.example.ex3.entities.Store;
-import com.example.ex3.objects.Category;
+import com.example.ex3.entities.Category;
 import java.util.List;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
@@ -17,17 +17,19 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     private final Context context;
     private final List<Category> categoryList;
     private final List<Store> chosenStores;
+    private final List<Store> favStores;
     private final TextView badgeTextView;
 
     public interface OnAddStoreClickListener {
         void onAddStoreClick(Store store);
     }
 
-    public CategoryAdapter(Context context, List<Category> categoryList, List<Store> chosenStores, TextView badgeTextView) {
+    public CategoryAdapter(Context context, List<Category> categoryList, List<Store> chosenStores,List<Store> favStores, TextView badgeTextView) {
         this.context = context;
         this.categoryList = categoryList;
         this.chosenStores = chosenStores;
         this.badgeTextView = badgeTextView;
+        this.favStores = favStores;
     }
 
     private void updateBadge() {
@@ -54,7 +56,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         Category category = categoryList.get(position);
         holder.categoryNameTextView.setText(category.getCategoryName());
 
-        StoreItemAdapter storeItemAdapter = new StoreItemAdapter(context, category.getStoresList(), new StoreItemAdapter.OnStoreInteractionListener() {
+        StoreItemAdapter storeItemAdapter = new StoreItemAdapter(context, category.getStoresList(), chosenStores,favStores, new StoreItemAdapter.OnStoreInteractionListener() {
             @Override
             public void onStoreAddedToList(Store store) {
                 if (chosenStores.contains(store)) {
@@ -63,12 +65,17 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                     chosenStores.add(store);
                 }
                 updateBadge();
+                notifyDataSetChanged(); // Refresh the adapter to update the UI
             }
 
             @Override
             public void onStoreAddedToFavorites(Store store) {
-                // Handle adding to favorites
-                // Example: if there's a favorites list, add/remove store from it
+                if (favStores.contains(store)) {
+                    favStores.remove(store);
+                } else {
+                    favStores.add(store);
+                }
+                notifyDataSetChanged(); // Refresh the adapter to update the UI
             }
         });
         holder.storeItemRecyclerView.setAdapter(storeItemAdapter);
@@ -82,13 +89,11 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     public static class CategoryViewHolder extends RecyclerView.ViewHolder {
         TextView categoryNameTextView;
         RecyclerView storeItemRecyclerView;
-        View selectionBackground;
 
         public CategoryViewHolder(@NonNull View itemView) {
             super(itemView);
             categoryNameTextView = itemView.findViewById(R.id.tvCategoryHeader);
             storeItemRecyclerView = itemView.findViewById(R.id.rvStoreItems);
-            selectionBackground = itemView.findViewById(R.id.selection_background);
         }
     }
 }

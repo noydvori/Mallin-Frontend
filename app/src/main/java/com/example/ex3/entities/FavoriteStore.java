@@ -11,8 +11,8 @@ import androidx.room.PrimaryKey;
 
 import java.util.Objects;
 
-@Entity(tableName = "store")
-public class Store implements Parcelable{
+@Entity(tableName = "favoritestore")
+public class FavoriteStore implements Parcelable{
     @PrimaryKey
     @NonNull
     @ColumnInfo(name = "storename")
@@ -37,7 +37,7 @@ public class Store implements Parcelable{
 
     private boolean isFavorite;
 
-    public Store(String storename,String workingHours, String floor, String logoPic,String storeType,boolean isFavorite) {
+    public FavoriteStore(String storename,String workingHours, String floor, String logoPic,String storeType,boolean isFavorite) {
         this.storename = storename;
         this.workingHours = workingHours;
         this.floor = floor;
@@ -110,14 +110,14 @@ public class Store implements Parcelable{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Store store = (Store) o;
-        return Objects.equals(storename, store.storename);
+        return Objects.equals(storename, store.getStoreName());
     }
     @Override
     public int hashCode() {
         return Objects.hash(storename);
     }
 
-    protected Store(Parcel in) {
+    protected FavoriteStore(Parcel in) {
         storename = in.readString();
         storeType = in.readString();
         floor = in.readString();

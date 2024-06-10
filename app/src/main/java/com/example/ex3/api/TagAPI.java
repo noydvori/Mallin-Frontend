@@ -2,8 +2,6 @@ package com.example.ex3.api;
 
 
 
-import com.example.ex3.entities.Store;
-import com.example.ex3.objects.Category;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import retrofit2.Call;

@@ -1,7 +1,7 @@
 package com.example.ex3.api;
 
 import com.example.ex3.entities.Store;
-import com.example.ex3.objects.Category;
+import com.example.ex3.entities.Category;
 import com.example.ex3.objects.NameAndPassword;
 import com.example.ex3.objects.User;
 import com.example.ex3.objects.UserInfo;

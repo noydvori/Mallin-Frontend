@@ -2,7 +2,7 @@ package com.example.ex3.fetchers;
 
 import com.example.ex3.api.CategoryAPI;
 import com.example.ex3.entities.Store;
-import com.example.ex3.objects.Category;
+import com.example.ex3.entities.Category;
 
 import java.util.ArrayList;
 import java.util.HashSet;

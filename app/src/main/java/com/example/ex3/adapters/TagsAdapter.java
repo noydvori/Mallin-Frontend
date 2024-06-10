@@ -17,7 +17,7 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder> {
 
     private final List<String> tags;
     private OnTagClickListener listener;
-    private int selectedPosition = -1;
+    private int selectedPosition = 0;
 
     public TagsAdapter(List<String> tags) {
         this.tags = tags;
@@ -57,6 +57,14 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder> {
         return tags.size();
     }
 
+    public String getSelectedTag() {
+        if (!tags.isEmpty()) {
+            return tags.get(selectedPosition);
+        } else {
+            return "all"; // Return a default value or handle this case according to your logic
+        }
+    }
+
     public interface OnTagClickListener {
         void onTagClick(String tag);
     }
@@ -69,6 +77,7 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder> {
         int position = tags.indexOf(tag);
         if (position >= 0) {
             selectedPosition = position;
+            listener.onTagClick(tag);
             notifyDataSetChanged();
         }
     }

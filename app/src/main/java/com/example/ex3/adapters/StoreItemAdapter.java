@@ -19,17 +19,27 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.StoreItemViewHolder> {
-    private final List<Store> storeItemList;
+    private List<Store> storeItemList;
     private final OnStoreInteractionListener storeInteractionListener;
+    private final List<Store> chosenStores;
+    private List<Store> favStores;
+    private final Context context;
 
     public interface OnStoreInteractionListener {
         void onStoreAddedToList(Store store);
         void onStoreAddedToFavorites(Store store);
     }
 
-    public StoreItemAdapter(Context context, List<Store> storeList, OnStoreInteractionListener listener) {
-        this.storeItemList = storeList;
+    public StoreItemAdapter(Context context, List<Store> storeItemList, List<Store> chosenStores,List<Store> favStores, OnStoreInteractionListener listener) {
+        this.context = context;
+        this.storeItemList = storeItemList;
+        this.chosenStores = chosenStores;
         this.storeInteractionListener = listener;
+        this.favStores = favStores;
+    }
+    public void setFavoriteStores(List<Store> favoriteStores) {
+        this.favStores = favoriteStores;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -44,6 +54,22 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         Store storeItem = storeItemList.get(position);
         holder.storeNameTextView.setText(storeItem.getStoreName());
         holder.categoryFloorTextView.setText(storeItem.getStoreType() + " • Floor number " + storeItem.getFloor());
+        // Highlight chosen stores
+        if (chosenStores.contains(storeItem)) {
+            holder.itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.added_to_list_color));
+        } else {
+            holder.itemView.setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
+        }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (chosenStores.contains(storeItem)) {
+                chosenStores.remove(storeItem);
+            } else {
+                chosenStores.add(storeItem);
+            }
+            storeInteractionListener.onStoreAddedToList(storeItem);
+            notifyDataSetChanged(); // Refresh the item to update the background
+        });
 
         String logoUrl = storeItem.getLogoUrl();
         String modifiedUrl = convertLogoUrl(logoUrl);
@@ -61,50 +87,47 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         // Update icons based on store's state
         updateButtonIcons(holder, storeItem);
 
-        // Set background color based on whether the item is added to the list
-        if (storeItem.isAddedToList()) {
-            holder.itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.added_to_list_color));
-        } else {
-            holder.itemView.setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
-        }
-
-
         // Add to List Button Click Listener
         holder.btnAddToList.setOnClickListener(v -> {
-            storeItem.setAddedToList(!storeItem.isAddedToList());
-            notifyItemChanged(holder.getAdapterPosition());
-            storeInteractionListener.onStoreAddedToList(storeItem);
+            if (!chosenStores.contains(storeItem)) {
+                holder.itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.added_to_list_color));
 
-            if (storeItem.isAddedToList()) {
-                GradientDrawable outline = new GradientDrawable();
-                outline.setStroke(1, ContextCompat.getColor(context, R.color.added_to_list_color)); // Outline color and width
-                holder.itemView.setBackground(outline);
             } else {
                 holder.itemView.setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
+
             }
+            notifyItemChanged(holder.getAdapterPosition());
+            storeInteractionListener.onStoreAddedToList(storeItem);
         });
 
         // Add to Favorites Button Click Listener
         holder.btnAddToFavorites.setOnClickListener(v -> {
-            storeItem.setFavorite(!storeItem.isFavorite());
             notifyItemChanged(holder.getAdapterPosition());
             storeInteractionListener.onStoreAddedToFavorites(storeItem);
         });
     }
 
+
     @Override
     public int getItemCount() {
-        return storeItemList.size();
-    }
-
-    private void updateButtonIcons(StoreItemViewHolder holder, Store storeItem) {
-        if (storeItem.isAddedToList()) {
-            holder.btnAddToList.setImageResource(R.drawable.ic_remove);
+        if (storeItemList != null) {
+            return storeItemList.size();
         } else {
-            holder.btnAddToList.setImageResource(R.drawable.ic_add_circle);
+            return 0; // Or return any other appropriate value
+        }
+    }
+    public void filterList(List<Store> filteredList) {
+        storeItemList = filteredList;
+        notifyDataSetChanged();
+    }
+    private void updateButtonIcons(StoreItemViewHolder holder, Store storeItem) {
+        if (chosenStores.contains(storeItem)) {
+            holder.btnAddToList.setImageResource(R.drawable.baseline_remove);
+        } else {
+            holder.btnAddToList.setImageResource(R.drawable.baseline_add);
         }
 
-        if (storeItem.isFavorite()) {
+        if (favStores.contains(storeItem)) {
             holder.btnAddToFavorites.setImageResource(R.drawable.ic_favorites);
         } else {
             holder.btnAddToFavorites.setImageResource(R.drawable.ic_favorite_border);
@@ -132,7 +155,8 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
             openStatusTextView = itemView.findViewById(R.id.open_status);
             btnAddToList = itemView.findViewById(R.id.btn_add_to_list);
             btnAddToFavorites = itemView.findViewById(R.id.btn_add_to_favorites);
-}
+        }
 
     }
+
 }
