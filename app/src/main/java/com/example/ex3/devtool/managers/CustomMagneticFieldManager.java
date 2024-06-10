@@ -13,9 +13,11 @@ public class CustomMagneticFieldManager implements SensorEventListener {
     private static final String TAG = "CustomMagneticFieldManager";
     private SensorManager sensorManager;
     private Sensor magneticSensor;
+    private boolean isScanning;
 
     private Context context;
     private MagneticFieldCallBack mCallBack;
+
     public CustomMagneticFieldManager(Context context, MagneticFieldCallBack callback) {
         this.mCallBack = callback;
         this.context = context;
@@ -24,6 +26,7 @@ public class CustomMagneticFieldManager implements SensorEventListener {
         if (magneticSensor == null) {
             Log.e(TAG, "Magnetic Sensor not available");
         }
+        isScanning = false;
     }
 
     public void startInitialScan() {
@@ -31,15 +34,31 @@ public class CustomMagneticFieldManager implements SensorEventListener {
     }
 
     private void startScan() {
-        sensorManager.registerListener(this, magneticSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        if (!isScanning) {
+            sensorManager.registerListener(this, magneticSensor, SensorManager.SENSOR_DELAY_NORMAL);
+            isScanning = true;
+        }
+    }
+
+    public void stopScan() {
+        if (isScanning) {
+            sensorManager.unregisterListener(this);
+            isScanning = false;
+        }
+    }
+
+    public void saveScanResults() {
+        stopScan();
+        // Your logic to save scan results
+        Log.d(TAG, "Scan results saved");
+        // Restart scanning if needed
+        startScan();
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
-            float x = event.values[0];
-            float y = event.values[1];
-            float z = event.values[2];
+
             mCallBack.onMagneticFieldCallBack(event);
         }
     }

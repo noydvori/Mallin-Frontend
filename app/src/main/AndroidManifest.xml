@@ -28,8 +28,9 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+
         <activity
-            android:name=".devtool.SplashScreen"
+            android:name=".devtool.DevTool"
             android:exported="false" />
 
         <service
@@ -53,7 +54,7 @@
             android:exported="false"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".devtool.DevTool"
+            android:name=".devtool.SplashScreen"
             android:exported="true"
             android:theme="@style/AppTheme">
             <intent-filter>

@@ -5,11 +5,17 @@ import android.util.Log;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
 public class Graph {
     private Map<String, GraphNode> nodes = new HashMap<>();
+
+    public Graph(List<GraphNode> nodes) {
+        nodes.forEach(this::addNode);
+    }
+
     public void addNode(GraphNode node) {
         nodes.put(node.getId(), node);
     }
@@ -19,8 +25,7 @@ public class Graph {
         if (fromNode == null || toNode == null) {
             throw new IllegalArgumentException("Both nodes must exist in the graph");
         }
-        GraphEdge edge = new GraphEdge(fromNode, toNode);
-        fromNode.getEdges().add(edge);
+        fromNode.addNeighbor(toNode.getId());
     }
 
     public Collection<GraphNode> getNodes ( ) {
@@ -39,7 +44,7 @@ public class Graph {
 
         float minDistance = Float.MAX_VALUE;  // Use Float.MAX_VALUE for consistency
         for (GraphNode node : nodes.values()) {
-            PointF nodePoint = viewToSourceCoordFunction.apply(node.getX(), node.getY());
+            PointF nodePoint = viewToSourceCoordFunction.apply(node.getXMultpyed(), node.getYMultpyed());
             float distance = (float) Math.hypot(imageX - nodePoint.x, imageY - nodePoint.y);
 
             // Check if this node is the closest found so far
@@ -56,6 +61,9 @@ public class Graph {
         } else {
             return null;
         }
+    }
+    public void changeFloorId() {
+        nodes.values().forEach(node-> node.getId());
     }
 
 }

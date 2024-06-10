@@ -1,8 +1,9 @@
 package com.example.ex3.devtool.graph;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
-import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,32 +12,40 @@ import java.util.List;
 public class GraphNode {
 
     private NodeStatus status = NodeStatus.none;
-    private int level = 0;
-
-
+    private int floor = 0;
+    @NonNull
     @PrimaryKey
     private String id;
 
     private String name;
     private float multplyer = 2.6F;
+
     private float x, y;
 
-    @Ignore
-    private List<GraphEdge> edges = new ArrayList<>();
+    @TypeConverters(StringListConverter.class)
+    private List<String> neighbors = new ArrayList<>();
 
-    public GraphNode(String id, String name, float x, float y) {
-        this.id = id;
+    public GraphNode(String id, String name, float x, float y, int floor) {
+        this.id =  id;
         this.name = name;
         this.x = x;
         this.y = y;
+        this.floor = floor;
     }
 
+    public float getMultplyer() {
+        return this.multplyer;
+    }
+
+    public void setMultplyer(float multplyer) {
+        this.multplyer = multplyer;
+    }
     public float getX() {
-        return x * multplyer;
+        return x;
     }
 
     public float getY() {
-        return y * multplyer;
+        return y;
     }
 
     public String getId() {
@@ -47,13 +56,10 @@ public class GraphNode {
         return this.name;
     }
 
-    public int getLevel() { return  this.level;}
-    public void setLevel(int level) {this.level = level;}
+    public int getFloor() { return  this.floor;}
+    public void setFloor(int floor) {this.floor = floor;}
 
-    @Ignore
-    public List<GraphEdge> getEdges() {
-        return this.edges;
-    }
+
 
     public NodeStatus getStatus() {
         return status;
@@ -63,8 +69,27 @@ public class GraphNode {
         this.status = status;
     }
 
+    public float getXMultpyed() {
+        return  this.x * multplyer;
+    }
+
+    public float getYMultpyed() {
+        return  this.y * multplyer;
+    }
     @Override
     public String toString() {
         return "node: " + this.id + " name: " + this.name + " x= " + getX() + " y= " + getY();
+    }
+
+    public void addNeighbor(String neighborID) {
+        this.neighbors.add(neighborID);
+    }
+
+    public List<String> getNeighbors() {
+        return this.neighbors;
+    }
+
+    public void setNeighbors(List<String> neighbors) {
+        this.neighbors = neighbors;
     }
 }

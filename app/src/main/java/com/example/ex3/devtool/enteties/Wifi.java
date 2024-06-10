@@ -5,12 +5,11 @@ import androidx.room.PrimaryKey;
 import androidx.room.ColumnInfo;
 import androidx.room.ForeignKey;
 
-@Entity(tableName = "wifi",
-        foreignKeys = @ForeignKey(entity = GraphNodeData.class,
-                parentColumns = "id",
-                childColumns = "nodeDataId",
-                onDelete = ForeignKey.CASCADE))
+@Entity(tableName = "wifi")
+
 public class Wifi {
+
+
 
     @PrimaryKey(autoGenerate = true)
     public int id;
@@ -26,6 +25,21 @@ public class Wifi {
 
     @ColumnInfo(name = "rssi")
     public int rssi;
+
+    @ColumnInfo(name = "nodeId")
+    public String nodeDataId; // Add this column to reference GraphNodeData
+
+
+    // Constructor
+    public Wifi(String userID, String SSID, String BSSID, int rssi, String nodeDataId) {
+        this.userID = userID;
+        this.SSID = SSID;
+        this.BSSID = BSSID;
+        this.rssi = rssi;
+        this.nodeDataId = nodeDataId;
+    }
+
+
 
     // Getters and Setters
     public int getId() {
@@ -66,5 +80,13 @@ public class Wifi {
 
     public void setRssi(int rssi) {
         this.rssi = rssi;
+    }
+
+    public String getNodeDataId() {
+        return nodeDataId;
+    }
+
+    public void setNodeDataId(String nodeDataId) {
+        this.nodeDataId = nodeDataId;
     }
 }

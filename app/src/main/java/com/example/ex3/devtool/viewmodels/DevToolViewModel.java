@@ -4,11 +4,14 @@ import android.bluetooth.le.ScanResult;
 import android.hardware.SensorEvent;
 import android.util.Log;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.ex3.R;
-import com.example.ex3.adapters.GrapthDataAdapter;
+import com.example.ex3.components.GraphOverlayImageView;
+import com.example.ex3.devtool.database.GraphDatabase;
+import com.example.ex3.devtool.enteties.MagneticField;
+import com.example.ex3.devtool.enteties.Wifi;
 import com.example.ex3.devtool.interfaces.BluetoothCallBack;
 import com.example.ex3.devtool.interfaces.MagneticFieldCallBack;
 import com.example.ex3.devtool.interfaces.WifiCallBack;
@@ -19,6 +22,7 @@ import com.example.ex3.devtool.graph.NodeStatus;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 public class DevToolViewModel extends ViewModel implements WifiCallBack, BluetoothCallBack, MagneticFieldCallBack {
     private MutableLiveData<ArrayList<Graph>> mGraphs = new MutableLiveData<>();
@@ -37,21 +41,26 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
 
     private MutableLiveData<Boolean> isScanLocked = new MutableLiveData<>();
 
-
+    private ArrayList<LiveData<List<GraphNode>>> floors = new ArrayList<>();
     private boolean isLocked = true;
-    public DevToolViewModel(GrapthDataAdapter dataAdapter) {
+    private GraphDatabase mDataBase;
+
+    private GraphNode savedNode;
+    public DevToolViewModel(GraphDatabase database) {
+        mDataBase = database;
         selectedFloor.setValue(3);
-//        scanLocks.put(BLUETOOTH_LOCK,false);
-//        scanLocks.put(WIFI_LOCK, false);
+        LiveData<List<GraphNode>> graphNodes0 = database.graphNodeDao().getNodesByFloor(0);
+        LiveData<List<GraphNode>> graphNodes1 = database.graphNodeDao().getNodesByFloor(1);
+        LiveData<List<GraphNode>> graphNodes2 = database.graphNodeDao().getNodesByFloor(2);
+        LiveData<List<GraphNode>> graphNodes3 = database.graphNodeDao().getNodesByFloor(3);
+
+        floors.add(graphNodes0);
+        floors.add(graphNodes1);
+        floors.add(graphNodes2);
+        floors.add(graphNodes3);
         isScanLocked.setValue(false);
         title.setValue("Floor 0");
-        Graph floor_0 = dataAdapter.loadGrapthData(R.raw.graph_data);
-        ArrayList<Graph> graphs = new ArrayList<>();
-        graphs.add(floor_0);
-        graphs.add(floor_0);
-        graphs.add(floor_0);
-        graphs.add(floor_0);
-        mGraphs.setValue(graphs);
+
     }
 
     public MutableLiveData<Integer> getSelectedFloor() {return this.selectedFloor;}
@@ -60,8 +69,8 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
         this.selectedFloor.setValue(selectedFloor);
     }
 
-    public MutableLiveData<ArrayList<Graph>> getGraphs() {
-        return mGraphs;
+    public ArrayList<LiveData<List<GraphNode>>> getGraphs() {
+        return floors;
     }
 
     public void setTitle( String title) {
@@ -100,7 +109,7 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
             return;
         }
         if(node == null) {
-            selectedNode.setStatus(NodeStatus.none);
+       ///     selectedNode.setStatus(NodeStatus.none);
             this.selectedNode.setValue(null);
             return;
         }
@@ -156,9 +165,12 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
 
     @Override
     public void onWifiCallBack(List<android.net.wifi.ScanResult> wifiScanResults) {
-        Log.d("DEVTOOL_VIEW_MODEL", "freed lock: " + WIFI_LOCK);
-   //     setScanLock(WIFI_LOCK,false);
+        ArrayList<Wifi> wifiList = new ArrayList<>();
+        wifiScanResults.forEach(result -> wifiList.add(new Wifi("lioz",result.SSID, result.BSSID, result.level,savedNode.getId())));
+        new Thread(() -> {
+            mDataBase.wifiDao().insertAll(wifiList);
 
+        }).start();
     }
 
     @Override
@@ -166,7 +178,37 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
        float x = event.values[0];
         float y = event.values[1];
         float z = event.values[2];
-        Log.d("DEVTOOL_VIEW_MODEL","Magnetic field area: x="+x + " y="+y + " z=" + z );
+         Log.d("DEVTOOL_VIEW_MODEL","Magnetic field area: x="+x + " y="+y + " z=" + z );
+         new Thread(()->{
+             mDataBase.magneticFieldDao().insertAll(new MagneticField(x,y,z,savedNode.getId(), "galaxy_a71"));
+         }).start();
+    }
+
+    public GraphNode getSavedNode() {
+        return savedNode;
+    }
+
+    public void setSavedNode(GraphNode savedNode) {
+        this.savedNode = savedNode;
+    }
+
+    public void updateSelectedNodeStatus(NodeStatus nodeStatus) {
+        new Thread(()->{
+            Objects.requireNonNull(selectedNode.getValue()).setStatus(nodeStatus);
+            mDataBase.graphNodeDao().update(selectedNode.getValue());
+        }).start();
+    }
+
+    public void deleteSelectedNodeData(GraphOverlayImageView mImageView) {
+        new Thread(()->{
+            Log.d("DevToolViewModel","deleting by Id: " + selectedNode.getValue().getId());
+            mDataBase.wifiDao().deleteByNodeId(Objects.requireNonNull(selectedNode.getValue()).getId());
+            mDataBase.magneticFieldDao().deleteByNodeId(Objects.requireNonNull(selectedNode.getValue()).getId());
+            selectedNode.getValue().setStatus(NodeStatus.none);
+            mDataBase.graphNodeDao().update(selectedNode.getValue());
+
+            mImageView.invalidate();
+        }).start();
 
     }
 }

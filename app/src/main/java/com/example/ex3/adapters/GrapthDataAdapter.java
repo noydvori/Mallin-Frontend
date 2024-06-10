@@ -9,15 +9,19 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 
 public class GrapthDataAdapter {
     Context context;
-    Graph graph = new Graph();
+    Graph graph;
+    private int level;
     private final static String LOG_TAG = "GraphDataAdapter";
 
-    public GrapthDataAdapter(Context context) {
+    public GrapthDataAdapter(Context context, int level) {
         this.context = context;
+        this.level = level;
+         graph = new Graph(new ArrayList<>());
     }
 
 
@@ -40,7 +44,7 @@ public void createNode(XmlPullParser parser) throws XmlPullParserException, IOEx
                 String value = parser.getText();
                 switch (key) {
                     case "id":
-                        id = value;
+                        id = level + value;
                         break;
                     case "label":
                         name = value;
@@ -57,7 +61,7 @@ public void createNode(XmlPullParser parser) throws XmlPullParserException, IOEx
         eventType = parser.next();
     }
 
-    GraphNode node = new GraphNode(id, name, x, y);
+    GraphNode node = new GraphNode(id, name, x, y, level);
     graph.addNode(node);
 }
 
@@ -73,10 +77,10 @@ public void createNode(XmlPullParser parser) throws XmlPullParserException, IOEx
                     String value = parser.getText();
                     switch (key) {
                         case "source":
-                            sourceId = value;
+                            sourceId = level + value;
                             break;
                         case "target":
-                            targetId = value;
+                            targetId = level + value;
                             break;
                     }
                 }

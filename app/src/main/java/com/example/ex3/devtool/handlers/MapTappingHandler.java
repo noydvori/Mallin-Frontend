@@ -5,11 +5,14 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.lifecycle.ViewModelProvider;
+
 import com.example.ex3.components.GraphOverlayImageView;
 import com.example.ex3.devtool.graph.Graph;
 import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.devtool.viewmodels.DevToolViewModel;
 
+import java.util.List;
 import java.util.function.BiFunction;
 
 public class MapTappingHandler implements View.OnTouchListener {
@@ -17,6 +20,7 @@ public class MapTappingHandler implements View.OnTouchListener {
     private GraphOverlayImageView mImageView;
     private float startX, startY;
     private DevToolViewModel viewModel;
+    private Graph mGraph;
     private final static float TAP_THRESHOLD = 10; // Define a threshold for what constitutes a tap
     public MapTappingHandler(GraphOverlayImageView imageView, DevToolViewModel viewModel) {
         this.mImageView = imageView;
@@ -41,16 +45,15 @@ public class MapTappingHandler implements View.OnTouchListener {
                         float imageY = sCoord.y;
                         viewModel.setOnClicked(imageX, imageY);
                         Log.d(TAG, " x=" + imageX + " y=" + imageY);
-                        if(viewModel.getGraphs().getValue()!=null&&viewModel.getSelectedFloor().getValue()!=null){
-                           Graph graph = viewModel.getGraphs().getValue().get(viewModel.getSelectedFloor().getValue());
+                        if(mGraph != null){
+                           // List<GraphNode> nodes = viewModel.getGraphs().get(viewModel.getSelectedFloor().getValue()).getValue();
+
                             BiFunction<Float, Float, PointF> viewToSourceCoordFunction = (Float x, Float y) -> {
                              //   Log.d(TAG, "location: " + mImageView.viewToSourceCoord(x, y).toString());
                                 return new PointF( x,  y);
                             };
-                           GraphNode node =  graph.getClosestNode(imageX, imageY, viewToSourceCoordFunction);
-                               viewModel.setSelectedNode(node);
-                              // mImageView.invalidate();
-
+                           GraphNode node =  mGraph.getClosestNode(imageX, imageY, viewToSourceCoordFunction);
+                           viewModel.setSelectedNode(node);
                         }
                     }
                 }
@@ -58,5 +61,10 @@ public class MapTappingHandler implements View.OnTouchListener {
         }
         return false;
     }
-
+    public void setGraph(Graph graph) {
+        this.mGraph = graph;
+    }
+    public Graph getGraph() {
+        return mGraph;
+    }
 }

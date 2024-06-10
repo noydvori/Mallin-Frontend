@@ -1,5 +1,6 @@
 package com.example.ex3.devtool;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -21,6 +22,9 @@ import android.widget.TextView;
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.example.ex3.R;
 import com.example.ex3.components.GraphOverlayImageView;
+import com.example.ex3.devtool.database.GraphDatabase;
+import com.example.ex3.devtool.graph.Graph;
+import com.example.ex3.devtool.graph.NodeStatus;
 import com.example.ex3.devtool.managers.CustomAccelerometerManager;
 import com.example.ex3.devtool.managers.CustomBluetoothManager;
 import com.example.ex3.devtool.managers.CustomMagneticFieldManager;
@@ -33,19 +37,26 @@ import com.example.ex3.devtool.viewmodels.DevToolViewModelFactory;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
+import java.util.List;
+import java.util.Objects;
+
 public class DevTool extends AppCompatActivity {
 
     private Handler handler = new Handler(Looper.getMainLooper());
-    private static final int SCAN_INTERVAL = 15000; // 15 seconds
+    private static final int SCAN_INTERVAL = 4000; // 15 seconds
     private static final String mapActivity = "MapActivity";
     private DevToolViewModel devToolViewModel;
     private MaterialToolbar mToolBar;
     private BottomSheetBehavior<View> bottomSheetBehavior;
     private CustomWifiManager customWifiManager;
     private Button mSaveButton;
+    private Button mDeleteButton;
+    private GraphOverlayImageView mImageView;
     private CustomBluetoothManager customBluetoothManager;
     private CustomMagneticFieldManager customMagneticFieldManager;
     private CustomAccelerometerManager customAccelerometerManager;
+
+    private MapTappingHandler mMapTappingHandler;
 
 
 
@@ -58,9 +69,10 @@ public class DevTool extends AppCompatActivity {
         setContentView(R.layout.acitivty_map);
         mToolBar = findViewById(R.id.devtool_toolbar);
         setSupportActionBar(mToolBar);
-        devToolViewModel = new ViewModelProvider(this, new DevToolViewModelFactory()).get(DevToolViewModel.class);
-        GraphOverlayImageView imageView = findViewById(R.id.devtool_map);
-        imageView.setImage(ImageSource.resource(R.drawable.floor_1));
+        devToolViewModel = new ViewModelProvider(this, new DevToolViewModelFactory(GraphDatabase.getDatabase(this))).get(DevToolViewModel.class);
+         mImageView = findViewById(R.id.devtool_map);
+        mMapTappingHandler = new MapTappingHandler(mImageView,devToolViewModel);
+        mImageView.setImage(ImageSource.resource(R.drawable.floor_1));
         Log.d(mapActivity, "start this app");
         customMagneticFieldManager = new CustomMagneticFieldManager(this,devToolViewModel);
         customAccelerometerManager = new CustomAccelerometerManager(this);
@@ -85,25 +97,25 @@ public class DevTool extends AppCompatActivity {
                     Log.d("DEVTOOL", "trying to collaps bottom sheet");
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
                 }
-                imageView.invalidate();
+                mImageView.invalidate();
             }
         });
 
         devToolViewModel.getFloorImage().observe(this, new Observer<Integer>() {
             @Override
             public void onChanged(Integer integer) {
-                imageView.setImage(ImageSource.resource(integer));
-                imageView.setOnImageEventListener(new MapScalingHandler(imageView));
-                imageView.setOnTouchListener(new MapTappingHandler(imageView, devToolViewModel));
+              //  mMapTappingHandler = new  MapTappingHandler(imageView, devToolViewModel);
+
+                mImageView.setImage(ImageSource.resource(integer));
+                mImageView.setOnImageEventListener(new MapScalingHandler(mImageView));
+                mImageView.setOnTouchListener(mMapTappingHandler);
+
             }
         });
 
-        devToolViewModel.getSelectedFloor().observe(this, new Observer<Integer>() {
-            @Override
-            public void onChanged(Integer integer) {
-                imageView.setGraph(devToolViewModel.getGraphs().getValue().get(integer));
-            }
-        });
+
+        graphChangedListeners(mImageView);
+
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -124,6 +136,7 @@ public class DevTool extends AppCompatActivity {
             public void onChanged(Boolean isLocked) {
                 Log.d("DEV_TOOL", "isLocked: "  + isLocked);
                 mSaveButton.setEnabled(!isLocked);
+                mDeleteButton.setEnabled(!isLocked);
                 if(isLocked) {
                     mProgressBar.setVisibility(View.VISIBLE);
                 }else {
@@ -133,6 +146,74 @@ public class DevTool extends AppCompatActivity {
         });
         // Register broadcast receiver to get scan results
         setFloor(2, "Floor 3");
+    }
+
+    private void graphChangedListeners(GraphOverlayImageView imageView) {
+        devToolViewModel.getSelectedFloor().observe(this, new Observer<Integer>() {
+            @Override
+            public void onChanged(Integer integer) {
+                if(devToolViewModel.getGraphs().get(integer).getValue()!=null) {
+                    devToolViewModel.getGraphs().get(integer).getValue().forEach(node-> Log.d("GraphOverlay", "node: " + node.getId() + " name: " + node.getName()));
+                    Graph graph = new Graph(devToolViewModel.getGraphs().get(integer).getValue());
+                    mMapTappingHandler.setGraph(graph);
+                    imageView.setGraph(graph);
+                }else {
+                    Log.d("DevTool" , "graph: " + integer + " is null");
+                }
+
+            }
+        });
+        devToolViewModel.getGraphs().get(0).observe(this, new Observer<List<GraphNode>>() {
+            @Override
+            public void onChanged(List<GraphNode> graphNodes) {
+                graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
+                if(devToolViewModel.getSelectedFloor().getValue() == 0) {
+                    Graph graph = new Graph(devToolViewModel.getGraphs().get(0).getValue());
+                    mMapTappingHandler.setGraph(graph);
+                    imageView.setGraph(graph);
+                }
+
+            }
+        });
+
+        devToolViewModel.getGraphs().get(1).observe(this, new Observer<List<GraphNode>>() {
+            @Override
+            public void onChanged(List<GraphNode> graphNodes) {
+                graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
+                if(devToolViewModel.getSelectedFloor().getValue() == 1) {
+                    Graph graph = new Graph(devToolViewModel.getGraphs().get(1).getValue());
+                    mMapTappingHandler.setGraph(graph);
+                    imageView.setGraph(graph);
+                }
+
+            }
+        });
+
+        devToolViewModel.getGraphs().get(2).observe(this, new Observer<List<GraphNode>>() {
+            @Override
+            public void onChanged(List<GraphNode> graphNodes) {
+                graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
+                if(devToolViewModel.getSelectedFloor().getValue() == 2) {
+                    Graph graph = new Graph(devToolViewModel.getGraphs().get(2).getValue());
+                    mMapTappingHandler.setGraph(graph);
+                    imageView.setGraph(graph);
+                }
+
+            }
+        });
+
+        devToolViewModel.getGraphs().get(3).observe(this, new Observer<List<GraphNode>>() {
+            @Override
+            public void onChanged(List<GraphNode> graphNodes) {
+                graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
+                if(devToolViewModel.getSelectedFloor().getValue() == 3) {
+                    Graph graph = new Graph(devToolViewModel.getGraphs().get(3).getValue());
+                    mMapTappingHandler.setGraph(graph);
+                    imageView.setGraph(graph);
+                }
+
+            }
+        });
     }
 
     @Override
@@ -171,24 +252,47 @@ public class DevTool extends AppCompatActivity {
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
             }
         });
+
+        bottomSheet.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(@NonNull View view) {
+
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(@NonNull View view) {
+                mImageView.invalidate();
+            }
+        });
        mSaveButton = bottomSheet.findViewById(R.id.button_save);
+        mDeleteButton = bottomSheet.findViewById(R.id.button_delete);
         mSaveButton.setOnClickListener(view -> {
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
             initiateFullScan();
         });
+
+        mDeleteButton.setOnClickListener(view -> {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            devToolViewModel.deleteSelectedNodeData(mImageView);
+
+        });
     }
 
     private void initiateFullScan() {
+        devToolViewModel.setSavedNode(devToolViewModel.getSelectedNode().getValue());
         devToolViewModel.setIsLocked(true);
         devToolViewModel.setAllScanLocked(true);
          new Thread(() -> {
+             devToolViewModel.updateSelectedNodeStatus(NodeStatus.selected);
              customBluetoothManager.startScan();
              customWifiManager.startScan();
              customMagneticFieldManager.startInitialScan();
-             customAccelerometerManager.start();
          }).start();
 
-        handler.postDelayed(()->devToolViewModel.setIsScanLocked(false), SCAN_INTERVAL);
+        handler.postDelayed(()->{
+            customMagneticFieldManager.stopScan();
+            devToolViewModel.setIsScanLocked(false);
+        }, SCAN_INTERVAL);
 
     }
 

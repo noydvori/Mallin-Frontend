@@ -4,11 +4,7 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 import androidx.room.ColumnInfo;
-@Entity(tableName = "magnetic_field",
-        foreignKeys = @ForeignKey(entity = GraphNodeData.class,
-                parentColumns = "id",
-                childColumns = "nodeDataId",
-                onDelete = ForeignKey.CASCADE))
+@Entity(tableName = "magnetic_field")
 public class MagneticField {
     @PrimaryKey(autoGenerate = true)
     public int id;
@@ -24,7 +20,18 @@ public class MagneticField {
 
     @ColumnInfo(name = "z_value")
     public float z;
-    private int nodeDataId; // Foreign key
+
+    @ColumnInfo(name = "node_id")
+    private String nodeId; // Foreign key
+
+    public MagneticField(float x, float y, float z, String nodeId, String phoneType) {
+        this.x= x;
+        this.y=y;
+        this.z=z;
+        this.nodeId = nodeId;
+        this.phoneType = phoneType;
+    }
+
 
     // Getters and Setters
     public int getId() {
@@ -67,7 +74,11 @@ public class MagneticField {
         this.z = z;
     }
 
-    public void setNodeDataId(int id) {
-        this.nodeDataId = id;
+    public void setNodeId(String id) {
+        this.nodeId = id;
+    }
+
+    public String getNodeId() {
+        return nodeId;
     }
 }
