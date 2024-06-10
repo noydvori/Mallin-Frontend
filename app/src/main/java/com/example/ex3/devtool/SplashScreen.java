@@ -31,9 +31,9 @@ public class SplashScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
         db = GraphDatabase.getDatabase(this);
-        ExportToXml exportToXml = new ExportToXml(this);
+   //     ExportToXml exportToXml = new ExportToXml(this);
 
-        new Thread(exportToXml::exportDataToXml).start();
+    //    new Thread(exportToXml::exportDataToXml).start();
 
 //        new Thread(()->{
 //            db.wifiDao().getAll().forEach(wifi->{

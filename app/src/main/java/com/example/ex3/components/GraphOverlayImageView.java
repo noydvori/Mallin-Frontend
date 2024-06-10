@@ -51,7 +51,7 @@ public class GraphOverlayImageView extends SubsamplingScaleImageView {
                     }
                     PointF start = sourceToViewCoord(node.getXMultpyed(), node.getYMultpyed());
                     PointF end = sourceToViewCoord(target.getXMultpyed(), target.getYMultpyed());
-
+                    Log.d("TEST", "point start: " + start +" end "  + end);
                     if (start != null && end != null) {
                         if(node.getStatus()==NodeStatus.selected && target.getStatus()== NodeStatus.selected){
                             paint.setColor(Color.GREEN);
@@ -59,7 +59,7 @@ public class GraphOverlayImageView extends SubsamplingScaleImageView {
                             paint.setColor(Color.RED);
 
                         }
-                        canvas.drawLine(start.x, start.y, end.x, end.y, paint);
+                       canvas.drawLine(start.x, start.y, end.x, end.y, paint);
                     }
                 }
 

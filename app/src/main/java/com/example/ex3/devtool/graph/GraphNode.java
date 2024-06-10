@@ -18,7 +18,7 @@ public class GraphNode {
     private String id;
 
     private String name;
-    private float multplyer = 2.6F;
+    private float multplyer = 1F;
 
     private float x, y;
 
@@ -70,11 +70,12 @@ public class GraphNode {
     }
 
     public float getXMultpyed() {
-        return  this.x * multplyer;
+        return  this.x * 3.5f;
     }
 
     public float getYMultpyed() {
-        return  this.y * multplyer;
+        return  this.y * 3.5f;
+
     }
     @Override
     public String toString() {
