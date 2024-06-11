@@ -23,6 +23,11 @@
     <string name="channel_description">new message</string>
     <string name="profile_pic_path"> </string>
     <string name="add_profile_picture">Add profile picture</string>
-<!-- TODO: Remove or change this placeholder text -->
+    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="lock">lock</string>
+    <string name="floor_0">floor 0</string>
+    <string name="floor_1">floor 1</string>
+    <string name="floor_3">floor 3</string>
+    <string name="floor_2">floor 2</string>
 </resources>
