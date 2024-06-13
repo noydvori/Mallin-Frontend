@@ -1,5 +1,8 @@
 package com.example.ex3.api;
 
+import static com.example.ex3.MyApplication.context;
+
+import com.example.ex3.R;
 import com.example.ex3.objects.User;
 import com.example.ex3.objects.UserInfo;
 import java.util.concurrent.CompletableFuture;
@@ -15,8 +18,9 @@ public class UserAPI {
     private WebServiceAPI webServiceAPI;
 
     private UserAPI() {
+        String baseUrl = context.getString(R.string.BASE_URL);
         retrofit = new Retrofit.Builder()
-                .baseUrl("http://192.168.153.1:5000/api/")
+                .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         webServiceAPI = retrofit.create(WebServiceAPI.class);

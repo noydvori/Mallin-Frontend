@@ -1,5 +1,7 @@
 package com.example.ex3;
 
+import static com.example.ex3.MyApplication.context;
+
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,6 +9,7 @@ import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import com.example.ex3.api.TokenAPI;
+import com.example.ex3.utils.UserPreferencesUtils;
 import com.google.android.material.snackbar.Snackbar;
 import java.util.concurrent.CompletableFuture;
 
@@ -69,7 +72,7 @@ public class Login extends AppCompatActivity {
             @Override
             public void run() {
                 Intent intent = new Intent(Login.this, Home.class);
-                intent.putExtra("token", token);
+                UserPreferencesUtils.setToken(context, token);
                 startActivity(intent);
             }
         });

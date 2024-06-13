@@ -1,5 +1,8 @@
 package com.example.ex3.api;
 
+import static com.example.ex3.MyApplication.context;
+
+import com.example.ex3.R;
 import com.example.ex3.entities.Store;
 import com.example.ex3.entities.Category;
 import java.util.List;
@@ -9,14 +12,17 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import com.example.ex3.utils.UserPreferencesUtils;
+
 
 public class CategoryAPI {
     private static CategoryAPI instance;
     private final WebServiceAPI webServiceAPI;
 
     private CategoryAPI() {
+        String baseUrl = context.getString(R.string.BASE_URL);
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://192.168.153.1:5000/api/")
+                .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         webServiceAPI = retrofit.create(WebServiceAPI.class);
@@ -30,7 +36,9 @@ public class CategoryAPI {
     }
 
     public CompletableFuture<Category> getStoresByType(String token,String storeType) {
-        Call<Category> call = this.webServiceAPI.getStoresByType(token,storeType,"Azrieli TLV");
+        String mallName = UserPreferencesUtils.getMallName(context);
+
+        Call<Category> call = this.webServiceAPI.getStoresByType(token,storeType,mallName);
         CompletableFuture<Category> future = new CompletableFuture<>();
 
         call.enqueue(new Callback<Category>() {
@@ -46,14 +54,13 @@ public class CategoryAPI {
                         String workingHours = responseStore.getWorkingHours();
                         String floorNumber = responseStore.getFloor();
                         String logoUrl = responseStore.getLogoUrl();
-                        //String isFav = ...
-                        Store storeItem = new Store(storeName, workingHours, floorNumber, logoUrl, storeType,false);
+                        String type = responseStore.getStoreType();
+                        Store storeItem = new Store(storeName, workingHours, floorNumber, logoUrl, type,false);
                         category.addStore(storeItem);
                     }
                     future.complete(category);
                 } else {
                     future.completeExceptionally(new Error("Invalid token"));
-                    System.out.println("invalid token");
                 }
             }
             @Override

@@ -2,6 +2,11 @@ package com.example.ex3.api;
 
 
 
+import static com.example.ex3.MyApplication.context;
+
+import com.example.ex3.R;
+import com.example.ex3.utils.UserPreferencesUtils;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import retrofit2.Call;
@@ -15,8 +20,9 @@ public class TagAPI {
     private final WebServiceAPI webServiceAPI;
 
     private TagAPI() {
+        String baseUrl = context.getString(R.string.BASE_URL);
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://192.168.153.1:5000/api/")
+                .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         webServiceAPI = retrofit.create(WebServiceAPI.class);
@@ -24,15 +30,17 @@ public class TagAPI {
 
     public static TagAPI getInstance() {
         if (instance == null) {
-            instance = new TagAPI(); // Initialize instance if null
+            instance = new TagAPI();
         }
         return instance;
     }
 
     public CompletableFuture<List<String>> getTypes(String token) {
-        Call<List<String>> call = this.webServiceAPI.getTypes(token, "Azrieli TLV");
+        String mallName = UserPreferencesUtils.getMallName(context);
+
+        Call<List<String>> call = this.webServiceAPI.getTypes(token, mallName);
         CompletableFuture<List<String>> future = new CompletableFuture<>();
-        System.out.println("1");
+
 
         call.enqueue(new Callback<List<String>>() {
             @Override
@@ -42,7 +50,6 @@ public class TagAPI {
                     System.out.println(tagsList);
                     future.complete(tagsList);
                 } else {
-                    System.out.println("2");
                     future.completeExceptionally(new Error("Failed to fetch stores by name"));
 
                 }

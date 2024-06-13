@@ -1,15 +1,12 @@
 package com.example.ex3.api;
 
 import static com.example.ex3.MyApplication.context;
-
 import com.example.ex3.R;
+import com.example.ex3.utils.UserPreferencesUtils;
 import com.example.ex3.entities.Store;
-import com.example.ex3.objects.User;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -37,10 +34,10 @@ public class FavoritesAPI {
         return instance;
     }
 
-    public CompletableFuture<List<Store>> getFavorites(String token, String storeType) {
-        Call<List<Store>> call = this.webServiceAPI.getFavorites(token,"Azrieli TLV");
+    public CompletableFuture<List<Store>> getFavorites(String token) {
+        String mallName = UserPreferencesUtils.getMallName(context);
+        Call<List<Store>> call = this.webServiceAPI.getFavorites(token,mallName);
         CompletableFuture<List<Store>> future = new CompletableFuture<>();
-
         call.enqueue(new Callback<List<Store>>() {
             @Override
             public void onResponse(Call<List<Store>> call, Response<List<Store>> response) {

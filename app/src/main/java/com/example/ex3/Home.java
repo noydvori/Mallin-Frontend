@@ -1,16 +1,13 @@
 package com.example.ex3;
 
-import androidx.annotation.NonNull;
+import static com.example.ex3.MyApplication.context;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
-import androidx.room.RoomDatabase;
-import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -18,21 +15,20 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.ex3.adapters.CategoryAdapter;
 import com.example.ex3.adapters.ChosenStoresAdapter;
 import com.example.ex3.adapters.TagsAdapter;
 import com.example.ex3.daos.CategoryDao;
-import com.example.ex3.daos.StoreDao;
 import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
 import com.example.ex3.fetchers.StoreFetcher;
 import com.example.ex3.fetchers.TagFetcher;
 import com.example.ex3.localDB.AppDB;
-import com.example.ex3.entities.User;
+import com.example.ex3.utils.UserPreferencesUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -44,7 +40,6 @@ import java.util.concurrent.Executors;
 
 public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRemoveClickListener {
     private RecyclerView categoriesList;
-    private User me;
     private String bearerToken;
     private TextView badgeTextView;
     private List<Store> chosenStores;
@@ -56,105 +51,58 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
     private ChosenStoresAdapter chosenStoresAdapter;
     private AppDB database;
     private CategoryDao categoryDao;
-    private List<Category> categoryList;
     private CategoryAdapter categoryAdapter;
     private RecyclerView tagsRecyclerView;
     private BottomNavigationView bottomNavigationView;
     private TagsAdapter tagsAdapter;
-    private List<Category> categoriesFromDB = new ArrayList<>();
     private List<Store> favoriteStores = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "DB").fallbackToDestructiveMigration().build();
-        categoryDao = database.categoryDao();
+        initializeDatabase();
+        initializeUI();
+        initializeListeners();
+        fetchInitialData();
+    }
 
-        bearerToken = getIntent().getStringExtra("token");
-        chosenStores = getIntent().getParcelableArrayListExtra("chosenStores");
-        if (chosenStores == null) {
-            chosenStores = new ArrayList<>();
-        }
-        favoriteStores = getIntent().getParcelableArrayListExtra("favoriteStores");
-        if (favoriteStores == null) {
-            favoriteStores = new ArrayList<>();
-        }
+    private void initializeDatabase() {
+        database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "DB")
+                .fallbackToDestructiveMigration()
+                .build();
+        categoryDao = database.categoryDao();
+    }
+
+    private void initializeUI() {
+        bearerToken = UserPreferencesUtils.getToken(context);
+        chosenStores = UserPreferencesUtils.getChosenStores(context);
+        favoriteStores = UserPreferencesUtils.getFavoriteStores(context);
         setContentView(R.layout.activity_stores_list);
+
         drawerLayout = findViewById(R.id.drawer_layout);
         chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
         chosenStoresRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         chosenStoresAdapter = new ChosenStoresAdapter(chosenStores, this);
         chosenStoresRecyclerView.setAdapter(chosenStoresAdapter);
 
-        findViewById(R.id.locationIcon).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (drawerLayout.isDrawerOpen(Gravity.END)) {
-                    drawerLayout.closeDrawer(Gravity.END);
-                } else {
-                    chosenStoresAdapter.notifyDataSetChanged();
-                    drawerLayout.openDrawer(Gravity.END);
-                }
-            }
-        });
-        findViewById(R.id.favorites_icon).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent favIntent = new Intent(Home.this, Favorites.class);
-                favIntent.putExtra("token", bearerToken);
-                favIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-                favIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
-
-                startActivity(favIntent);
-            }
-        });
-
-
         tagsRecyclerView = findViewById(R.id.tags);
         tagsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         tagsAdapter = new TagsAdapter(tags);
         tagsRecyclerView.setAdapter(tagsAdapter);
         tagsAdapter.selectTag("all");
-        fetchCategoryForTag("all");
 
         FloatingActionButton navigateButton = findViewById(R.id.navigate);
-        navigateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Check if the chosen list is empty
-                if (!chosenStores.isEmpty()) {
-                    Intent navigateIntent = new Intent(Home.this, CurrentLocation.class);
-                    navigateIntent.putExtra("token", bearerToken);
-                    navigateIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-                    navigateIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
-                    startActivity(navigateIntent);
-                } else {
-                    // Show a message or handle the case where chosen list is empty
-                    Snackbar.make(findViewById(android.R.id.content), "Chosen list is empty. Add stores to continue navigate", Snackbar.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        fetchTypes(bearerToken);
+        navigateButton.setOnClickListener(v -> handleNavigateButtonClick());
 
         badgeTextView = findViewById(R.id.locationBadge);
         updateBadge();
-
-        tagsAdapter.setOnTagClickListener(new TagsAdapter.OnTagClickListener() {
-            @Override
-            public void onTagClick(String tag) {
-                fetchCategoryForTag(tag);
-            }
-        });
-
-        fetchDataFromServer();
 
         SearchView searchView = findViewById(R.id.search_view);
         searchView.setBackgroundResource(R.drawable.bg_white_rounded);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onQueryTextSubmit(String str) {
-                currentSearchQuery = str.isEmpty() ? "" : str;
+            public boolean onQueryTextSubmit(String query) {
+                currentSearchQuery = query.isEmpty() ? "" : query;
                 fetchDataFromServer();
                 return true;
             }
@@ -170,87 +118,76 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         categoriesList = findViewById(R.id.categories);
         categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
         categoriesList.setLayoutManager(new LinearLayoutManager(this));
-        categoryAdapter = new CategoryAdapter(this, categories, chosenStores, favoriteStores,badgeTextView);
+        categoryAdapter = new CategoryAdapter(this, categories, chosenStores, favoriteStores, badgeTextView);
         categoriesList.setAdapter(categoryAdapter);
 
-        // Initialize the BottomNavigationView
         bottomNavigationView = findViewById(R.id.bottom_nav_menu);
         bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
+        fetchCategoryForTag("all");
+    }
 
-        // Set up the item selected listener
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                Intent intent;
-                switch (item.getItemId()) {
-                    case R.id.menu_home:
-                        // Already on the Home screen, do nothing
-                        return true;
-                    case R.id.menu_navigate:
-                        intent = new Intent(Home.this, NavigateActivity.class);
-                        intent.putExtra("token", bearerToken);
-                        intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-                        intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+    private void initializeListeners() {
+        findViewById(R.id.locationIcon).setOnClickListener(v -> toggleDrawer());
+        findViewById(R.id.favorites_icon).setOnClickListener(v -> navigateToFavorites());
 
-                        startActivity(intent);
-                        return true;
-                    case R.id.menu_favorites:
-                        Intent favIntent = new Intent(Home.this, Favorites.class);
-                        favIntent.putExtra("token", bearerToken);
-                        favIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-                        favIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
-
-                        startActivity(favIntent);
-                }
-                return false;
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            Intent intent;
+            switch (item.getItemId()) {
+                case R.id.menu_home:
+                    return true;
+                case R.id.menu_navigate:
+                    intent = new Intent(Home.this, NavigateActivity.class);
+                    break;
+                case R.id.menu_favorites:
+                    intent = new Intent(Home.this, Favorites.class);
+                    break;
+                default:
+                    return false;
             }
+            startActivity(intent);
+            return true;
         });
+
+        tagsAdapter.setOnTagClickListener(tag -> fetchCategoryForTag(tag));
+    }
+
+    private void fetchInitialData() {
+        fetchTypes(bearerToken);
+        fetchDataFromServer();
     }
 
     private void fetchDataFromServer() {
+        showLoadingIndicator(true);
         categories.clear();
         if (currentSearchQuery.isEmpty()) {
-            tagsRecyclerView.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (tags.contains("all")) {
-                        tagsAdapter.selectTag("all");
-                        fetchCategoryForTag("all");
-                    }
-                }
+            tagsRecyclerView.post(() -> {
+                getCategoryInBackground("all");
             });
         } else {
             fetchStoresByName(bearerToken, currentSearchQuery);
         }
     }
-
-    private void fetchStoresByName(String token, String str) {
+    private void showLoadingIndicator(boolean show) {
+        ProgressBar progressBar = findViewById(R.id.progressBar);
+        if (progressBar != null) {
+            progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
+    }
+    private void fetchStoresByName(String token, String query) {
         StoreFetcher storeFetcher = new StoreFetcher();
-        storeFetcher.fetchStoresByName(token, str, new StoreFetcher.FetchSearchStoresCallback() {
+        storeFetcher.fetchStoresByName(token, query, new StoreFetcher.FetchSearchStoresCallback() {
             @Override
-            public void onSuccess(List<Category> c) {
+            public void onSuccess(List<Category> fetchedCategories) {
                 categories.clear();
-                categories.addAll(c);
-                updateUI();
+                categories.addAll(fetchedCategories);
+                categoryAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onError(Throwable throwable) {
-                Snackbar.make(findViewById(android.R.id.content), "Error fetching stores by name", Snackbar.LENGTH_SHORT).show();
+                showSnackbar("Error fetching stores by name");
             }
         });
-    }
-
-    private void updateBadge() {
-        if (badgeTextView != null) {
-            int numberOfChosenStores = chosenStores.size();
-            if (numberOfChosenStores > 0) {
-                badgeTextView.setVisibility(View.VISIBLE);
-                badgeTextView.setText(String.valueOf(numberOfChosenStores));
-            } else {
-                badgeTextView.setVisibility(View.GONE);
-            }
-        }
     }
 
     private void fetchCategoryForTag(String tag) {
@@ -264,50 +201,44 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
             @Override
             public void onSuccess(Category category) {
                 addCategoryInBackground(category);
-                categories.add(category);
-                updateUI();
             }
 
             @Override
             public void onError(Throwable throwable) {
-                Snackbar.make(findViewById(android.R.id.content), "Error fetching category for tag", Snackbar.LENGTH_SHORT).show();
+                showSnackbar("Error fetching category for tag");
             }
         });
     }
 
-    public void addCategoryInBackground(Category category) {
+    private void getCategoryInBackground(String tag) {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                categoryDao.insert(category);
-                Log.d("DAO", "Inserted category: " + category.getCategoryName()+ category.getStoresList());
-            }
+        executorService.execute(() -> {
+            Category category = categoryDao.getCategory(tag);
+            handler.post(() -> {
+                if (category != null && !category.getStoresList().isEmpty()) {
+                    categories.add(category);
+                    categoryAdapter.notifyDataSetChanged();
+                    fetchCategoryFromServer(tag); // הבאת נתונים מהשרת ועדכון UI לאחר מכן
+                } else {
+                    fetchCategoryFromServer(tag);
+                }
+            });
         });
     }
 
-    public void getCategoryInBackground(String tag) {
+    private void addCategoryInBackground(Category category) {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                Category category = database.categoryDao().getCategory(tag);
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (category != null && category.getStoresList().equals("[]")) {
-                            Log.d("DAO", "Fetched category from DB: " + category.getCategoryName() + category.getStoresList());
-                            categories.add(category);
-                            updateUI();
-                        } else {
-                            Log.d("DAO", "No category found for tag: " + tag);
-                            fetchCategoryFromServer(tag);
-                        }
-                    }
-                });
-            }
+        executorService.execute(() -> {
+            categoryDao.deleteAll(); // מחיקת כל הקטגוריות הישנות
+            categoryDao.insert(category); // הוספת הקטגוריה החדשה
+            Log.d("DAO", "Inserted category: " + category.getCategoryName() + category.getStoresList());
+            runOnUiThread(() -> {
+                categories.clear();
+                categories.add(category);
+                categoryAdapter.notifyDataSetChanged();
+                showLoadingIndicator(false); // הסתרת תצוגת הטעינה
+            });
         });
     }
 
@@ -315,22 +246,57 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         TagFetcher tagFetcher = new TagFetcher();
         tagFetcher.fetchTags(token, new TagFetcher.FetchTagsCallback() {
             @Override
-            public void onSuccess(List<String> c) {
-                tags.addAll(c);
+            public void onSuccess(List<String> fetchedTags) {
+                tags.addAll(fetchedTags);
                 tagsAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onError(Throwable throwable) {
-                Snackbar.make(findViewById(android.R.id.content), "Error fetching types", Snackbar.LENGTH_SHORT).show();
+                showSnackbar("Error fetching types");
             }
         });
     }
 
-    private void updateUI() {
-        categoryAdapter.notifyDataSetChanged();
+
+    private void updateBadge() {
+        if (badgeTextView != null) {
+            int numberOfChosenStores = chosenStores.size();
+            if (numberOfChosenStores > 0) {
+                badgeTextView.setVisibility(View.VISIBLE);
+                badgeTextView.setText(String.valueOf(numberOfChosenStores));
+            } else {
+                badgeTextView.setVisibility(View.GONE);
+            }
+        }
     }
 
+    private void showSnackbar(String message) {
+        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
+    }
+
+    private void toggleDrawer() {
+        if (drawerLayout.isDrawerOpen(Gravity.END)) {
+            drawerLayout.closeDrawer(Gravity.END);
+        } else {
+            chosenStoresAdapter.notifyDataSetChanged();
+            drawerLayout.openDrawer(Gravity.END);
+        }
+    }
+
+    private void navigateToFavorites() {
+        Intent favIntent = new Intent(Home.this, Favorites.class);
+        startActivity(favIntent);
+    }
+
+    private void handleNavigateButtonClick() {
+        if (!chosenStores.isEmpty()) {
+            Intent navigateIntent = new Intent(Home.this, CurrentLocation.class);
+           startActivity(navigateIntent);
+        } else {
+            showSnackbar("Chosen list is empty. Add stores to continue navigate");
+        }
+    }
 
     @Override
     public void onRemoveClick(int position) {

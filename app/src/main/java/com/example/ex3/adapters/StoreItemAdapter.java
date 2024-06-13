@@ -1,8 +1,7 @@
 package com.example.ex3.adapters;
 
-import static com.example.ex3.MyApplication.context;
-
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +10,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.ex3.R;
@@ -30,13 +30,14 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         void onStoreAddedToFavorites(Store store);
     }
 
-    public StoreItemAdapter(Context context, List<Store> storeItemList, List<Store> chosenStores,List<Store> favStores, OnStoreInteractionListener listener) {
+    public StoreItemAdapter(Context context, List<Store> storeItemList, List<Store> chosenStores, List<Store> favStores, OnStoreInteractionListener listener) {
         this.context = context;
         this.storeItemList = storeItemList;
         this.chosenStores = chosenStores;
         this.storeInteractionListener = listener;
         this.favStores = favStores;
     }
+
     public void setFavoriteStores(List<Store> favoriteStores) {
         this.favStores = favoriteStores;
         notifyDataSetChanged();
@@ -54,11 +55,12 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         Store storeItem = storeItemList.get(position);
         holder.storeNameTextView.setText(storeItem.getStoreName());
         holder.categoryFloorTextView.setText(storeItem.getStoreType() + " • Floor number " + storeItem.getFloor());
+
         // Highlight chosen stores
         if (chosenStores.contains(storeItem)) {
-            holder.itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.added_to_list_color));
+            holder.cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.added_to_list_color));
         } else {
-            holder.itemView.setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
+            holder.cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.white));  // or any other default color
         }
 
         holder.itemView.setOnClickListener(v -> {
@@ -90,11 +92,9 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         // Add to List Button Click Listener
         holder.btnAddToList.setOnClickListener(v -> {
             if (!chosenStores.contains(storeItem)) {
-                holder.itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.added_to_list_color));
-
+                holder.cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.added_to_list_color));
             } else {
-                holder.itemView.setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
-
+                holder.cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.white));  // or any other default color
             }
             notifyItemChanged(holder.getAdapterPosition());
             storeInteractionListener.onStoreAddedToList(storeItem);
@@ -116,10 +116,12 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
             return 0; // Or return any other appropriate value
         }
     }
+
     public void filterList(List<Store> filteredList) {
         storeItemList = filteredList;
         notifyDataSetChanged();
     }
+
     private void updateButtonIcons(StoreItemViewHolder holder, Store storeItem) {
         if (chosenStores.contains(storeItem)) {
             holder.btnAddToList.setImageResource(R.drawable.baseline_remove);
@@ -146,6 +148,7 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         TextView openStatusTextView;
         ImageButton btnAddToList;
         ImageButton btnAddToFavorites;
+        CardView cardView;
 
         StoreItemViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -155,8 +158,7 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
             openStatusTextView = itemView.findViewById(R.id.open_status);
             btnAddToList = itemView.findViewById(R.id.btn_add_to_list);
             btnAddToFavorites = itemView.findViewById(R.id.btn_add_to_favorites);
+            cardView = itemView.findViewById(R.id.card_view);
         }
-
     }
-
 }

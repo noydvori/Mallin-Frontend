@@ -4,6 +4,8 @@ import static android.content.Context.MODE_PRIVATE;
 import static android.content.Intent.getIntent;
 import static androidx.core.content.ContextCompat.startActivity;
 
+import static com.example.ex3.MyApplication.context;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -26,6 +28,7 @@ import com.example.ex3.adapters.ChosenStoresAdapter;
 import com.example.ex3.adapters.StoreItemAdapter;
 import com.example.ex3.entities.FavoriteStore;
 import com.example.ex3.entities.Store;
+import com.example.ex3.utils.UserPreferencesUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
@@ -35,7 +38,6 @@ public class Favorites extends AppCompatActivity implements ChosenStoresAdapter.
     private StoreItemAdapter StoreItemAdapter;
 
     BottomNavigationView bottomNavigationView;
-    private Switch themeSwitch;
     private List<Store> chosenStores;
     private List<Store> favoriteStores;
     private RecyclerView favoritesList;
@@ -43,26 +45,16 @@ public class Favorites extends AppCompatActivity implements ChosenStoresAdapter.
     private DrawerLayout drawerLayout;
     private RecyclerView chosenStoresRecyclerView;
     private ChosenStoresAdapter chosenStoresAdapter;
-
-
-
-
-
-    private String token;
+    private String bearerToken;
     private SharedPreferences sharedPreferencesSettings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
-        token = getIntent().getStringExtra("token");
-        favoriteStores = getIntent().getParcelableArrayListExtra("favoriteStores");
-        chosenStores = getIntent().getParcelableArrayListExtra("chosenStores");
-        setContentView(R.layout.activity_favorites); // Inflate the layout first
-
-        // Initialize badgeTextView
-
+        bearerToken = UserPreferencesUtils.getToken(context);
+        chosenStores = UserPreferencesUtils.getChosenStores(context);
+        favoriteStores = UserPreferencesUtils.getFavoriteStores(context);
+        setContentView(R.layout.activity_favorites);
         bottomNavigationView = findViewById(R.id.bottom_nav_menu);
         badgeTextView = findViewById(R.id.locationBadge);
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -113,21 +105,13 @@ public class Favorites extends AppCompatActivity implements ChosenStoresAdapter.
                     case R.id.menu_home:
                         // Navigate to Home activity
                         Intent homeIntent = new Intent(Favorites.this, Home.class);
-                        homeIntent.putExtra("token", token);
-                        homeIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-                        homeIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
                         startActivity(homeIntent);
-                        finish(); // Close current activity
                         return true;
                     case R.id.menu_navigate:
                         // Navigate to NavigateActivity
                         // Navigate to Home activity
                         Intent navIntent = new Intent(Favorites.this, NavigateActivity.class);
-                        navIntent.putExtra("token", token);
-                        navIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-                        navIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
                         startActivity(navIntent);
-                        finish(); // Close current activity
                         return true;
                     case R.id.menu_favorites:
                         return true;
@@ -178,10 +162,6 @@ public class Favorites extends AppCompatActivity implements ChosenStoresAdapter.
         Button buttonBack = findViewById(R.id.button_back);
         buttonBack.setOnClickListener(v -> {
             Intent intent = new Intent(Favorites.this, Home.class);
-            intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-            intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
-
-            intent.putExtra("token", token);
             startActivity(intent);
         });
         bottomNavigationView.getMenu().findItem(R.id.menu_favorites).setChecked(true);

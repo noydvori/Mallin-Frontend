@@ -1,5 +1,8 @@
 package com.example.ex3.api;
 
+import static com.example.ex3.MyApplication.context;
+
+import com.example.ex3.R;
 import com.example.ex3.objects.NameAndPassword;
 import java.util.concurrent.CompletableFuture;
 import retrofit2.Call;
@@ -14,8 +17,9 @@ public class TokenAPI {
     private WebServiceAPI webServiceAPI;
 
     private TokenAPI() {
+        String baseUrl = context.getString(R.string.BASE_URL);
         retrofit = new Retrofit.Builder()
-                .baseUrl("http://192.168.153.1:5000/api/")
+                .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         webServiceAPI = retrofit.create(WebServiceAPI.class);
@@ -36,7 +40,7 @@ public class TokenAPI {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 if (response.isSuccessful()) {
-                    future.complete(response.body()); // extract the token from the server's response
+                    future.complete(response.body());
                 } else {
                     future.completeExceptionally(new Error("Incorrect username or password"));
                 }
