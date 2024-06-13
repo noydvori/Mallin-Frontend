@@ -3,12 +3,10 @@ package com.example.ex3.objects;
 public class UserInfo {
     private String username;
     private String displayName;
-    private String profilePic;
 
-    public UserInfo(String username, String displayName, String profilePicture) {
+    public UserInfo(String username, String displayName) {
         this.username = username;
         this.displayName = displayName;
-        this.profilePic = profilePicture;
     }
 
     public String getUsername() {
@@ -27,11 +25,4 @@ public class UserInfo {
         this.displayName = displayName;
     }
 
-    public String getProfilePic() {
-        return profilePic;
-    }
-
-    public void setProfilePic(String profilePic) {
-        this.profilePic = profilePic;
-    }
 }

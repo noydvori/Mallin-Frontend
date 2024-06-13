@@ -66,17 +66,6 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        RoomDatabase.Callback myCallBack = new RoomDatabase.Callback() {
-            @Override
-            public void onCreate(@NonNull SupportSQLiteDatabase db) {
-                super.onCreate(db);
-            }
-
-            @Override
-            public void onOpen(@NonNull SupportSQLiteDatabase db) {
-                super.onOpen(db);
-            }
-        };
         super.onCreate(savedInstanceState);
         database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "DB").fallbackToDestructiveMigration().build();
         categoryDao = database.categoryDao();

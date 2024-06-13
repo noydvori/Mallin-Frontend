@@ -42,5 +42,10 @@ public interface WebServiceAPI {
             @Header("Authorization") String token,
             @Path("mallname") String mallname
     );
-
+    @GET("AzrieliStore/favorites")
+    Call<List<Store>> getFavorites(@Header("Authorization") String token, String azrieliTlv);
+    @POST("Users")
+    Call<Void> addToFavorites(@Header("Authorization") String token, @Body Store store);
+    @POST("Users")
+    Call<Void> removeFromFavorites(@Header("Authorization") String token, @Body Store store);
 }

@@ -65,7 +65,7 @@ public class UserAPI {
             @Override
             public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
                 if (response.isSuccessful()) {
-                    UserInfo userInfo = new UserInfo(response.body().getUsername(), response.body().getDisplayName(), response.body().getProfilePic());
+                    UserInfo userInfo = new UserInfo(response.body().getUsername(), response.body().getDisplayName());
                     future.complete(userInfo);
                 } else if (response.code() == 404) {
                     future.completeExceptionally(new Error("User was not found"));

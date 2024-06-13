@@ -102,7 +102,9 @@
                     android:background="@drawable/bg_dark_rounded"
                     android:orientation="vertical"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:listitem="@layout/category_layout" />
+                    tools:listitem="@layout/category_layout"
+
+                    android:nestedScrollingEnabled="false"/>
                 <ProgressBar
                     android:id="@+id/idPBLoading"
                     android:layout_width="match_parent"

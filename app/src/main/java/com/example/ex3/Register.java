@@ -1,25 +1,15 @@
 package com.example.ex3;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.text.InputType;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 import com.example.ex3.api.UserAPI;
 import com.google.android.material.snackbar.Snackbar;
-
-import java.io.ByteArrayOutputStream;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,26 +21,23 @@ public class Register extends AppCompatActivity {
     private Button registerButton;
     private UserAPI userAPI;
 
-    private static final int PICK_IMAGE_REQUEST_CODE = 1;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-
         usernameEditText = findViewById(R.id.usernameEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         displayNameEditText = findViewById(R.id.displayNameEditText);
         registerButton = findViewById(R.id.registerButton);
         Button loginBtn = findViewById(R.id.toLogin);
+        // Move to login screen button
         loginBtn.setOnClickListener(view -> {
             Intent i = new Intent(this, Login.class);
             startActivity(i);
         });
-
         // Password masking
         passwordEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-
+        // Submit registration
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -63,10 +50,8 @@ public class Register extends AppCompatActivity {
         String username = usernameEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
         String displayName = displayNameEditText.getText().toString().trim();
-
         if (TextUtils.isEmpty(username)) {
             Snackbar.make(findViewById(android.R.id.content), "Please enter a username", Snackbar.LENGTH_SHORT).show();
-
             return;
         }
         if (TextUtils.isEmpty(password)) {
@@ -80,40 +65,10 @@ public class Register extends AppCompatActivity {
         }
         if (!isValidPassword(password)) {
             Snackbar.make(findViewById(android.R.id.content), "Password should have at least one numerical digit(0-9). Password's length should be in between 8 to 15 characters. Password should have at least one lowercase letter(a-z). Password should have at least one uppercase letter(A-Z)", Snackbar.LENGTH_SHORT).show();
-
-
             return;
         }
         // All fields are valid
         handleRegister();
-
-    }
-
-    private String getImagePathFromUri(Uri uri) {
-        String imagePath = null;
-        if (uri != null) {
-            // Retrieve the image path using the ContentResolver
-            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-            if (cursor != null) {
-                cursor.moveToFirst();
-                int columnIndex = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
-                imagePath = cursor.getString(columnIndex);
-                cursor.close();
-            }
-        }
-        return imagePath;
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == PICK_IMAGE_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
-            // The user has selected an image
-            Uri imageUri = data.getData();
-            // Get the selected image path
-            String imagePath = getImagePathFromUri(imageUri);
-        }
     }
 
     private void handleRegister() {
@@ -121,49 +76,29 @@ public class Register extends AppCompatActivity {
         String username = usernameEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
         String nickname = displayNameEditText.getText().toString().trim();
-
-
-            userAPI = UserAPI.getInstance();
-            CompletableFuture<String> future = userAPI.registerUser(username, password, nickname);
-            System.out.println("1");
-            future.thenAccept(status -> {
+        userAPI = UserAPI.getInstance();
+        CompletableFuture<String> future = userAPI.registerUser(username, password, nickname);
+        future.thenAccept(status -> {
                 if (status.equals("ok")) {
                     navigateToLogin();
                 } else {
-                    showToast(status);
+                    Snackbar.make(findViewById(android.R.id.content), status, Snackbar.LENGTH_SHORT).show();
                 }
             }).exceptionally(ex -> {
                 Snackbar.make(findViewById(android.R.id.content), "An error occurred", Snackbar.LENGTH_SHORT).show();
-
-
                 return null;
             });
 
     }
-
-
     private boolean isValidPassword(String password) {
         String passwordRegex = "^(?=.*[a-zA-Z])(?=.*[0-9]).{8,16}$";
         Pattern pattern = Pattern.compile(passwordRegex);
         Matcher matcher = pattern.matcher(password);
         return matcher.matches();
     }
-
     private void navigateToLogin() {
-        // Start the Register activity
         Intent intent = new Intent(Register.this, Login.class);
         startActivity(intent);
-        finish(); // Finish the current activity so that the user cannot navigate back to it
-    }
-
-    private void showToast(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
-    private String convertImageToBase64(String imagePath) {
-        Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-        byte[] byteArray = byteArrayOutputStream.toByteArray();
-        return Base64.encodeToString(byteArray, Base64.DEFAULT);
+        finish();
     }
 }
