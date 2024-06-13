@@ -18,7 +18,7 @@
             android:layout_height="42dp"
             android:layout_marginEnd="20dp"
             android:layout_marginTop="20dp"
-            android:src="@drawable/ict_list_bulleted"
+            android:src="@drawable/baseline_near_me_24"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -43,7 +43,7 @@
             android:layout_height="40dp"
             android:layout_marginEnd="70dp"
             android:layout_marginTop="20dp"
-            android:src="@drawable/ic_favorites"
+            android:src="@drawable/ic_favorite_border"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -109,15 +109,13 @@
                     android:orientation="vertical"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/category_layout"
-
                     android:nestedScrollingEnabled="false"/>
 
             </LinearLayout>
         </FrameLayout>
-
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/navigate"
-            android:layout_width="wrap_content"
+            android:layout_width="90dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="30dp"
             android:layout_marginBottom="95dp"
@@ -129,6 +127,7 @@
             android:scaleType="fitCenter"
             android:src="@drawable/ic_next"
             android:backgroundTint="@color/colorPrimary"
+            app:tint="@android:color/white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

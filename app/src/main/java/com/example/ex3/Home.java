@@ -181,11 +181,12 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
                 categories.clear();
                 categories.addAll(fetchedCategories);
                 categoryAdapter.notifyDataSetChanged();
+                showLoadingIndicator(false);
             }
 
             @Override
             public void onError(Throwable throwable) {
-                showSnackbar("Error fetching stores by name");
+                showLoadingIndicator(false);
             }
         });
     }
@@ -218,6 +219,7 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
             handler.post(() -> {
                 if (category != null && !category.getStoresList().isEmpty()) {
                     categories.add(category);
+                    showLoadingIndicator(false);
                     categoryAdapter.notifyDataSetChanged();
                     fetchCategoryFromServer(tag); // הבאת נתונים מהשרת ועדכון UI לאחר מכן
                 } else {

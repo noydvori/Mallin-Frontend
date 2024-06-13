@@ -1,5 +1,7 @@
 package com.example.ex3.adapters;
 
+import static com.example.ex3.MyApplication.context;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
@@ -15,6 +17,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.ex3.R;
 import com.example.ex3.entities.Store;
+import com.example.ex3.utils.UserPreferencesUtils;
 import com.squareup.picasso.Picasso;
 import java.util.List;
 
@@ -104,6 +107,7 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         holder.btnAddToFavorites.setOnClickListener(v -> {
             notifyItemChanged(holder.getAdapterPosition());
             storeInteractionListener.onStoreAddedToFavorites(storeItem);
+            UserPreferencesUtils.setFavoriteStores(context, favStores);
         });
     }
 
