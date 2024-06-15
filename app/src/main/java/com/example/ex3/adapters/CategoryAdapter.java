@@ -22,8 +22,8 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
     private final Context context;
     private final List<Category> categoryList;
-    private final List<Store> chosenStores;
-    private final List<Store> favStores;
+    private List<Store> chosenStores;
+    private List<Store> favStores;
     private final TextView badgeTextView;
 
     public CategoryAdapter(Context context, List<Category> categoryList, List<Store> chosenStores,List<Store> favStores, TextView badgeTextView) {
@@ -44,6 +44,15 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                 badgeTextView.setVisibility(View.GONE);
             }
         }
+    }
+    public void updateChosenStores(List<Store> newChosenStores) {
+        this.chosenStores = newChosenStores;
+        notifyDataSetChanged();
+    }
+
+    public void updateFavoriteStores(List<Store> newFavoriteStores) {
+        this.favStores = newFavoriteStores;
+        notifyDataSetChanged();
     }
 
     @NonNull

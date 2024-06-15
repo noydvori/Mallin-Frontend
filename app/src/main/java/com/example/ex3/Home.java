@@ -1,6 +1,8 @@
 package com.example.ex3;
 
 import static com.example.ex3.MyApplication.context;
+
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -47,6 +49,8 @@ import java.util.stream.Collectors;
 
 public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRemoveClickListener {
     private RecyclerView categoriesList;
+    private static final int REQUEST_CODE_FAVORITES = 1;
+
     private String bearerToken;
     private TextView badgeTextView;
     private List<Store> chosenStores;
@@ -84,8 +88,8 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
     private void initializeUI() {
         bearerToken = UserPreferencesUtils.getToken(context);
         chosenStores = UserPreferencesUtils.getChosenStores(context);
-fetchFavorites();
-setContentView(R.layout.activity_stores_list);
+        fetchFavorites();
+        setContentView(R.layout.activity_stores_list);
 
         drawerLayout = findViewById(R.id.drawer_layout);
         chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
@@ -145,18 +149,29 @@ setContentView(R.layout.activity_stores_list);
                     return true;
                 case R.id.menu_navigate:
                     intent = new Intent(Home.this, NavigateActivity.class);
-                    break;
+                    startActivity(intent);
+                    return true;
                 case R.id.menu_favorites:
                     intent = new Intent(Home.this, Favorites.class);
-                    break;
+                    startActivityForResult(intent, REQUEST_CODE_FAVORITES);
+                    return true;
                 default:
                     return false;
             }
-            startActivity(intent);
-            return true;
         });
 
         tagsAdapter.setOnTagClickListener(tag -> fetchCategoryForTag(tag));
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_FAVORITES && resultCode == RESULT_OK) {
+            chosenStores = UserPreferencesUtils.getChosenStores(context);
+            chosenStoresAdapter.updateChosenStores(chosenStores);
+            updateBadge();
+            categoryAdapter.updateChosenStores(chosenStores);
+        }
     }
 
     private void fetchInitialData() {
@@ -175,25 +190,25 @@ setContentView(R.layout.activity_stores_list);
             fetchStoresByName(bearerToken, currentSearchQuery);
         }
     }
+
     private void showLoadingIndicator(boolean show) {
         ProgressBar progressBar = findViewById(R.id.progressBar);
         if (progressBar != null) {
             progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
         }
     }
+
     private void fetchStoresByName(String token, String query) {
         CategoryAPI categoryAPI = CategoryAPI.getInstance();
 
         CompletableFuture<List<Store>> future = categoryAPI.getStoresByName(token, query);
 
         future.thenAccept(storeList -> {
-            // Create a set to store unique store types
             Set<String> uniqueStoreTypes = new HashSet<>();
             for (Store store : storeList) {
                 uniqueStoreTypes.add(store.getStoreType());
             }
 
-            // Create a list of categories
             List<Category> c = new ArrayList<>();
             for (String storeType : uniqueStoreTypes) {
                 List<Store> storesOfType = storeList.stream()
@@ -204,13 +219,12 @@ setContentView(R.layout.activity_stores_list);
             }
             categories.clear();
             categories.addAll(c);
-            categoryAdapter.notifyDataSetChanged();
+            runOnUiThread(() -> categoryAdapter.notifyDataSetChanged());
             showLoadingIndicator(false);
         }).exceptionally(ex -> {
             showLoadingIndicator(false);
             return null;
         });
-
     }
 
     private void fetchCategoryForTag(String tag) {
@@ -272,7 +286,6 @@ setContentView(R.layout.activity_stores_list);
         });
     }
 
-
     private void updateBadge() {
         if (badgeTextView != null) {
             int numberOfChosenStores = chosenStores.size();
@@ -289,6 +302,7 @@ setContentView(R.layout.activity_stores_list);
         Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void toggleDrawer() {
         if (drawerLayout.isDrawerOpen(Gravity.END)) {
             drawerLayout.closeDrawer(Gravity.END);
@@ -306,30 +320,33 @@ setContentView(R.layout.activity_stores_list);
     private void handleNavigateButtonClick() {
         if (!chosenStores.isEmpty()) {
             Intent navigateIntent = new Intent(Home.this, CurrentLocation.class);
-           startActivity(navigateIntent);
+            startActivity(navigateIntent);
         } else {
             showSnackbar("Chosen list is empty. Add stores to continue navigate");
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onRemoveClick(int position) {
         chosenStores.remove(position);
         chosenStoresAdapter.notifyItemRemoved(position);
         chosenStoresAdapter.notifyItemRangeChanged(position, chosenStores.size());
+        UserPreferencesUtils.setChosenStores(context, chosenStores);
         updateBadge();
         categoryAdapter.notifyDataSetChanged();
     }
 
-
-    @SuppressLint("NotifyDataSetChanged")
+    @Override
     protected void onResume() {
         super.onResume();
+        chosenStores = UserPreferencesUtils.getChosenStores(context);
+        chosenStoresAdapter.updateChosenStores(chosenStores);
         updateBadge();
-        categoryAdapter.notifyDataSetChanged();
+        categoryAdapter.updateChosenStores(chosenStores);
         bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
-
     }
+
     private void fetchFavorites() {
         String token = UserPreferencesUtils.getToken(context);
         FavoritesAPI.getInstance().getFavorites(token).thenAccept(favoriteStores -> {
@@ -338,40 +355,10 @@ setContentView(R.layout.activity_stores_list);
                 this.favoriteStores.clear();
                 this.favoriteStores.addAll(favoriteStores);
                 UserPreferencesUtils.setFavoriteStores(context, favoriteStores);
-                categoryAdapter.notifyDataSetChanged();
+                categoryAdapter.updateFavoriteStores(favoriteStores);
             });
         }).exceptionally(throwable -> {
             runOnUiThread(() -> Toast.makeText(Home.this, "Failed to fetch favorites", Toast.LENGTH_SHORT).show());
-            return null;
-        });
-    }
-
-    private void addToFavorites(Store store) {
-        String token = UserPreferencesUtils.getToken(context);
-        FavoritesAPI.getInstance().addToFavorites(token, store).thenAccept(response -> {
-            UserPreferencesUtils.addFavoriteStore(context, store);
-            runOnUiThread(() -> {
-                favoriteStores.add(store);
-                categoryAdapter.notifyDataSetChanged();
-                showSnackbar("Store added to favorites");
-            });
-        }).exceptionally(throwable -> {
-            runOnUiThread(() -> Toast.makeText(Home.this, "Failed to add to favorites", Toast.LENGTH_SHORT).show());
-            return null;
-        });
-    }
-
-    private void removeFromFavorites(Store store) {
-        String token = UserPreferencesUtils.getToken(context);
-        FavoritesAPI.getInstance().removeFromFavorites(token, store).thenAccept(response -> {
-            UserPreferencesUtils.removeFavoriteStore(context, store);
-            runOnUiThread(() -> {
-                favoriteStores.remove(store);
-                categoryAdapter.notifyDataSetChanged();
-                showSnackbar("Store removed from favorites");
-            });
-        }).exceptionally(throwable -> {
-            runOnUiThread(() -> Toast.makeText(Home.this, "Failed to remove from favorites", Toast.LENGTH_SHORT).show());
             return null;
         });
     }

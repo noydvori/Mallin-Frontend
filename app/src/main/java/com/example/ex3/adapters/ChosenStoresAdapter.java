@@ -19,7 +19,7 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 public class ChosenStoresAdapter extends RecyclerView.Adapter<ChosenStoresAdapter.ViewHolder> {
-    private final List<Store> stores;
+    private List<Store> stores;
 
     private final OnRemoveClickListener removeClickListener;
     public ChosenStoresAdapter(List<Store> stores, OnRemoveClickListener removeClickListener) {
@@ -41,6 +41,11 @@ public class ChosenStoresAdapter extends RecyclerView.Adapter<ChosenStoresAdapte
         }
         return baseUrl + logoUrl;
     }
+    public void updateChosenStores(List<Store> newChosenStores) {
+        this.stores = newChosenStores;
+        notifyDataSetChanged();
+    }
+
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
