@@ -30,6 +30,7 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder> {
         return new ViewHolder(view);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         String tag = tags.get(position);
@@ -57,14 +58,6 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder> {
         return tags.size();
     }
 
-    public String getSelectedTag() {
-        if (!tags.isEmpty()) {
-            return tags.get(selectedPosition);
-        } else {
-            return "all"; // Return a default value or handle this case according to your logic
-        }
-    }
-
     public interface OnTagClickListener {
         void onTagClick(String tag);
     }
@@ -73,6 +66,7 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder> {
         this.listener = listener;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void selectTag(String tag) {
         int position = tags.indexOf(tag);
         if (position >= 0) {
@@ -88,6 +82,6 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder> {
         ViewHolder(View itemView) {
             super(itemView);
             chip = itemView.findViewById(R.id.chip);
-}
-}
+        }
+    }
 }

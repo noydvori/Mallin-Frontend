@@ -25,11 +25,8 @@ public interface CategoryDao {
 
     @Query("SELECT * FROM category WHERE category_name = :tag LIMIT 1")
     public Category getCategory(String tag);
-    @Query("SELECT * FROM category")
-    public List<Category> getAllCategories();
 
     @Query("DELETE FROM category")
     void deleteAll();
 
-    // Add more queries as needed, such as getting category by name or ID
 }

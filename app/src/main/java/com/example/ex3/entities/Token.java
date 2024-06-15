@@ -9,15 +9,16 @@ public class Token {
     @PrimaryKey @NonNull
     private String token;
 
-    public Token(String token) {
+    public Token(@NonNull String token) {
         this.token = token;
     }
 
+    @NonNull
     public String getToken() {
         return token;
     }
 
-    public void setToken(String token) {
+    public void setToken(@NonNull String token) {
         this.token = token;
     }
 }

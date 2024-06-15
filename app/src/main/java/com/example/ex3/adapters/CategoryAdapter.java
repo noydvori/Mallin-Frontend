@@ -1,5 +1,8 @@
 package com.example.ex3.adapters;
 
+import static com.example.ex3.MyApplication.context;
+
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,8 +11,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.ex3.R;
+import com.example.ex3.api.FavoritesAPI;
 import com.example.ex3.entities.Store;
 import com.example.ex3.entities.Category;
+import com.example.ex3.utils.UserPreferencesUtils;
+
 import java.util.List;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
@@ -19,10 +25,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     private final List<Store> chosenStores;
     private final List<Store> favStores;
     private final TextView badgeTextView;
-
-    public interface OnAddStoreClickListener {
-        void onAddStoreClick(Store store);
-    }
 
     public CategoryAdapter(Context context, List<Category> categoryList, List<Store> chosenStores,List<Store> favStores, TextView badgeTextView) {
         this.context = context;
@@ -57,25 +59,36 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         holder.categoryNameTextView.setText(category.getCategoryName());
 
         StoreItemAdapter storeItemAdapter = new StoreItemAdapter(context, category.getStoresList(), chosenStores,favStores, new StoreItemAdapter.OnStoreInteractionListener() {
+            @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onStoreAddedToList(Store store) {
                 if (chosenStores.contains(store)) {
                     chosenStores.remove(store);
+                    UserPreferencesUtils.setChosenStores(context, chosenStores);
                 } else {
                     chosenStores.add(store);
+                    UserPreferencesUtils.setChosenStores(context, chosenStores);
+
                 }
                 updateBadge();
-                notifyDataSetChanged(); // Refresh the adapter to update the UI
+                notifyDataSetChanged();
             }
 
+            @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onStoreAddedToFavorites(Store store) {
+                String bearerToken = UserPreferencesUtils.getToken(context);
                 if (favStores.contains(store)) {
                     favStores.remove(store);
+                    FavoritesAPI.getInstance().removeFromFavorites(bearerToken,store);
+                    UserPreferencesUtils.removeFavoriteStore(context, store);
                 } else {
                     favStores.add(store);
+                    FavoritesAPI.getInstance().addToFavorites(bearerToken, store);
+                    UserPreferencesUtils.addFavoriteStore(context, store);
+
                 }
-                notifyDataSetChanged(); // Refresh the adapter to update the UI
+                notifyDataSetChanged();
             }
         });
         holder.storeItemRecyclerView.setAdapter(storeItemAdapter);

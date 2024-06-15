@@ -1,4 +1,6 @@
 package com.example.ex3;
+import static com.example.ex3.MyApplication.context;
+
 import android.Manifest;
 
 import android.content.Intent;
@@ -39,14 +41,18 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.ex3.api.CategoryAPI;
 import com.example.ex3.api.WebServiceAPI;
 import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
+import com.example.ex3.utils.UserPreferencesUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import retrofit2.Call;
@@ -66,6 +72,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -76,13 +83,9 @@ public class CurrentLocation extends AppCompatActivity {
 
     private Button buttonConfirm;
     private static final int REQUEST_CAMERA_PERMISSION = 100;
-
-    private List<Store> storesList = new ArrayList<>();
     private List<String> stringsStoresList = new ArrayList<>();
-    private String token;
-    private WebServiceAPI webServiceAPI;
+    private String bearerToken;
     private List<Store> chosenStores;
-    private List<Store> favoriteStores;
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private Button buttonCapture;
 
@@ -93,30 +96,16 @@ public class CurrentLocation extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current_location);
+        bearerToken = UserPreferencesUtils.getToken(context);
+        chosenStores = UserPreferencesUtils.getChosenStores(context);
+        CategoryAPI categoryAPI = CategoryAPI.getInstance();
 
-        chosenStores = getIntent().getParcelableArrayListExtra("chosenStores");
-        if (chosenStores == null) {
-            chosenStores = new ArrayList<>();
-        }
-        favoriteStores = getIntent().getParcelableArrayListExtra("favoriteStores");
+        CompletableFuture<Category> future = categoryAPI.getStoresByType(bearerToken, "all");
 
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://192.168.153.1:5000/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        webServiceAPI = retrofit.create(WebServiceAPI.class);
-
-        token = getIntent().getStringExtra("token");
-
-        // Fetch stores asynchronously
-        fetchStoresAsync(token, "all").thenAccept(category -> {
-            storesList.addAll(category.getStoresList());
-            for (Store store : storesList) {
+        future.thenAccept(category -> {
+            for (Store store : category.getStoresList()) {
                 stringsStoresList.add(store.getStorename());
             }
-
-            // Update the UI on the main thread
             runOnUiThread(() -> {
                 ArrayAdapter<String> adapter = new ArrayAdapter<>(
                         CurrentLocation.this,
@@ -153,6 +142,7 @@ public class CurrentLocation extends AppCompatActivity {
             return null;
         });
 
+
         buttonConfirm = findViewById(R.id.button_confirm);
         buttonConfirm.setOnClickListener(v -> {
             // Get the text from the AutoCompleteTextView
@@ -161,19 +151,11 @@ public class CurrentLocation extends AppCompatActivity {
 
             // Check if location is correct before proceeding
             if (isLocationCorrect(location)) {
-                if(chosenStores.size() == 1) {
+                if (chosenStores.size() == 1) {
                     Intent intent = new Intent(CurrentLocation.this, NavigateActivity.class);
-                    intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-                    intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
-
-                    intent.putExtra("token", token); // Assuming bearerToken is your token variable
                     startActivity(intent);
                 } else {
                     Intent intent = new Intent(CurrentLocation.this, ConfirmPath.class);
-                    intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-                    intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
-
-                    intent.putExtra("token", token); // Assuming bearerToken is your token variable
                     startActivity(intent);
                 }
             } else {
@@ -185,11 +167,6 @@ public class CurrentLocation extends AppCompatActivity {
         Button buttonBack = findViewById(R.id.button_back);
         buttonBack.setOnClickListener(v -> {
             Intent intent = new Intent(CurrentLocation.this, Home.class);
-            intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-            intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
-
-
-            intent.putExtra("token", token);
             startActivity(intent);
         });
 
@@ -207,9 +184,6 @@ public class CurrentLocation extends AppCompatActivity {
                     case R.id.menu_navigate:
                         // Navigate to NavigateActivity and pass the token
                         Intent navigateIntent = new Intent(CurrentLocation.this, NavigateActivity.class);
-                        navigateIntent.putExtra("token", token); // Assuming bearerToken is your token variable
-                        navigateIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
-                        navigateIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
 
 
                         startActivity(navigateIntent);
@@ -217,9 +191,6 @@ public class CurrentLocation extends AppCompatActivity {
                     case R.id.menu_favorites:
                         // Navigate to SettingsActivity and pass the token
                         Intent favoritesIntent = new Intent(CurrentLocation.this, Favorites.class);
-                        favoritesIntent.putExtra("token", token);
-                        favoritesIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
-                        favoritesIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
 
 
                         // Assuming bearerToken is your token variable
@@ -232,6 +203,7 @@ public class CurrentLocation extends AppCompatActivity {
         buttonCapture = findViewById(R.id.button_capture);
         buttonCapture.setOnClickListener(v -> checkCameraPermission());
     }
+
     private void checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -308,7 +280,7 @@ public class CurrentLocation extends AppCompatActivity {
 
     // Method to check if the location is correct
     private boolean isLocationCorrect(String v) {
-        if(stringsStoresList.contains(v)){
+        if (stringsStoresList.contains(v)) {
             return true;
         }
         return false;
@@ -317,34 +289,5 @@ public class CurrentLocation extends AppCompatActivity {
     // Method to update the state of the confirm button
     private void updateButtonState(String v) {
         buttonConfirm.setEnabled(isLocationCorrect(v));
-    }
-
-    public CompletableFuture<Category> fetchStoresAsync(String token, String storeType) {
-        Call<Category> call = this.webServiceAPI.getStoresByType(token, storeType, "Azrieli TLV");
-        CompletableFuture<Category> future = new CompletableFuture<>();
-
-        call.enqueue(new Callback<Category>() {
-
-            @Override
-            public void onResponse(Call<Category> call, retrofit2.Response<Category> response) {
-                if (response.isSuccessful()) {
-                    Category responseCategory = response.body();
-                    if (responseCategory != null) {
-                        future.complete(responseCategory);
-                    } else {
-                        future.completeExceptionally(new Error("Response body is null"));
-                    }
-                } else {
-                    future.completeExceptionally(new Error("Invalid token"));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Category> call, Throwable t) {
-                future.completeExceptionally(t);
-            }
-        });
-
-        return future;
     }
 }

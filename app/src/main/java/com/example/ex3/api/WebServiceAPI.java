@@ -11,6 +11,7 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -42,10 +43,13 @@ public interface WebServiceAPI {
             @Header("Authorization") String token,
             @Path("mallname") String mallname
     );
-    @GET("AzrieliStore/favorites")
-    Call<List<Store>> getFavorites(@Header("Authorization") String token, String azrieliTlv);
-    @POST("Users")
+    @GET("Users")
+    Call<List<Store>> getFavorites(@Header("Authorization") String token);
+
+    @PUT("Users/favorites/add")
     Call<Void> addToFavorites(@Header("Authorization") String token, @Body Store store);
-    @POST("Users")
+
+    @PUT("Users/favorites/remove")
     Call<Void> removeFromFavorites(@Header("Authorization") String token, @Body Store store);
+
 }

@@ -2,6 +2,8 @@ package com.example.ex3.api;
 
 import static com.example.ex3.MyApplication.context;
 
+import androidx.annotation.NonNull;
+
 import com.example.ex3.R;
 import com.example.ex3.objects.NameAndPassword;
 import java.util.concurrent.CompletableFuture;
@@ -38,7 +40,7 @@ public class TokenAPI {
         CompletableFuture<String> future = new CompletableFuture<>();
         call.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<String> call, Response<String> response) {
+            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                 if (response.isSuccessful()) {
                     future.complete(response.body());
                 } else {
@@ -47,7 +49,7 @@ public class TokenAPI {
             }
 
             @Override
-            public void onFailure(Call<String> call, Throwable t) {
+            public void onFailure(@NonNull Call<String> call, @NonNull Throwable t) {
                 t.printStackTrace();
             }
         });

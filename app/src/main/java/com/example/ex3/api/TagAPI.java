@@ -4,6 +4,8 @@ package com.example.ex3.api;
 
 import static com.example.ex3.MyApplication.context;
 
+import androidx.annotation.NonNull;
+
 import com.example.ex3.R;
 import com.example.ex3.utils.UserPreferencesUtils;
 
@@ -44,7 +46,7 @@ public class TagAPI {
 
         call.enqueue(new Callback<List<String>>() {
             @Override
-            public void onResponse(Call<List<String>> call, Response<List<String>> response) {
+            public void onResponse(@NonNull Call<List<String>> call, @NonNull Response<List<String>> response) {
                 if (response.isSuccessful()) {
                     List<String> tagsList = response.body();
                     System.out.println(tagsList);
@@ -56,7 +58,7 @@ public class TagAPI {
             }
 
             @Override
-            public void onFailure(Call<List<String>> call, Throwable t) {
+            public void onFailure(@NonNull Call<List<String>> call, @NonNull Throwable t) {
                 future.completeExceptionally(t);
             }
         });
