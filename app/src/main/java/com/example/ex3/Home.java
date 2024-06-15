@@ -7,26 +7,28 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.ex3.adapters.CategoryAdapter;
 import com.example.ex3.adapters.ChosenStoresAdapter;
 import com.example.ex3.adapters.TagsAdapter;
+import com.example.ex3.api.CategoryAPI;
+import com.example.ex3.api.FavoritesAPI;
+import com.example.ex3.api.TagAPI;
 import com.example.ex3.daos.CategoryDao;
 import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
-import com.example.ex3.fetchers.StoreFetcher;
-import com.example.ex3.fetchers.TagFetcher;
 import com.example.ex3.localDB.AppDB;
 import com.example.ex3.utils.UserPreferencesUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -34,9 +36,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRemoveClickListener {
     private RecyclerView categoriesList;
@@ -64,6 +71,7 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         initializeUI();
         initializeListeners();
         fetchInitialData();
+        fetchFavorites();
     }
 
     private void initializeDatabase() {
@@ -76,8 +84,8 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
     private void initializeUI() {
         bearerToken = UserPreferencesUtils.getToken(context);
         chosenStores = UserPreferencesUtils.getChosenStores(context);
-        favoriteStores = UserPreferencesUtils.getFavoriteStores(context);
-        setContentView(R.layout.activity_stores_list);
+fetchFavorites();
+setContentView(R.layout.activity_stores_list);
 
         drawerLayout = findViewById(R.id.drawer_layout);
         chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
@@ -159,7 +167,7 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
     private void fetchDataFromServer() {
         showLoadingIndicator(true);
         categories.clear();
-        if (currentSearchQuery.isEmpty()) {
+        if (Objects.equals(currentSearchQuery, "")) {
             tagsRecyclerView.post(() -> {
                 getCategoryInBackground("all");
             });
@@ -174,20 +182,35 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         }
     }
     private void fetchStoresByName(String token, String query) {
-        StoreFetcher storeFetcher = new StoreFetcher();
-        storeFetcher.fetchStoresByName(token, query, new StoreFetcher.FetchSearchStoresCallback() {
-            @Override
-            public void onSuccess(List<Category> fetchedCategories) {
-                categories.clear();
-                categories.addAll(fetchedCategories);
-                categoryAdapter.notifyDataSetChanged();
+        CategoryAPI categoryAPI = CategoryAPI.getInstance();
+
+        CompletableFuture<List<Store>> future = categoryAPI.getStoresByName(token, query);
+
+        future.thenAccept(storeList -> {
+            // Create a set to store unique store types
+            Set<String> uniqueStoreTypes = new HashSet<>();
+            for (Store store : storeList) {
+                uniqueStoreTypes.add(store.getStoreType());
             }
 
-            @Override
-            public void onError(Throwable throwable) {
-                showSnackbar("Error fetching stores by name");
+            // Create a list of categories
+            List<Category> c = new ArrayList<>();
+            for (String storeType : uniqueStoreTypes) {
+                List<Store> storesOfType = storeList.stream()
+                        .filter(store -> storeType.equals(store.getStoreType()))
+                        .collect(Collectors.toList());
+                Category category = new Category(storeType, storesOfType);
+                c.add(category);
             }
+            categories.clear();
+            categories.addAll(c);
+            categoryAdapter.notifyDataSetChanged();
+            showLoadingIndicator(false);
+        }).exceptionally(ex -> {
+            showLoadingIndicator(false);
+            return null;
         });
+
     }
 
     private void fetchCategoryForTag(String tag) {
@@ -196,17 +219,11 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
     }
 
     private void fetchCategoryFromServer(String tag) {
-        StoreFetcher storeFetcher = new StoreFetcher();
-        storeFetcher.fetchStores(bearerToken, tag, new StoreFetcher.FetchStoresCallback() {
-            @Override
-            public void onSuccess(Category category) {
-                addCategoryInBackground(category);
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                showSnackbar("Error fetching category for tag");
-            }
+        CategoryAPI categoryAPI = CategoryAPI.getInstance();
+        CompletableFuture<Category> future = categoryAPI.getStoresByType(bearerToken, tag);
+        future.thenAccept(this::addCategoryInBackground).exceptionally(ex -> {
+            showSnackbar("Error fetching category for tag");
+            return null;
         });
     }
 
@@ -218,8 +235,9 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
             handler.post(() -> {
                 if (category != null && !category.getStoresList().isEmpty()) {
                     categories.add(category);
+                    showLoadingIndicator(false);
                     categoryAdapter.notifyDataSetChanged();
-                    fetchCategoryFromServer(tag); // הבאת נתונים מהשרת ועדכון UI לאחר מכן
+                    fetchCategoryFromServer(tag);
                 } else {
                     fetchCategoryFromServer(tag);
                 }
@@ -230,31 +248,27 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
     private void addCategoryInBackground(Category category) {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.execute(() -> {
-            categoryDao.deleteAll(); // מחיקת כל הקטגוריות הישנות
-            categoryDao.insert(category); // הוספת הקטגוריה החדשה
+            categoryDao.deleteAll();
+            categoryDao.insert(category);
             Log.d("DAO", "Inserted category: " + category.getCategoryName() + category.getStoresList());
             runOnUiThread(() -> {
                 categories.clear();
                 categories.add(category);
                 categoryAdapter.notifyDataSetChanged();
-                showLoadingIndicator(false); // הסתרת תצוגת הטעינה
+                showLoadingIndicator(false);
             });
         });
     }
 
     private void fetchTypes(String token) {
-        TagFetcher tagFetcher = new TagFetcher();
-        tagFetcher.fetchTags(token, new TagFetcher.FetchTagsCallback() {
-            @Override
-            public void onSuccess(List<String> fetchedTags) {
-                tags.addAll(fetchedTags);
-                tagsAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                showSnackbar("Error fetching types");
-            }
+        TagAPI tagAPI = TagAPI.getInstance();
+        CompletableFuture<List<String>> future = tagAPI.getTypes(token);
+        future.thenAccept(list -> {
+            tags.addAll(list);
+            tagsAdapter.notifyDataSetChanged();
+        }).exceptionally(ex -> {
+            showSnackbar("Error fetching types");
+            return null;
         });
     }
 
@@ -305,5 +319,60 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         chosenStoresAdapter.notifyItemRangeChanged(position, chosenStores.size());
         updateBadge();
         categoryAdapter.notifyDataSetChanged();
+    }
+
+
+    @SuppressLint("NotifyDataSetChanged")
+    protected void onResume() {
+        super.onResume();
+        updateBadge();
+        categoryAdapter.notifyDataSetChanged();
+        bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
+
+    }
+    private void fetchFavorites() {
+        String token = UserPreferencesUtils.getToken(context);
+        FavoritesAPI.getInstance().getFavorites(token).thenAccept(favoriteStores -> {
+            UserPreferencesUtils.setFavoriteStores(context, favoriteStores);
+            runOnUiThread(() -> {
+                this.favoriteStores.clear();
+                this.favoriteStores.addAll(favoriteStores);
+                UserPreferencesUtils.setFavoriteStores(context, favoriteStores);
+                categoryAdapter.notifyDataSetChanged();
+            });
+        }).exceptionally(throwable -> {
+            runOnUiThread(() -> Toast.makeText(Home.this, "Failed to fetch favorites", Toast.LENGTH_SHORT).show());
+            return null;
+        });
+    }
+
+    private void addToFavorites(Store store) {
+        String token = UserPreferencesUtils.getToken(context);
+        FavoritesAPI.getInstance().addToFavorites(token, store).thenAccept(response -> {
+            UserPreferencesUtils.addFavoriteStore(context, store);
+            runOnUiThread(() -> {
+                favoriteStores.add(store);
+                categoryAdapter.notifyDataSetChanged();
+                showSnackbar("Store added to favorites");
+            });
+        }).exceptionally(throwable -> {
+            runOnUiThread(() -> Toast.makeText(Home.this, "Failed to add to favorites", Toast.LENGTH_SHORT).show());
+            return null;
+        });
+    }
+
+    private void removeFromFavorites(Store store) {
+        String token = UserPreferencesUtils.getToken(context);
+        FavoritesAPI.getInstance().removeFromFavorites(token, store).thenAccept(response -> {
+            UserPreferencesUtils.removeFavoriteStore(context, store);
+            runOnUiThread(() -> {
+                favoriteStores.remove(store);
+                categoryAdapter.notifyDataSetChanged();
+                showSnackbar("Store removed from favorites");
+            });
+        }).exceptionally(throwable -> {
+            runOnUiThread(() -> Toast.makeText(Home.this, "Failed to remove from favorites", Toast.LENGTH_SHORT).show());
+            return null;
+        });
     }
 }

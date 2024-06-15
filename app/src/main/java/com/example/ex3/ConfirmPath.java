@@ -1,5 +1,7 @@
 package com.example.ex3;
 
+import static com.example.ex3.MyApplication.context;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -12,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.ex3.adapters.ConfirmPathAdapter;
 import com.example.ex3.entities.Store;
+import com.example.ex3.utils.UserPreferencesUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
@@ -22,7 +25,7 @@ public class ConfirmPath extends AppCompatActivity {
     private RecyclerView recyclerView;
     private ConfirmPathAdapter adapter;
     private List<Store> chosenStores;
-    private String token;
+    private String bearerToken;
     private List<Store> favoriteStores;
 
 
@@ -32,13 +35,8 @@ public class ConfirmPath extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_confirm_path);
-        token = getIntent().getStringExtra("token");
-
-        chosenStores = getIntent().getParcelableArrayListExtra("chosenStores");
-        if (chosenStores == null) {
-            chosenStores = new ArrayList<>();
-        }
-        favoriteStores = getIntent().getParcelableArrayListExtra("favoriteStores");
+        bearerToken = UserPreferencesUtils.getToken(context);
+        chosenStores = UserPreferencesUtils.getChosenStores(context);
 
 
         recyclerView = findViewById(R.id.recyclerView);
@@ -68,21 +66,12 @@ public class ConfirmPath extends AppCompatActivity {
         buttonConfirm.setOnClickListener(v -> {
             List<Store> reorderedStores = adapter.getChosenStores();
             Intent intent = new Intent(ConfirmPath.this, NavigateActivity.class);
-            intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-            intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
-
-            intent.putExtra("token", token); // Assuming bearerToken is your token variable
             startActivity(intent);
         });
 
         Button buttonBack = findViewById(R.id.button_back);
         buttonBack.setOnClickListener(v -> {
             Intent intent = new Intent(ConfirmPath.this, CurrentLocation.class);
-            intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-            intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
-
-
-            intent.putExtra("token", token);
             startActivity(intent);
         });
 
@@ -100,21 +89,11 @@ public class ConfirmPath extends AppCompatActivity {
                     case R.id.menu_navigate:
                         // Navigate to NavigateActivity and pass the token
                         Intent navigateIntent = new Intent(ConfirmPath.this, NavigateActivity.class);
-                        navigateIntent.putExtra("token", token); // Assuming bearerToken is your token variable
-                        navigateIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
-                        navigateIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-
-
                         startActivity(navigateIntent);
                         return true;
                     case R.id.menu_favorites:
                         // Navigate to SettingsActivity and pass the token
                         Intent favoritesIntent = new Intent(ConfirmPath.this, Favorites.class);
-                        favoritesIntent.putExtra("token", token);
-                        favoritesIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
-                        favoritesIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
-
-
                         // Assuming bearerToken is your token variable
                         startActivity(favoritesIntent);
                         return true;

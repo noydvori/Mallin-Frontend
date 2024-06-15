@@ -80,4 +80,20 @@ public class UserPreferencesUtils {
         Type type = new TypeToken<List<Store>>() {}.getType();
         return gson.fromJson(json, type);
     }
+
+    public static void addFavoriteStore(Context context, Store store) {
+        List<Store> favoriteStores = getFavoriteStores(context);
+        if (!favoriteStores.contains(store)) {
+            favoriteStores.add(store);
+            setFavoriteStores(context, favoriteStores);
+        }
+    }
+
+    public static void removeFavoriteStore(Context context, Store store) {
+        List<Store> favoriteStores = getFavoriteStores(context);
+        if (favoriteStores.contains(store)) {
+            favoriteStores.remove(store);
+            setFavoriteStores(context, favoriteStores);
+        }
+    }
 }

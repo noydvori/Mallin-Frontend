@@ -31,7 +31,6 @@ public class NavigateActivity extends AppCompatActivity {
         // Set the "Navigate" item as checked in the bottom navigation view
         bottomNavigationView.getMenu().findItem(R.id.menu_navigate).setChecked(true);
 
-        // Set up the item selected listener
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -39,13 +38,15 @@ public class NavigateActivity extends AppCompatActivity {
                 switch (item.getItemId()) {
                     case R.id.menu_home:
                         intent = new Intent(NavigateActivity.this, Home.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
+                        finish();
                         return true;
                     case R.id.menu_navigate:
-                        // Current activity
+                        intent = new Intent(NavigateActivity.this, NavigateActivity.class);
+                        startActivity(intent);
                         return true;
                     case R.id.menu_favorites:
-                        intent = new Intent(NavigateActivity.this, Favorites.class);startActivity(intent);
                         return true;
                 }
                 return false;

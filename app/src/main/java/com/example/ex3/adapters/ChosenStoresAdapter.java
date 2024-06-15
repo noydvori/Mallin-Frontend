@@ -1,5 +1,7 @@
 package com.example.ex3.adapters;
 
+import static com.example.ex3.MyApplication.context;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,61 +19,62 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 public class ChosenStoresAdapter extends RecyclerView.Adapter<ChosenStoresAdapter.ViewHolder> {
-    private List<Store> stores;
-    private OnRemoveClickListener removeClickListener;
+    private final List<Store> stores;
 
+    private final OnRemoveClickListener removeClickListener;
     public ChosenStoresAdapter(List<Store> stores, OnRemoveClickListener removeClickListener) {
         this.stores = stores;
         this.removeClickListener = removeClickListener;
     }
-
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.small_store_item, parent, false);
         return new ViewHolder(view);
+
+    }
+    private String convertLogoUrl(String logoUrl) {
+        if (logoUrl == null) return null;
+        String baseUrl = context.getString(R.string.BASE_URL);
+        if (baseUrl.endsWith("api/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 4);
+        }
+        return baseUrl + logoUrl;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(ViewHolder holder, int position) {
         Store store = stores.get(position);
         holder.storeName.setText(store.getStoreName());
-        String logoUrl = convertLogoUrl(store.getLogoUrl());
-        if (logoUrl != null) {
-            Picasso.get().load(logoUrl).into(holder.storeLogo);
-        }
-        holder.removeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        String logoUrl = store.getLogoUrl();
+        String modifiedUrl = convertLogoUrl(logoUrl);
+        Picasso.get().load(modifiedUrl).into(holder.storeLogo);
+        // Set click listener for the remove button
+        holder.removeButton.setOnClickListener(v -> {
+            if (removeClickListener != null) {
                 removeClickListener.onRemoveClick(holder.getAdapterPosition());
             }
         });
     }
 
+    public interface OnRemoveClickListener {
+        void onRemoveClick(int position);
+    }
     @Override
     public int getItemCount() {
         return stores.size();
     }
-
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView storeName;
         ImageView storeLogo;
         ImageButton removeButton;
 
+        // Constructor to initialize the views
         ViewHolder(View itemView) {
             super(itemView);
             storeName = itemView.findViewById(R.id.store_name);
             storeLogo = itemView.findViewById(R.id.logo);
             removeButton = itemView.findViewById(R.id.remove_button);
         }
-    }
-
-    public interface OnRemoveClickListener {
-        void onRemoveClick(int position);
-    }
-
-    private String convertLogoUrl(String logoUrl) {
-        if (logoUrl == null) return null;
-        return logoUrl.replace("pictures/", "http://192.168.153.1:5000/pictures/");
     }
 }

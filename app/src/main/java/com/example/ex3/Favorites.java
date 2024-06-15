@@ -160,13 +160,40 @@ public class Favorites extends AppCompatActivity implements ChosenStoresAdapter.
         });
         // Mark the Settings menu item as checked
         Button buttonBack = findViewById(R.id.button_back);
-        buttonBack.setOnClickListener(v -> {
-            Intent intent = new Intent(Favorites.this, Home.class);
-            startActivity(intent);
+        buttonBack.setOnClickListener(v -> onBackPressed());
+
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                Intent intent;
+                switch (item.getItemId()) {
+                    case R.id.menu_home:
+                        intent = new Intent(Favorites.this, Home.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        startActivity(intent);
+                        finish();
+                        return true;
+                    case R.id.menu_navigate:
+                        intent = new Intent(Favorites.this, NavigateActivity.class);
+                        startActivity(intent);
+                        return true;
+                    case R.id.menu_favorites:
+                        return true;
+                }
+                return false;
+            }
         });
         bottomNavigationView.getMenu().findItem(R.id.menu_favorites).setChecked(true);
 
     }
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(Favorites.this, Home.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        finish();
+    }
+
     private void filter(String query) {
         List<Store> filteredList = new ArrayList<>();
         for (Store store : favoriteStores) {

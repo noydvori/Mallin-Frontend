@@ -2,9 +2,14 @@ package com.example.ex3.api;
 
 import static com.example.ex3.MyApplication.context;
 
+import androidx.annotation.NonNull;
+
 import com.example.ex3.R;
+import com.example.ex3.entities.Store;
 import com.example.ex3.objects.User;
 import com.example.ex3.objects.UserInfo;
+
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -24,7 +29,6 @@ public class UserAPI {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         webServiceAPI = retrofit.create(WebServiceAPI.class);
-
     }
 
     public static UserAPI getInstance() {
@@ -53,8 +57,7 @@ public class UserAPI {
             }
 
             @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                t.printStackTrace();
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
                 completableFuture.completeExceptionally(t);
             }
         });
@@ -67,8 +70,9 @@ public class UserAPI {
         CompletableFuture<UserInfo> future = new CompletableFuture<>();
         call.enqueue(new Callback<UserInfo>() {
             @Override
-            public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
+            public void onResponse(@NonNull Call<UserInfo> call, @NonNull Response<UserInfo> response) {
                 if (response.isSuccessful()) {
+                    assert response.body() != null;
                     UserInfo userInfo = new UserInfo(response.body().getUsername(), response.body().getDisplayName());
                     future.complete(userInfo);
                 } else if (response.code() == 404) {
@@ -79,7 +83,7 @@ public class UserAPI {
             }
 
             @Override
-            public void onFailure(Call<UserInfo> call, Throwable t) {}
+            public void onFailure(@NonNull Call<UserInfo> call, @NonNull Throwable t) {}
         });
         return future;
     }

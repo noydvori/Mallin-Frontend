@@ -1,5 +1,6 @@
 package com.example.ex3.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
@@ -9,16 +10,21 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.ex3.R;
 import com.example.ex3.entities.Store;
+import com.example.ex3.utils.UserPreferencesUtils;
 import com.squareup.picasso.Picasso;
+
 import java.util.List;
 
 public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.StoreItemViewHolder> {
+
     private List<Store> storeItemList;
     private final OnStoreInteractionListener storeInteractionListener;
     private final List<Store> chosenStores;
@@ -38,11 +44,6 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         this.favStores = favStores;
     }
 
-    public void setFavoriteStores(List<Store> favoriteStores) {
-        this.favStores = favoriteStores;
-        notifyDataSetChanged();
-    }
-
     @NonNull
     @Override
     public StoreItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -50,6 +51,7 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         return new StoreItemViewHolder(view);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onBindViewHolder(@NonNull StoreItemViewHolder holder, int position) {
         Store storeItem = storeItemList.get(position);
@@ -70,7 +72,7 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
                 chosenStores.add(storeItem);
             }
             storeInteractionListener.onStoreAddedToList(storeItem);
-            notifyDataSetChanged(); // Refresh the item to update the background
+            notifyDataSetChanged();
         });
 
         String logoUrl = storeItem.getLogoUrl();
@@ -79,10 +81,10 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
 
         // Set open/closed status
         if (storeItem.isOpen()) {
-            holder.openStatusTextView.setText("Open");
+            holder.openStatusTextView.setText(R.string.open_string);
             holder.openStatusTextView.setBackgroundResource(R.drawable.bg_green_rounded);
         } else {
-            holder.openStatusTextView.setText("Closed");
+            holder.openStatusTextView.setText(R.string.closed_string);
             holder.openStatusTextView.setBackgroundResource(R.drawable.bg_red_rounded);
         }
 
@@ -104,19 +106,16 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
         holder.btnAddToFavorites.setOnClickListener(v -> {
             notifyItemChanged(holder.getAdapterPosition());
             storeInteractionListener.onStoreAddedToFavorites(storeItem);
+            UserPreferencesUtils.setFavoriteStores(context, favStores);
         });
     }
 
-
     @Override
     public int getItemCount() {
-        if (storeItemList != null) {
-            return storeItemList.size();
-        } else {
-            return 0; // Or return any other appropriate value
-        }
+        return storeItemList != null ? storeItemList.size() : 0;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void filterList(List<Store> filteredList) {
         storeItemList = filteredList;
         notifyDataSetChanged();
@@ -138,7 +137,11 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
 
     private String convertLogoUrl(String logoUrl) {
         if (logoUrl == null) return null;
-        return logoUrl.replace("pictures/", "http://192.168.153.1:5000/pictures/");
+        String baseUrl = context.getString(R.string.BASE_URL);
+        if (baseUrl.endsWith("api/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 4);
+        }
+        return baseUrl + logoUrl;
     }
 
     static class StoreItemViewHolder extends RecyclerView.ViewHolder {

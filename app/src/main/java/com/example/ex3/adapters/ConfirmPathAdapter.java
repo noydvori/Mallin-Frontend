@@ -1,5 +1,7 @@
 package com.example.ex3.adapters;
 
+import static com.example.ex3.MyApplication.context;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,7 +56,11 @@ public class ConfirmPathAdapter extends RecyclerView.Adapter<ConfirmPathAdapter.
 
     private String convertLogoUrl(String logoUrl) {
         if (logoUrl == null) return null;
-        return logoUrl.replace("pictures/", "http://192.168.153.1:5000/pictures/");
+        String baseUrl = context.getString(R.string.BASE_URL);
+        if (baseUrl.endsWith("api/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 4);
+        }
+        return baseUrl + logoUrl;
     }
 
     static class ConfirmPathViewHolder extends RecyclerView.ViewHolder {

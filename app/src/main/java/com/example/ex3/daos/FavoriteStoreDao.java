@@ -26,15 +26,12 @@ public interface FavoriteStoreDao {
     @Update
     void update(FavoriteStore store);
 
-    // Additional method to fetch favorite stores
     @Query("SELECT * FROM favoritestore WHERE isFavorite = 1")
     List<FavoriteStore> getFavoriteStores();
 
-    // Additional method to mark a store as favorite
     @Query("UPDATE favoritestore SET isFavorite = 1 WHERE storename = :name")
     void markAsFavorite(String name);
 
-    // Additional method to fetch stores by category
     @Query("SELECT * FROM favoritestore WHERE categoryId = :categoryId")
     List<FavoriteStore> getStoresByCategory(int categoryId);
 }
