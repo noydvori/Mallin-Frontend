@@ -103,8 +103,10 @@ public class Favorites extends AppCompatActivity implements ChosenStoresAdapter.
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.menu_home:
+
                         // Navigate to Home activity
                         Intent homeIntent = new Intent(Favorites.this, Home.class);
+                        setResult(RESULT_OK, homeIntent);
                         startActivity(homeIntent);
                         return true;
                     case R.id.menu_navigate:
@@ -128,9 +130,15 @@ public class Favorites extends AppCompatActivity implements ChosenStoresAdapter.
             public void onStoreAddedToList(Store store) {
                 if (chosenStores.contains(store)) {
                     chosenStores.remove(store);
+
+
+
                 } else {
                     chosenStores.add(store);
+
                 }
+                UserPreferencesUtils.setChosenStores(context, chosenStores); // Save the updated list
+
                 updateBadge();
                 StoreItemAdapter.notifyDataSetChanged(); // Refresh the adapter to update the UI
             }
@@ -139,8 +147,12 @@ public class Favorites extends AppCompatActivity implements ChosenStoresAdapter.
             public void onStoreAddedToFavorites(Store store) {
                 if (favoriteStores.contains(store)) {
                     favoriteStores.remove(store);
+                    UserPreferencesUtils.removeFavoriteStore(context, store);
+
                 } else {
                     favoriteStores.add(store);
+                    UserPreferencesUtils.addFavoriteStore(context, store);
+
                 }
                 StoreItemAdapter.notifyDataSetChanged(); // Refresh the adapter to update the UI
             }//         }
@@ -186,13 +198,6 @@ public class Favorites extends AppCompatActivity implements ChosenStoresAdapter.
         bottomNavigationView.getMenu().findItem(R.id.menu_favorites).setChecked(true);
 
     }
-    @Override
-    public void onBackPressed() {
-        Intent intent = new Intent(Favorites.this, Home.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(intent);
-        finish();
-    }
 
     private void filter(String query) {
         List<Store> filteredList = new ArrayList<>();
@@ -214,6 +219,13 @@ public class Favorites extends AppCompatActivity implements ChosenStoresAdapter.
             }
         }
     }
+    @Override
+    public void onBackPressed() {
+        UserPreferencesUtils.setChosenStores(context, chosenStores); // Save the updated list
+        Intent intent = new Intent();
+        setResult(RESULT_OK, intent);
+        super.onBackPressed();
+        }
     @Override
     public void onRemoveClick(int position) {
         chosenStores.remove(position);
