@@ -6,6 +6,9 @@ plugins {
 android {
     namespace 'com.example.ex3'
     compileSdk 33
+    viewBinding {
+        enabled = true
+    }
 
     defaultConfig {
         applicationId "com.example.ex3"

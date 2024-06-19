@@ -166,8 +166,11 @@ public class CurrentLocation extends AppCompatActivity {
         updateButtonState("");
         Button buttonBack = findViewById(R.id.button_back);
         buttonBack.setOnClickListener(v -> {
-            Intent intent = new Intent(CurrentLocation.this, Home.class);
-            startActivity(intent);
+
+            // Navigate to Home activity
+            Intent homeIntent = new Intent(CurrentLocation.this, Home.class);
+            setResult(RESULT_OK, homeIntent);
+            startActivity(homeIntent);
         });
 
         // Initialize the BottomNavigationView
@@ -179,7 +182,11 @@ public class CurrentLocation extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.menu_home:
-                        // Already on the Home screen, do nothing
+
+                        // Navigate to Home activity
+                        Intent homeIntent = new Intent(CurrentLocation.this, Home.class);
+                        setResult(RESULT_OK, homeIntent);
+                        startActivity(homeIntent);
                         return true;
                     case R.id.menu_navigate:
                         // Navigate to NavigateActivity and pass the token
