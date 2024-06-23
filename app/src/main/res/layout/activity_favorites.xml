@@ -104,22 +104,7 @@
             </LinearLayout>
         </FrameLayout>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/navigate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="30dp"
-            android:layout_marginBottom="95dp"
-            android:adjustViewBounds="true"
-            android:clickable="true"
-            android:focusable="true"
-            android:maxWidth="100dp"
-            android:maxHeight="100dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_next"
-            android:backgroundTint="@color/colorPrimary"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_nav_menu"
