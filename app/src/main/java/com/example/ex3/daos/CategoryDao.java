@@ -28,5 +28,7 @@ public interface CategoryDao {
 
     @Query("DELETE FROM category")
     void deleteAll();
+    @Query("DELETE FROM category WHERE category_name = :tagName")
+    void deleteByTagName(String tagName);
 
 }

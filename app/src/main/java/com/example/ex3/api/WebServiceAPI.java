@@ -1,7 +1,7 @@
 package com.example.ex3.api;
 
-import com.example.ex3.entities.Store;
 import com.example.ex3.entities.Category;
+import com.example.ex3.entities.Store;
 import com.example.ex3.objects.NameAndPassword;
 import com.example.ex3.objects.User;
 import com.example.ex3.objects.UserInfo;
@@ -31,6 +31,7 @@ public interface WebServiceAPI {
             @Path("storeType") String storeType,
             @Query("mallname") String mallname
     );
+
     @GET("AzrieliStore/name/{storeName}")
     Call<List<Store>> getStoresByName(
             @Header("Authorization") String token,
@@ -43,13 +44,22 @@ public interface WebServiceAPI {
             @Header("Authorization") String token,
             @Path("mallname") String mallname
     );
+
     @GET("Users")
     Call<List<Store>> getFavorites(@Header("Authorization") String token);
+
+    @GET("AzrieliStore/type/{storeType}/paged")
+    Call<List<Store>> getStoresByTypePaged(
+            @Header("Authorization") String token,
+            @Path("storeType") String storeType,
+            @Query("mallname") String mallname,
+            @Query("page") int page,
+            @Query("limit") int limit
+    );
 
     @PUT("Users/favorites/add")
     Call<Void> addToFavorites(@Header("Authorization") String token, @Body Store store);
 
     @PUT("Users/favorites/remove")
     Call<Void> removeFromFavorites(@Header("Authorization") String token, @Body Store store);
-
 }

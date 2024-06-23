@@ -58,6 +58,10 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.ViewHolder> {
         return tags.size();
     }
 
+    public int getTagSelected() {
+        return selectedPosition;
+    }
+
     public interface OnTagClickListener {
         void onTagClick(String tag);
     }

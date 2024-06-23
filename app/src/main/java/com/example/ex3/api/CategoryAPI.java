@@ -37,6 +37,29 @@ public class CategoryAPI {
         }
         return instance;
     }
+    public CompletableFuture<List<Store>> getStoresByTypePaged(String token, String storeType, int page) {
+        String mallName = UserPreferencesUtils.getMallName(context);
+        Call<List<Store>> call = webServiceAPI.getStoresByTypePaged(token, storeType, mallName, page, 10);
+        CompletableFuture<List<Store>> future = new CompletableFuture<>();
+
+        call.enqueue(new Callback<List<Store>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<Store>> call, @NonNull Response<List<Store>> response) {
+                if (response.isSuccessful()) {
+                    List<Store> storesList = response.body();
+                    future.complete(storesList);
+                } else {
+                    future.completeExceptionally(new Error("Failed to fetch stores by type"));
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<Store>> call, @NonNull Throwable t) {
+                future.completeExceptionally(t);
+            }
+        });
+        return future;
+    }
 
     public CompletableFuture<Category> getStoresByType(String token, String storeType) {
         String mallName = UserPreferencesUtils.getMallName(context);
@@ -47,20 +70,8 @@ public class CategoryAPI {
             @Override
             public void onResponse(@NonNull Call<Category> call, @NonNull Response<Category> response) {
                 if (response.isSuccessful()) {
-                    Category category = new Category(storeType);
                     Category responseList = response.body();
-                    if (responseList != null) {
-                        List<Store> storesList = responseList.getStoresList();
-                        for (Store responseStore : storesList) {
-                            String storeName = responseStore.getStoreName();
-                            String workingHours = responseStore.getWorkingHours();
-                            String floorNumber = responseStore.getFloor();
-                            String logoUrl = responseStore.getLogoUrl();
-                            String type = responseStore.getStoreType();
-                            Store storeItem = new Store(storeName, workingHours, floorNumber, logoUrl, type, false);
-                            category.addStore(storeItem);
-                        }
-                    }
+                    Category category = new Category(storeType, responseList.getStoresList());
                     future.complete(category);
                 } else {
                     future.completeExceptionally(new Error("Invalid token"));
