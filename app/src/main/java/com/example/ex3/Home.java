@@ -47,7 +47,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRemoveClickListener {
+public class Home extends AppCompatActivity{
     private RecyclerView categoriesList;
     private static final int REQUEST_CODE_FAVORITES = 1;
 
@@ -97,7 +97,7 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         drawerLayout = findViewById(R.id.drawer_layout);
         chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
         chosenStoresRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        chosenStoresAdapter = new ChosenStoresAdapter(chosenStores, this);
+        chosenStoresAdapter = new ChosenStoresAdapter(chosenStores);
         chosenStoresRecyclerView.setAdapter(chosenStoresAdapter);
 
         tagsRecyclerView = findViewById(R.id.tags);
@@ -353,16 +353,6 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         } else {
             showSnackbar("Chosen list is empty. Add stores to continue navigate");
         }
-    }
-
-    @Override
-    public void onRemoveClick(int position) {
-        chosenStores.remove(position);
-        chosenStoresAdapter.notifyItemRemoved(position);
-        chosenStoresAdapter.notifyItemRangeChanged(position, chosenStores.size());
-        UserPreferencesUtils.setChosenStores(this, chosenStores);
-        updateBadge();
-        categoryAdapter.notifyDataSetChanged();
     }
 
     private void updateBadge() {
