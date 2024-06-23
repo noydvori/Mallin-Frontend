@@ -27,6 +27,7 @@ import com.example.ex3.adapters.TagsAdapter;
 import com.example.ex3.api.CategoryAPI;
 import com.example.ex3.api.FavoritesAPI;
 import com.example.ex3.api.TagAPI;
+import com.example.ex3.NavigateActivity;
 import com.example.ex3.daos.CategoryDao;
 import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
@@ -151,10 +152,10 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
                 runOnUiThread(() -> {
                     if(categories.isEmpty()) {
                         categories.add(new Category(storeType, storeList));
-                        categoryAdapter.notifyDataSetChanged();
+                        categoryAdapter.notifyItemInserted(0);
                     } else {
                         categories.get(0).getStoresList().addAll(storeList);
-                        categoryAdapter.notifyDataSetChanged();
+                        categoryAdapter.notifyItemChanged(0);
                     }
                     remainingRequests--;
                     if (remainingRequests == 0) {
@@ -180,19 +181,19 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         findViewById(R.id.favorites_icon).setOnClickListener(v -> navigateToFavorites());
 
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
-            Intent intent;
-            switch (item.getItemId()) {
-                case R.id.menu_home:
-                    return true;
-                case R.id.menu_navigate:
-                    intent = new Intent(Home.this, NavigateActivity.class);
-                    startActivity(intent);
-                    return true;
-                case R.id.menu_favorites:
-                    intent = new Intent(Home.this, Favorites.class);
-                    startActivityForResult(intent, REQUEST_CODE_FAVORITES);
-                    return true;
-                default:
+                    Intent intent;
+                    switch (item.getItemId()) {
+                        case R.id.menu_home:
+                            return true;
+                        case R.id.menu_navigate:
+                            intent = new Intent(Home.this, NavigateActivity.class);
+                            startActivity(intent);
+                            return true;
+                        case R.id.menu_favorites:
+                            intent = new Intent(Home.this, Favorites.class);
+                            startActivityForResult(intent, REQUEST_CODE_FAVORITES);
+                            return true;
+                        default:
                     return false;
             }
         });
@@ -306,7 +307,6 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
             runOnUiThread(() -> {
                 categories.clear();
                 categories.add(category);
-                categoryAdapter.notifyDataSetChanged();
                 showLoadingIndicator(false);
             });
         });
@@ -375,7 +375,7 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         chosenStoresAdapter.notifyItemRangeChanged(position, chosenStores.size());
         UserPreferencesUtils.setChosenStores(this, chosenStores);
         updateBadge();
-        categoryAdapter.notifyDataSetChanged();
+        categoryAdapter.notifyItemRemoved(position);
     }
 
     @Override
