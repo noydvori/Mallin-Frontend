@@ -151,26 +151,16 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
 
             // Add to List Button Click Listener
             btnAddToList.setOnClickListener(v -> {
-                boolean isAdded = !chosenStores.contains(storeItem);
-                if (isAdded) {
-                    cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.added_to_list_color));
-                    chosenStores.add(storeItem);
-                } else {
-                    cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.white));
-                    chosenStores.remove(storeItem);
-                }
+
                 storeInteractionListener.onStoreAddedToList(storeItem);
+                UserPreferencesUtils.setChosenStores(context, chosenStores);
+
                 updateButtonIcons(this, storeItem);
             });
 
             // Add to Favorites Button Click Listener
             btnAddToFavorites.setOnClickListener(v -> {
-                boolean isFavored = !favStores.contains(storeItem);
-                if (isFavored) {
-                    favStores.add(storeItem);
-                } else {
-                    favStores.remove(storeItem);
-                }
+
                 storeInteractionListener.onStoreAddedToFavorites(storeItem);
                 UserPreferencesUtils.setFavoriteStores(context, favStores);
                 updateButtonIcons(this, storeItem);

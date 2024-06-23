@@ -21,10 +21,9 @@ import java.util.List;
 public class ChosenStoresAdapter extends RecyclerView.Adapter<ChosenStoresAdapter.ViewHolder> {
     private List<Store> stores;
 
-    private final OnRemoveClickListener removeClickListener;
-    public ChosenStoresAdapter(List<Store> stores, OnRemoveClickListener removeClickListener) {
+
+    public ChosenStoresAdapter(List<Store> stores) {
         this.stores = stores;
-        this.removeClickListener = removeClickListener;
     }
     @NonNull
     @Override
@@ -55,16 +54,8 @@ public class ChosenStoresAdapter extends RecyclerView.Adapter<ChosenStoresAdapte
         String modifiedUrl = convertLogoUrl(logoUrl);
         Picasso.get().load(modifiedUrl).into(holder.storeLogo);
         // Set click listener for the remove button
-        holder.removeButton.setOnClickListener(v -> {
-            if (removeClickListener != null) {
-                removeClickListener.onRemoveClick(holder.getAdapterPosition());
-            }
-        });
     }
 
-    public interface OnRemoveClickListener {
-        void onRemoveClick(int position);
-    }
     @Override
     public int getItemCount() {
         return stores.size();

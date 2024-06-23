@@ -34,7 +34,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Favorites extends AppCompatActivity implements ChosenStoresAdapter.OnRemoveClickListener{
+public class Favorites extends AppCompatActivity{
     private StoreItemAdapter StoreItemAdapter;
 
     BottomNavigationView bottomNavigationView;
@@ -60,7 +60,7 @@ public class Favorites extends AppCompatActivity implements ChosenStoresAdapter.
         drawerLayout = findViewById(R.id.drawer_layout);
         chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
         chosenStoresRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        chosenStoresAdapter = new ChosenStoresAdapter(chosenStores, this);
+        chosenStoresAdapter = new ChosenStoresAdapter(chosenStores);
         chosenStoresRecyclerView.setAdapter(chosenStoresAdapter);
         // Initialize searchView
         SearchView searchView = findViewById(R.id.search_view);
@@ -226,12 +226,4 @@ public class Favorites extends AppCompatActivity implements ChosenStoresAdapter.
         setResult(RESULT_OK, intent);
         super.onBackPressed();
         }
-    @Override
-    public void onRemoveClick(int position) {
-        chosenStores.remove(position);
-        chosenStoresAdapter.notifyItemRemoved(position);
-        chosenStoresAdapter.notifyItemRangeChanged(position, chosenStores.size());
-        updateBadge();
-        StoreItemAdapter.notifyDataSetChanged();
-    }
 }
