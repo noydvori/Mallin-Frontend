@@ -324,18 +324,6 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         });
     }
 
-    private void updateBadge() {
-        if (badgeTextView != null) {
-            int numberOfChosenStores = chosenStores.size();
-            if (numberOfChosenStores > 0) {
-                badgeTextView.setVisibility(View.VISIBLE);
-                badgeTextView.setText(String.valueOf(numberOfChosenStores));
-            } else {
-                badgeTextView.setVisibility(View.GONE);
-            }
-        }
-    }
-
     private void showSnackbar(String message) {
         Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
     }
@@ -367,7 +355,6 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onRemoveClick(int position) {
         chosenStores.remove(position);
@@ -375,9 +362,20 @@ public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRem
         chosenStoresAdapter.notifyItemRangeChanged(position, chosenStores.size());
         UserPreferencesUtils.setChosenStores(this, chosenStores);
         updateBadge();
-        categoryAdapter.notifyItemRemoved(position);
+        categoryAdapter.notifyDataSetChanged();
     }
 
+    private void updateBadge() {
+        if (badgeTextView != null) {
+            int numberOfChosenStores = chosenStores.size();
+            if (numberOfChosenStores > 0) {
+                badgeTextView.setVisibility(View.VISIBLE);
+                badgeTextView.setText(String.valueOf(numberOfChosenStores));
+            } else {
+                badgeTextView.setVisibility(View.GONE);
+            }
+        }
+    }
     @Override
     protected void onResume() {
         super.onResume();

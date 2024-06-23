@@ -1,13 +1,11 @@
-package com.example.ex3;
+package com.example.ex3.viewModels;
 
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.ex3.adapters.GrapthDataAdapter;
 import com.example.ex3.devtool.database.GraphDatabase;
-import com.example.ex3.devtool.viewmodels.DevToolViewModel;
 
 public class NavigateViewModelFactory implements ViewModelProvider.Factory {
     GraphDatabase mGraphDatabase;

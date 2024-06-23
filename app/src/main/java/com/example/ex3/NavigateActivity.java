@@ -19,8 +19,8 @@ import com.example.ex3.devtool.managers.CustomBluetoothManager;
 import com.example.ex3.devtool.managers.CustomMagneticFieldManager;
 import com.example.ex3.devtool.managers.CustomWifiManager;
 import com.example.ex3.devtool.handlers.MapScalingHandler;
-import com.example.ex3.devtool.handlers.MapTappingHandler;
-import com.example.ex3.devtool.viewmodels.DevToolViewModelFactory;
+import com.example.ex3.viewModels.NavigateViewModel;
+import com.example.ex3.viewModels.NavigateViewModelFactory;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 
