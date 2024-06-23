@@ -1,4 +1,4 @@
-package com.example.ex3;
+package com.example.ex3.viewModels;
 
 import android.bluetooth.le.ScanResult;
 import android.hardware.SensorEvent;
