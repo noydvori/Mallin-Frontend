@@ -14,3 +14,4 @@ public interface AccelerometerDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(Accelerometer... accelerometers);
 }
+    

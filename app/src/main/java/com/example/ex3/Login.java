@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.ex3.api.TokenAPI;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.concurrent.CompletableFuture;
@@ -76,12 +77,16 @@ public class Login extends AppCompatActivity {
         String password = passwordEditText.getText().toString().trim();
 
         if (TextUtils.isEmpty(username)) {
-            showToast("Please enter a username");
+            Snackbar.make(findViewById(android.R.id.content), "Please enter your username", Snackbar.LENGTH_SHORT).show();
+
+            showToast("Please enter username");
             return;
         }
 
         if (TextUtils.isEmpty(password)) {
-            showToast("Please enter a password");
+            Snackbar.make(findViewById(android.R.id.content), "Please enter your password", Snackbar.LENGTH_SHORT).show();
+
+            showToast("Please enter password");
             return;
         }
 
@@ -99,7 +104,7 @@ public class Login extends AppCompatActivity {
                     // Token has been retrieved, proceed with further actions
                     handleToken(token, username);
                 } else {
-                    showToast("Incorrect username or password");
+                    Snackbar.make(findViewById(android.R.id.content), "Incorrect username or password", Snackbar.LENGTH_SHORT).show();
                 }
             }
         });

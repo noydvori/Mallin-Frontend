@@ -1,351 +1,354 @@
 package com.example.ex3;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModelProvider;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import android.os.Bundle;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
-import com.example.ex3.entities.Store;
-import com.example.ex3.fetchers.StoreFetcher;
-import com.example.ex3.objects.Category;
-import com.example.ex3.viewModels.CategoryViewModel;
-import com.example.ex3.viewModels.CategoryViewModelFactory;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import android.annotation.SuppressLint;import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.SearchView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.ex3.adapters.CategoryAdapter;
-import com.example.ex3.entities.Chat;
+import com.example.ex3.adapters.ChosenStoresAdapter;
+import com.example.ex3.adapters.TagsAdapter;
+import com.example.ex3.daos.CategoryDao;
+import com.example.ex3.daos.StoreDao;
+import com.example.ex3.entities.Category;
+import com.example.ex3.entities.Store;
+import com.example.ex3.fetchers.StoreFetcher;
+import com.example.ex3.fetchers.TagFetcher;
+import com.example.ex3.localDB.AppDB;
 import com.example.ex3.entities.User;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class Home extends AppCompatActivity {
-    private MutableLiveData<List<Chat>> filteredChats;
+public class Home extends AppCompatActivity implements ChosenStoresAdapter.OnRemoveClickListener {
+    private RecyclerView categoriesList;
     private User me;
-    String bearerToken;
-    private CategoryViewModel viewModel;
-    CategoryAdapter adapter;
-    private List<Category> categories = new ArrayList<>();
-    private int typesToFetch = 3; // Number of types to fetch
+    private String bearerToken;
+    private TextView badgeTextView;
+    private List<Store> chosenStores;
+    private final List<Category> categories = new ArrayList<>();
+    private String currentSearchQuery = "";
+    private final List<String> tags = new ArrayList<>();
+    private DrawerLayout drawerLayout;
+    private RecyclerView chosenStoresRecyclerView;
+    private ChosenStoresAdapter chosenStoresAdapter;
+    private AppDB database;
+    private CategoryDao categoryDao;
+    private List<Category> categoryList;
+    private CategoryAdapter categoryAdapter;
+    private RecyclerView tagsRecyclerView;
+    private BottomNavigationView bottomNavigationView;
+    private TagsAdapter tagsAdapter;
+    private List<Category> categoriesFromDB = new ArrayList<>();
+    private List<Store> favoriteStores = new ArrayList<>();
 
-
-    BottomNavigationView bottomNavigationView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Retrieve the saved theme preference
-        SharedPreferences sharedPreferencesSettings = getSharedPreferences("Settings", MODE_PRIVATE);
-        boolean isDarkThemeEnabled = sharedPreferencesSettings.getBoolean("DarkTheme", false);
-        filteredChats = new MutableLiveData<List<Chat>>();
-        // Apply the saved theme preference
-        if (isDarkThemeEnabled) {
-            setTheme(R.style.DarkTheme);
-        } else {
-            setTheme(R.style.AppTheme);
-        }
+        RoomDatabase.Callback myCallBack = new RoomDatabase.Callback() {
+            @Override
+            public void onCreate(@NonNull SupportSQLiteDatabase db) {
+                super.onCreate(db);
+            }
 
+            @Override
+            public void onOpen(@NonNull SupportSQLiteDatabase db) {
+                super.onOpen(db);
+            }
+        };
         super.onCreate(savedInstanceState);
+        database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "DB").fallbackToDestructiveMigration().build();
+        categoryDao = database.categoryDao();
+
+        bearerToken = getIntent().getStringExtra("token");
+        chosenStores = getIntent().getParcelableArrayListExtra("chosenStores");
+        if (chosenStores == null) {
+            chosenStores = new ArrayList<>();
+        }
+        favoriteStores = getIntent().getParcelableArrayListExtra("favoriteStores");
+        if (favoriteStores == null) {
+            favoriteStores = new ArrayList<>();
+        }
         setContentView(R.layout.activity_stores_list);
-        // Retrieve the Intent that started this activity
-        Intent intent = getIntent();
+        drawerLayout = findViewById(R.id.drawer_layout);
+        chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
+        chosenStoresRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        chosenStoresAdapter = new ChosenStoresAdapter(chosenStores, this);
+        chosenStoresRecyclerView.setAdapter(chosenStoresAdapter);
 
-
-
-
-
-
-        // Extract token & get user details from database
-        //SharedPreferences userSharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
-        //String myUsername = userSharedPreferences.getString("User", "");
-        //me = chatsViewModel.getUser(myUsername);
-        String myName = "Noy";
-
-        // Add contact button
-        FloatingActionButton addContactButton = findViewById(R.id.addContact);
-        addContactButton.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.locationIcon).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openAddContactDialog();
+                if (drawerLayout.isDrawerOpen(Gravity.END)) {
+                    drawerLayout.closeDrawer(Gravity.END);
+                } else {
+                    chosenStoresAdapter.notifyDataSetChanged();
+                    drawerLayout.openDrawer(Gravity.END);
+                }
             }
         });
-        // Retrieve the token from the Intent extras
-        String token = intent.getStringExtra("token");
-        bearerToken = getIntent().getStringExtra("Token");
+        findViewById(R.id.favorites_icon).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent favIntent = new Intent(Home.this, Favorites.class);
+                favIntent.putExtra("token", bearerToken);
+                favIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+                favIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+
+                startActivity(favIntent);
+            }
+        });
 
 
-        String storeType = "food"; // Example store type
-        //StoreFetcher storeFetcher = new StoreFetcher();
-        //storeFetcher.fetchStores(token, storeType);
-        // Fetch stores for each store type
-        fetchStoresByType(token, "food");
-        fetchStoresByType(token, "fashion and sports");
-        fetchStoresByType(token, "fashion");
+        tagsRecyclerView = findViewById(R.id.tags);
+        tagsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        tagsAdapter = new TagsAdapter(tags);
+        tagsRecyclerView.setAdapter(tagsAdapter);
+        tagsAdapter.selectTag("all");
+        fetchCategoryForTag("all");
 
-        //RecyclerView categoriesList = findViewById(R.id.categories);
-        //categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
-        //adapter = new CategoryAdapter(this);
-        //categoriesList.setAdapter(adapter);
-        //categoriesList.setLayoutManager(new LinearLayoutManager(this));
-        //CategoryViewModelFactory factory = new CategoryViewModelFactory(bearerToken,"food");
-        //viewModel = new ViewModelProvider(this, factory).get(CategoryViewModel.class);
-        //viewModel.reload();
-        //viewModel.getStoresList().observe(this, stores -> {
-        //    // Update UI with the new list of stores
-        //    if (stores != null) {
-        //        adapter.setStoresList(stores);
-        //    }
-        //});
+        FloatingActionButton navigateButton = findViewById(R.id.navigate);
+        navigateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Check if the chosen list is empty
+                if (!chosenStores.isEmpty()) {
+                    Intent navigateIntent = new Intent(Home.this, CurrentLocation.class);
+                    navigateIntent.putExtra("token", bearerToken);
+                    navigateIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+                    navigateIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+                    startActivity(navigateIntent);
+                } else {
+                    // Show a message or handle the case where chosen list is empty
+                    Snackbar.make(findViewById(android.R.id.content), "Chosen list is empty. Add stores to continue navigate", Snackbar.LENGTH_SHORT).show();
+                }
+            }
+        });
 
-        List<Store> SHITItems = new ArrayList<>();
-        SHITItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-        SHITItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-        SHITItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-        SHITItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-        SHITItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-        SHITItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
+        fetchTypes(bearerToken);
 
-        List<Category> categories = new ArrayList<>();
-       List<Store> electronicsItems = new ArrayList<>();
-        electronicsItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-        electronicsItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-        electronicsItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
-       electronicsItems.add(new Store( "name","floor","ggg" , "hh","R.drawable.ic_home_background"));
+        badgeTextView = findViewById(R.id.locationBadge);
+        updateBadge();
 
-       categories.add(new Category("Electronics", electronicsItems));
+        tagsAdapter.setOnTagClickListener(new TagsAdapter.OnTagClickListener() {
+            @Override
+            public void onTagClick(String tag) {
+                fetchCategoryForTag(tag);
+            }
+        });
 
-        categories.add(new Category("Electronics", electronicsItems));
+        fetchDataFromServer();
 
-        categories.add(new Category("Electronics", electronicsItems));
-        categories.add(new Category("Electronics", electronicsItems));
-       categories.add(new Category("Electronics", SHITItems));
-
-       // Add more categories and items as needed...
-
-
-       // Set up RecyclerView with adapter
-       //RecyclerView categoriesList = findViewById(R.id.categories);
-       //categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
-       //categoriesList.setLayoutManager(new LinearLayoutManager(this));
-       //CategoryAdapter adapter = new CategoryAdapter(this, categories);
-       //categoriesList.setAdapter(adapter);
-
-        // Chat item listener
-        //adapter = new ChatListAdapter(this, filteredChats);
-        //adapter.setOnItemClickListener(new ChatListAdapter.OnItemClickListener() {
-        //@Override
-
-            //public void onItemClick(Chat chat) {
-                ;
-            //}
-        //});
-        // In your activity or fragment where you have access to the badge TextView:
-        TextView badgeTextView = findViewById(R.id.locationBadge);
-
-        // Set the desired number dynamically
-        // TODO: badge.
-        int number = 10; // Replace this with your desired number
-        badgeTextView.setText(String.valueOf(number));
-
-
-
-        // Set the hardcoded chat list to your adapter
-        //adapter = new ChatListAdapter(this, hardcodedChatsLiveData);
-        //RecyclerView lsChats = findViewById(R.id.lsChats);
-        //lsChats.setAdapter(adapter);
-        //lsChats.setBackgroundResource(R.drawable.bg_dark_rounded);
-        //lsChats.setLayoutManager(new LinearLayoutManager(this));
-
-        //chatsViewModel.getChats(me.getUsername()).observe(this, chats -> {
-        //    filteredChats.setValue(chats); // Initialize filteredChats with all chats
-        //    adapter.setChats(chats);
-        //});
-
-        // Settings button
-        //FloatingActionButton settingsButton = findViewById(R.id.settings);
-        //settingsButton.setOnClickListener(new View.OnClickListener() {
-        //    @Override
-        //    public void onClick(View v) {
-         //       openSettingsDialog();
-         //   }
-        //});
-
-
-
-        // Handle search
         SearchView searchView = findViewById(R.id.search_view);
         searchView.setBackgroundResource(R.drawable.bg_white_rounded);
-        //searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-        //    @Override
-        //    public boolean onQueryTextSubmit(String query) {
-        //        return false;
-        //    }
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String str) {
+                currentSearchQuery = str.isEmpty() ? "" : str;
+                fetchDataFromServer();
+                return true;
+            }
 
-         //   @Override
-         //   public boolean onQueryTextChange(String newText) {
-         //       filterChats(newText);
-          //      return true;
-         //   }
-        //});
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                currentSearchQuery = newText.isEmpty() ? "" : newText;
+                fetchDataFromServer();
+                return true;
+            }
+        });
+
+        categoriesList = findViewById(R.id.categories);
+        categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
+        categoriesList.setLayoutManager(new LinearLayoutManager(this));
+        categoryAdapter = new CategoryAdapter(this, categories, chosenStores, favoriteStores,badgeTextView);
+        categoriesList.setAdapter(categoryAdapter);
+
+        // Initialize the BottomNavigationView
+        bottomNavigationView = findViewById(R.id.bottom_nav_menu);
+        bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
+
+        // Set up the item selected listener
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                Intent intent;
+                switch (item.getItemId()) {
+                    case R.id.menu_home:
+                        // Already on the Home screen, do nothing
+                        return true;
+                    case R.id.menu_navigate:
+                        intent = new Intent(Home.this, NavigateActivity.class);
+                        intent.putExtra("token", bearerToken);
+                        intent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+                        intent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+
+                        startActivity(intent);
+                        return true;
+                    case R.id.menu_favorites:
+                        Intent favIntent = new Intent(Home.this, Favorites.class);
+                        favIntent.putExtra("token", bearerToken);
+                        favIntent.putParcelableArrayListExtra("chosenStores", new ArrayList<>(chosenStores));
+                        favIntent.putParcelableArrayListExtra("favoriteStores", new ArrayList<>(favoriteStores));
+
+                        startActivity(favIntent);
+                }
+                return false;
+            }
+        });
     }
 
-
-    private void fetchStoresByType(String token, String storeType) {
-        StoreFetcher storeFetcher = new StoreFetcher();
-        storeFetcher.fetchStores(token, storeType, new StoreFetcher.FetchStoresCallback() {
-            @Override
-            public void onSuccess(Category category) {
-                // Add fetched category to the list
-                categories.add(category);
-                // Update UI if all types are fetched
-                if (categories.size() == typesToFetch) {
-                    updateUI();
+    private void fetchDataFromServer() {
+        categories.clear();
+        if (currentSearchQuery.isEmpty()) {
+            tagsRecyclerView.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (tags.contains("all")) {
+                        tagsAdapter.selectTag("all");
+                        fetchCategoryForTag("all");
+                    }
                 }
+            });
+        } else {
+            fetchStoresByName(bearerToken, currentSearchQuery);
+        }
+    }
+
+    private void fetchStoresByName(String token, String str) {
+        StoreFetcher storeFetcher = new StoreFetcher();
+        storeFetcher.fetchStoresByName(token, str, new StoreFetcher.FetchSearchStoresCallback() {
+            @Override
+            public void onSuccess(List<Category> c) {
+                categories.clear();
+                categories.addAll(c);
+                updateUI();
             }
 
             @Override
             public void onError(Throwable throwable) {
-                // Handle error
-                Toast.makeText(Home.this, "Error fetching " + storeType + " stores", Toast.LENGTH_SHORT).show();
-                // Update UI if all types are fetched (considering error)
-                if (categories.size() == typesToFetch) {
-                    updateUI();
-                }
+                Snackbar.make(findViewById(android.R.id.content), "Error fetching stores by name", Snackbar.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateBadge() {
+        if (badgeTextView != null) {
+            int numberOfChosenStores = chosenStores.size();
+            if (numberOfChosenStores > 0) {
+                badgeTextView.setVisibility(View.VISIBLE);
+                badgeTextView.setText(String.valueOf(numberOfChosenStores));
+            } else {
+                badgeTextView.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private void fetchCategoryForTag(String tag) {
+        categories.clear();
+        getCategoryInBackground(tag);
+    }
+
+    private void fetchCategoryFromServer(String tag) {
+        StoreFetcher storeFetcher = new StoreFetcher();
+        storeFetcher.fetchStores(bearerToken, tag, new StoreFetcher.FetchStoresCallback() {
+            @Override
+            public void onSuccess(Category category) {
+                addCategoryInBackground(category);
+                categories.add(category);
+                updateUI();
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Snackbar.make(findViewById(android.R.id.content), "Error fetching category for tag", Snackbar.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void addCategoryInBackground(Category category) {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                categoryDao.insert(category);
+                Log.d("DAO", "Inserted category: " + category.getCategoryName()+ category.getStoresList());
+            }
+        });
+    }
+
+    public void getCategoryInBackground(String tag) {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                Category category = database.categoryDao().getCategory(tag);
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (category != null && category.getStoresList().equals("[]")) {
+                            Log.d("DAO", "Fetched category from DB: " + category.getCategoryName() + category.getStoresList());
+                            categories.add(category);
+                            updateUI();
+                        } else {
+                            Log.d("DAO", "No category found for tag: " + tag);
+                            fetchCategoryFromServer(tag);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void fetchTypes(String token) {
+        TagFetcher tagFetcher = new TagFetcher();
+        tagFetcher.fetchTags(token, new TagFetcher.FetchTagsCallback() {
+            @Override
+            public void onSuccess(List<String> c) {
+                tags.addAll(c);
+                tagsAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Snackbar.make(findViewById(android.R.id.content), "Error fetching types", Snackbar.LENGTH_SHORT).show();
             }
         });
     }
 
     private void updateUI() {
-        RecyclerView categoriesList = findViewById(R.id.categories);
-        categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
-        categoriesList.setLayoutManager(new LinearLayoutManager(this));
-        CategoryAdapter adapter = new CategoryAdapter(this, categories);
-        categoriesList.setAdapter(adapter);
-    }
-    private void openAddContactDialog() {
-        final Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.dialog_add_contact);
-        dialog.setTitle("Add Contact");
-        final EditText usernameEditText = dialog.findViewById(R.id.usernameEditText);
-        // Add contact button
-        Button addButton = dialog.findViewById(R.id.addButton);
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String username = usernameEditText.getText().toString().trim();
-                if (!username.isEmpty()) {
-                    addContact(username);
-                    // Restart the activity to apply the theme changes
-                    Intent intent = new Intent(Home.this, Home.class);
-
-                    finish();
-                    startActivity(intent);
-                }
-            }
-        });
-        dialog.show();
+        categoryAdapter.notifyDataSetChanged();
     }
 
-    private void openSettingsDialog() {
-        final Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.dialog_settings);
-        dialog.setTitle("Settings");
-
-        // Initialize views
-        Switch themeSwitch = dialog.findViewById(R.id.themeSwitch);
-        Button saveButton = dialog.findViewById(R.id.saveButton);
-
-        // Load saved theme preference
-        SharedPreferences sharedPreferencesSettings = getSharedPreferences("Settings", MODE_PRIVATE);
-        boolean isDarkThemeEnabled = sharedPreferencesSettings.getBoolean("DarkTheme", false);
-        themeSwitch.setChecked(isDarkThemeEnabled);
-        //EditText serverPortEditText = dialog.findViewById(R.id.serverPortEditText); // Add this line
-
-
-
-        // Theme switch listener
-        themeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // Save theme preference
-                SharedPreferences.Editor editor = sharedPreferencesSettings.edit();
-                editor.putBoolean("DarkTheme", isChecked);
-                editor.apply();
-
-                // Restart the activity to apply the theme changes
-                Intent intent = new Intent(Home.this, Home.class);
-
-                finish();
-                startActivity(intent);
-            }
-        });
-
-        // Save button listener
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @SuppressLint("StringFormatInvalid")
-            @Override
-            public void onClick(View v) {
-                // Get the entered server path
-                //String serverPort = serverPortEditText.getText().toString().trim();
-
-                // Save server path and port preferences
-                //SharedPreferences.Editor editor = sharedPreferences.edit();
-                //editor.putString("ServerPort", serverPort);
-                //.apply();
-
-                // Update the BaseUrl value
-                //tring newBaseUrl = getString(R.string.ServerPath) + ":" + getString(R.string.ServerPort) + "/";
-                //MyApplication.context.getResources().getString(R.string.BaseUrl, newBaseUrl);
-
-                // Restart the activity to apply the theme changes
-                //Intent intent = new Intent(ChatsList.this, MainActivity.class);
-
-                //finish();
-                //startActivity(intent);
-            }
-        });
-
-        dialog.show();
-    }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        //chatsViewModel.getChats(me.getUsername());
-    }
-
-
-
-    private void addContact(String username) {
-
-        //LiveData<Chat> newChat = chatsViewModel.createChat(username);
-        //chatsViewModel.getChats(me.getUsername()).observe(this, chats -> {
-        //    filteredChats.setValue(chats); // Initialize filteredChats with all chats
-        //    adapter.setChats(chats);
-        //});
-        //newChat.observe(this, chat -> {
-        //    Log.e("ChatAPI", "on observe");
-        //    List<Chat> newListChats = filteredChats.getValue();
-        //    newListChats.add(chat); // Initialize filteredChats with all chats
-         //   filteredChats.setValue(newListChats);
-        //    adapter.setChats(newListChats);
-
-        //});
-        //Log.e("ChatAPI", "newChat in activity "+ newChat.getValue());
-        // TODO: add chat to relevant list
-        //adapter.notifyDataSetChanged();
+    public void onRemoveClick(int position) {
+        chosenStores.remove(position);
+        chosenStoresAdapter.notifyItemRemoved(position);
+        chosenStoresAdapter.notifyItemRangeChanged(position, chosenStores.size());
+        updateBadge();
+        categoryAdapter.notifyDataSetChanged();
     }
 }

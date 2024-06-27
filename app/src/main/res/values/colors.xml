@@ -11,4 +11,15 @@
     <color name="colorPrimaryDarkT">#3F51B5</color>
     <color name="colorAccent">#361275</color>
     <color name="colorAccentDark">#361275</color>
+    <color name="added_to_list_color">#7A673AB7</color>
+    <color name="background_search">#F1F1F1</color>
+
+    <color name="background">#FFFFFF</color>
+    <color name="backgroundDark">#515151</color>
+
+    <color name="selected_tag_background">@color/lightPrimary</color>
+    <color name="unselected_tag_background">#DCDCDC</color>
+    <color name="selected_tag_text">@color/colorPrimary</color>
+    <color name="unselected_tag_text">#787878</color>
+
 </resources>

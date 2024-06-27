@@ -328,6 +328,8 @@ public class DevTool extends AppCompatActivity {
             setFloor(2, item.getTitle());
         } else if (id == R.id.floor_3) {
             setFloor(3, item.getTitle());
+        }else if(id == R.id.sync_data) {
+            devToolViewModel.uploadData();
         }
 
         return super.onOptionsItemSelected(item);

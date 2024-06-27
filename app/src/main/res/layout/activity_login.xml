@@ -11,24 +11,35 @@
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10pt"
+        android:layout_margin="14dp"
+        android:layout_marginBottom="20dp"
         android:background="@drawable/bg_white_rounded"
         android:orientation="vertical"
-
-        android:padding="20dp"
+        android:padding="25dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.293"
-        tools:layout_editor_absoluteX="23dp">
+        app:layout_constraintVertical_bias="0.293">
 
         <TextView
             android:id="@+id/loginMsg"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_semibold"
             android:text="Login"
-            android:textAlignment="center"
             android:textColor="@color/colorPrimary"
-            android:textSize="36sp"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:fontFamily="@font/poppins_semibold"
+            android:text="Username"
+            android:textColor="#c2c2c2"
+            android:textSize="13sp"
             android:textStyle="bold" />
 
 
@@ -36,33 +47,65 @@
             android:id="@+id/unameEditText"
             android:layout_width="match_parent"
             android:layout_height="45dp"
-            android:layout_marginTop="40dp"
-            android:background="@drawable/custom_edittext"
+            android:layout_marginTop="16dp"
             android:drawablePadding="8dp"
-            android:hint="Username"
+            android:fontFamily="@font/poppins_semibold"
+            android:maxLines="1"
             android:padding="8dp"
             android:textColor="@color/black"
-            android:textColorHighlight="@color/cardview_dark_background" />
+            android:textColorHighlight="@color/cardview_dark_background"
+            android:textCursorDrawable="@drawable/grey_cursor_color"
+            android:textSize="15sp" />
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:layout_marginBottom="6dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginRight="44dp"
+            android:background="#d5d5d5" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:fontFamily="@font/poppins_semibold"
+            android:text="Password"
+            android:textColor="#c2c2c2"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
         <EditText
             android:id="@+id/pswEditText"
             android:layout_width="match_parent"
             android:layout_height="45dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/custom_edittext"
+
+            android:layout_marginTop="16dp"
             android:drawablePadding="8dp"
-            android:hint="Password"
+            android:fontFamily="@font/poppins_semibold"
             android:inputType="textPassword"
+            android:maxLines="1"
             android:padding="8dp"
             android:textColor="@color/black"
-            android:textColorHighlight="@color/cardview_dark_background" />
+            android:textColorHighlight="@color/cardview_dark_background"
+            android:textCursorDrawable="@drawable/grey_cursor_color"
+            android:textSize="15sp" />
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginRight="44dp"
+            android:background="#d5d5d5" />
 
         <Button
             android:id="@+id/loginBtn"
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginTop="30dp"
+            android:layout_marginBottom="10dp"
             android:background="@drawable/bg_primary_rounded"
+            android:fontFamily=""
             android:text="Login"
             android:textColor="@color/white"
             android:textSize="18sp"
@@ -83,13 +126,15 @@
 
     <Button
         android:id="@+id/toRegister"
+        android:background="@android:color/transparent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"
-        android:background="@android:color/transparent"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/poppins_semibold"
         android:text="Not yet registered? Sign Up Now"
         android:textAllCaps="false"
+        android:textSize="12sp"
         android:textColor="@color/lightPrimary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

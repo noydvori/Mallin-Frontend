@@ -15,11 +15,9 @@ import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.ex3.api.UserAPI;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.ByteArrayOutputStream;
 import java.util.concurrent.CompletableFuture;
@@ -30,8 +28,6 @@ public class Register extends AppCompatActivity {
     private EditText usernameEditText;
     private EditText passwordEditText;
     private EditText displayNameEditText;
-    private ImageView profilePicImageView;
-    private TextView profilePicPathTextView;
     private Button registerButton;
     private UserAPI userAPI;
 
@@ -55,8 +51,6 @@ public class Register extends AppCompatActivity {
         // Password masking
         passwordEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
-
-
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -71,60 +65,29 @@ public class Register extends AppCompatActivity {
         String displayName = displayNameEditText.getText().toString().trim();
 
         if (TextUtils.isEmpty(username)) {
-            showToast("Please enter a username");
+            Snackbar.make(findViewById(android.R.id.content), "Please enter a username", Snackbar.LENGTH_SHORT).show();
+
             return;
         }
-
         if (TextUtils.isEmpty(password)) {
-            showToast("Please enter a password");
-            return;
-        }
-
-        if (!isValidPassword(password)) {
-            showToast("Password should have at least one numerical digit(0-9). Password's length should be in between 8 to 15 characters. Password should have at least one lowercase letter(a-z). Password should have at least one uppercase letter(A-Z)");
+            Snackbar.make(findViewById(android.R.id.content), "Please enter a password", Snackbar.LENGTH_SHORT).show();
             return;
         }
 
         if (TextUtils.isEmpty(displayName)) {
-            showToast("Please enter a display name");
+            Snackbar.make(findViewById(android.R.id.content), "Please enter your name", Snackbar.LENGTH_SHORT).show();
             return;
         }
+        if (!isValidPassword(password)) {
+            Snackbar.make(findViewById(android.R.id.content), "Password should have at least one numerical digit(0-9). Password's length should be in between 8 to 15 characters. Password should have at least one lowercase letter(a-z). Password should have at least one uppercase letter(A-Z)", Snackbar.LENGTH_SHORT).show();
 
+
+            return;
+        }
         // All fields are valid
         handleRegister();
 
     }
-
-   //private boolean isValidPassword(String password) {
-   //    // Password should have a minimum length of 8 characters and a maximum length of 15 characters
-   //    if (password.length() < 8 || password.length() > 15) {
-   //        return false;
-   //    }
-
-   //    // Password should contain at least one uppercase letter
-   //    boolean containsUppercase = false;
-   //    // Password should contain at least one lowercase letter
-   //    boolean containsLowercase = false;
-   //    // Password should contain at least one numerical digit
-   //    boolean containsDigit = false;
-
-   //    for (char c : password.toCharArray()) {
-   //        if (Character.isUpperCase(c)) {
-   //            containsUppercase = true;
-   //        } else if (Character.isLowerCase(c)) {
-   //            containsLowercase = true;
-   //        } else if (Character.isDigit(c)) {
-   //            containsDigit = true;
-   //        }
-
-   //        // Break the loop if all required character types are found
-   //        if (containsUppercase && containsLowercase && containsDigit) {
-   //            break;
-   //        }
-   //    }
-
-   //    return containsUppercase && containsLowercase && containsDigit;
-   //}
 
     private String getImagePathFromUri(Uri uri) {
         String imagePath = null;
@@ -148,28 +111,11 @@ public class Register extends AppCompatActivity {
         if (requestCode == PICK_IMAGE_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
             // The user has selected an image
             Uri imageUri = data.getData();
-
             // Get the selected image path
             String imagePath = getImagePathFromUri(imageUri);
-
-
-            // Update the path TextView
-            profilePicPathTextView.setText(imagePath);
-
-            // Set the selected image to the ImageView
-            profilePicImageView.setImageURI(imageUri);
         }
     }
 
-    private void performRegistration(String username, String password, String displayName, String profilePicPath) {
-        // Convert the image to base64 string
-        //String base64Image = convertImageToBase64(profilePicPath); - error!
-
-        // TODO: Add the user to the database!!
-        //registerViewModel.createNewUser(username, password, displayName, profilePicPath);
-        Intent intent = new Intent(this, Login.class);
-        startActivity(intent);
-    }
     private void handleRegister() {
         // Get values from the EditText fields
         String username = usernameEditText.getText().toString().trim();
@@ -187,7 +133,9 @@ public class Register extends AppCompatActivity {
                     showToast(status);
                 }
             }).exceptionally(ex -> {
-                showToast("An error occurred: " + ex.getMessage());
+                Snackbar.make(findViewById(android.R.id.content), "An error occurred", Snackbar.LENGTH_SHORT).show();
+
+
                 return null;
             });
 

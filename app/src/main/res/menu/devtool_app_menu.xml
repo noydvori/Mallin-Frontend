@@ -11,5 +11,5 @@
     <item app:showAsAction="never" android:id="@+id/floor_1" android:title="@string/floor_1"/>
     <item app:showAsAction="never" android:id="@+id/floor_2" android:title="@string/floor_2"/>
     <item app:showAsAction="never" android:id="@+id/floor_3" android:title="@string/floor_3"/>
-
+    <item app:showAsAction="never" android:id="@+id/sync_data" android:title="@string/sync_data"/>
 </menu>

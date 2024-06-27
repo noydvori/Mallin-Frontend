@@ -1,11 +1,7 @@
 package com.example.ex3.api;
 
 import com.example.ex3.objects.NameAndPassword;
-import com.example.ex3.R;
-import com.example.ex3.viewModels.MyApplication;
-
 import java.util.concurrent.CompletableFuture;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -25,13 +21,6 @@ public class TokenAPI {
         webServiceAPI = retrofit.create(WebServiceAPI.class);
     }
 
-    public void setRetrofit(String url){
-        retrofit = new Retrofit.Builder()
-                .baseUrl(url)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        webServiceAPI = retrofit.create(WebServiceAPI.class);
-    }
     public static TokenAPI getInstance() {
         if (instance == null) {
             instance = new TokenAPI();
@@ -55,7 +44,7 @@ public class TokenAPI {
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                t.printStackTrace(); // Complete the CompletableFuture exceptionally with the thrown Throwable
+                t.printStackTrace();
             }
         });
         return future;

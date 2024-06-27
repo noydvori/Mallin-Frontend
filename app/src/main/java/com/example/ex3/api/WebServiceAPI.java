@@ -1,11 +1,12 @@
 package com.example.ex3.api;
 
-import com.example.ex3.objects.Category;
+import com.example.ex3.devtool.enteties.Wifi;
+import com.example.ex3.entities.Store;
+import com.example.ex3.entities.Category;
 import com.example.ex3.objects.NameAndPassword;
 import com.example.ex3.objects.User;
 import com.example.ex3.objects.UserInfo;
-
-import okhttp3.ResponseBody;
+import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -13,7 +14,6 @@ import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
-import retrofit2.http.Url;
 
 public interface WebServiceAPI {
     @GET("Users")
@@ -25,11 +25,26 @@ public interface WebServiceAPI {
     @POST("Tokens")
     Call<String> createToken(@Body NameAndPassword nameAndPassword);
 
+    @POST("wifi/batch")
+    Call<Void> createWifiBatch(@Body List<Wifi> wifiList);
+
     @GET("AzrieliStore/type/{storeType}")
     Call<Category> getStoresByType(
             @Header("Authorization") String token,
             @Path("storeType") String storeType,
             @Query("mallname") String mallname
+    );
+    @GET("AzrieliStore/name/{storeName}")
+    Call<List<Store>> getStoresByName(
+            @Header("Authorization") String token,
+            @Path("storeName") String storeName,
+            @Query("mallname") String mallname
+    );
+
+    @GET("AzrieliStore/mallname/{mallname}")
+    Call<List<String>> getTypes(
+            @Header("Authorization") String token,
+            @Path("mallname") String mallname
     );
 
 }
