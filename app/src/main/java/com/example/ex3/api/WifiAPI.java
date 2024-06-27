@@ -37,27 +37,27 @@ public class WifiAPI {
         return instance;
     }
 
-    public CompletableFuture<> getLocation() {
-        Call<List<Node>> call = this.webServiceAPI.get
-        CompletableFuture<Category> future = new CompletableFuture<>();
-
-        call.enqueue(new Callback<List<Node>>() {
-            @Override
-            public void onResponse(Call<List<Node>> call, Response<List<Node>> response) {
-                if (response.isSuccessful()) {
-                    future.complete();
-                } else {
-                    future.completeExceptionally(new Error("Invalid token"));
-                    System.out.println("invalid token");
-                }
-            }
-            @Override
-            public void onFailure(Call<List<Node>> call, Throwable t) {
-                future.completeExceptionally(t);
-            }
-        });
-        return future;
-    }
+//    public CompletableFuture<List<Node>> getLocation() {
+//       // Call<List<Node>> call = this.webServiceAPI.get
+//        CompletableFuture<Category> future = new CompletableFuture<>();
+//
+//        call.enqueue(new Callback<List<Node>>() {
+//            @Override
+//            public void onResponse(Call<List<Node>> call, Response<List<Node>> response) {
+//                if (response.isSuccessful()) {
+//                    future.complete("ok");
+//                } else {
+//                    future.completeExceptionally(new Error("Invalid token"));
+//                    System.out.println("invalid token");
+//                }
+//            }
+//            @Override
+//            public void onFailure(Call<List<Node>> call, Throwable t) {
+//                future.completeExceptionally(t);
+//            }
+//        });
+//        return future;
+//    }
 
     public CompletableFuture<String> postWifiList(List<Wifi> wifiList) {
         Call<Void> call = this.webServiceAPI.createWifiBatch(wifiList);
