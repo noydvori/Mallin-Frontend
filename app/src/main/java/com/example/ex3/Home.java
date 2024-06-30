@@ -29,6 +29,7 @@ import com.example.ex3.api.FavoritesAPI;
 import com.example.ex3.api.TagAPI;
 import com.example.ex3.NavigateActivity;
 import com.example.ex3.daos.CategoryDao;
+import com.example.ex3.daos.StoreDao;
 import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
 import com.example.ex3.localDB.AppDB;
@@ -48,6 +49,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class Home extends AppCompatActivity{
+    private static final int REQUEST_CODE_NAVIGATE = 2;
     private RecyclerView categoriesList;
     private static final int REQUEST_CODE_FAVORITES = 1;
 
@@ -62,6 +64,8 @@ public class Home extends AppCompatActivity{
     private ChosenStoresAdapter chosenStoresAdapter;
     private AppDB database;
     private CategoryDao categoryDao;
+    private StoreDao storeDao;
+
     private CategoryAdapter categoryAdapter;
     private RecyclerView tagsRecyclerView;
     private BottomNavigationView bottomNavigationView;
@@ -70,6 +74,7 @@ public class Home extends AppCompatActivity{
     boolean isLoading = false;
     private int currentPage;
     private int remainingRequests = 18;
+
 
 
     @Override
@@ -187,7 +192,7 @@ public class Home extends AppCompatActivity{
                             return true;
                         case R.id.menu_navigate:
                             intent = new Intent(Home.this, NavigateActivity.class);
-                            startActivity(intent);
+                            startActivityForResult(intent, REQUEST_CODE_NAVIGATE);
                             return true;
                         case R.id.menu_favorites:
                             intent = new Intent(Home.this, Favorites.class);
@@ -270,11 +275,7 @@ public class Home extends AppCompatActivity{
         categories.clear();
         getCategoryInBackground(tag);
     }
-
-
-    private void getCategoryInBackground(String tag) {
-        showLoadingIndicator(true);
-
+    public void getCategoryInBackground(String tag) {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
         executorService.execute(() -> {
@@ -293,7 +294,6 @@ public class Home extends AppCompatActivity{
                     }
                 }
                 showLoadingIndicator(false);
-
             });
         });
     }

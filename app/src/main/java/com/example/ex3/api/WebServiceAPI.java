@@ -62,4 +62,8 @@ public interface WebServiceAPI {
 
     @PUT("Users/favorites/remove")
     Call<Void> removeFromFavorites(@Header("Authorization") String token, @Body Store store);
+
+    Call<List<Store>> getClosestStores(String token, String ssid, String bssid, int rssi);
+    //Call<????> getCurrentLocation(String token, String ssid, String bssid, int rssi);
+
 }

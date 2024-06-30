@@ -183,7 +183,6 @@ public class Favorites extends AppCompatActivity{
                         intent = new Intent(Favorites.this, Home.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
-                        finish();
                         return true;
                     case R.id.menu_navigate:
                         intent = new Intent(Favorites.this, NavigateActivity.class);
@@ -222,8 +221,8 @@ public class Favorites extends AppCompatActivity{
     @Override
     public void onBackPressed() {
         UserPreferencesUtils.setChosenStores(context, chosenStores); // Save the updated list
-        Intent intent = new Intent();
-        setResult(RESULT_OK, intent);
-        super.onBackPressed();
+        Intent intent = new Intent(Favorites.this, Home.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
         }
 }

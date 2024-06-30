@@ -15,10 +15,8 @@ import com.example.ex3.devtool.database.GraphDatabase;
 import com.example.ex3.devtool.graph.Graph;
 import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.devtool.managers.CustomAccelerometerManager;
-import com.example.ex3.devtool.managers.CustomBluetoothManager;
-import com.example.ex3.devtool.managers.CustomMagneticFieldManager;
-import com.example.ex3.devtool.managers.CustomWifiManager;
 import com.example.ex3.devtool.handlers.MapScalingHandler;
+import com.example.ex3.managers.NavigationWifiManager;
 import com.example.ex3.viewModels.NavigateViewModel;
 import com.example.ex3.viewModels.NavigateViewModelFactory;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -29,12 +27,10 @@ import java.util.List;
 public class NavigateActivity extends AppCompatActivity {
     private static final String mapActivity = "MapActivity";
     private NavigateViewModel navigateViewModel;
-    private CustomWifiManager customWifiManager;
+    private NavigationWifiManager navigationWifiManager;
     private BottomNavigationView bottomNavigationView;
 
     private GraphOverlayImageView mImageView;
-    private CustomBluetoothManager customBluetoothManager;
-    private CustomMagneticFieldManager customMagneticFieldManager;
     private CustomAccelerometerManager customAccelerometerManager;
     private TabLayout tabLayout;
 
@@ -48,7 +44,6 @@ public class NavigateActivity extends AppCompatActivity {
         tabLayout = findViewById(R.id.tab_layout);
         mImageView.setImage(ImageSource.resource(R.drawable.floor_1));
         Log.d(mapActivity, "start this app");
-        customMagneticFieldManager = new CustomMagneticFieldManager(this, navigateViewModel);
         customAccelerometerManager = new CustomAccelerometerManager(this);
         bottomNavigationView = findViewById(R.id.bottom_nav_menu);
         bottomNavigationView.getMenu().findItem(R.id.menu_navigate).setChecked(true);
@@ -57,6 +52,7 @@ public class NavigateActivity extends AppCompatActivity {
             switch (item.getItemId()) {
                 case R.id.menu_home:
                     intent = new Intent(NavigateActivity.this, Home.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
                     return true;
                 case R.id.menu_navigate:
@@ -80,26 +76,20 @@ public class NavigateActivity extends AppCompatActivity {
 
         graphChangedListeners(mImageView);
 
+        // Check and request permissions for location if needed
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
         } else {
+            // Initialize the WiFi manager
             initializeWifiManager();
         }
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
-        } else {
-            initializeBluetoothManager();
-        }
         // Add tabs to the TabLayout
         tabLayout.addTab(tabLayout.newTab().setText("Floor 0"));
         tabLayout.addTab(tabLayout.newTab().setText("Floor 1"));
         tabLayout.addTab(tabLayout.newTab().setText("Floor 2"));
         tabLayout.addTab(tabLayout.newTab().setText("Floor 3"));
-
-
 
         // Add TabSelectedListener to change image based on selected tab
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -123,6 +113,16 @@ public class NavigateActivity extends AppCompatActivity {
         // Set initial floor
         setFloor(0, "Floor 0");
     }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Stop WiFi scan when activity is no longer visible
+        if (navigationWifiManager != null) {
+            navigationWifiManager.stopScan();
+        }
+    }
+
+
 
     private void graphChangedListeners(GraphOverlayImageView imageView) {
         navigateViewModel.getSelectedFloor().observe(this, new Observer<Integer>() {
@@ -158,8 +158,8 @@ public class NavigateActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 2) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Initialize the WiFi manager
                 initializeWifiManager();
-                initializeBluetoothManager();
             } else {
                 // Handle the case where the user denies the permission
             }
@@ -167,12 +167,9 @@ public class NavigateActivity extends AppCompatActivity {
     }
 
     private void initializeWifiManager() {
-        customWifiManager = new CustomWifiManager(this, navigateViewModel);
+        navigationWifiManager = new NavigationWifiManager(this);
     }
 
-    private void initializeBluetoothManager() {
-        customBluetoothManager = new CustomBluetoothManager(this, navigateViewModel);
-    }
 
     public int getFloorResource(Integer floor) {
         switch (floor) {

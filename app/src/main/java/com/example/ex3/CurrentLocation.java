@@ -20,64 +20,29 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Bundle;
-import android.provider.MediaStore;
-import android.util.Base64;
 import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.ex3.api.CategoryAPI;
-import com.example.ex3.api.WebServiceAPI;
 import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
+import com.example.ex3.managers.CurrentLocationWifiManager;
 import com.example.ex3.utils.UserPreferencesUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
-import com.example.ex3.api.WebServiceAPI;
-import com.example.ex3.entities.Category;
-import com.example.ex3.entities.Store;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CurrentLocation extends AppCompatActivity {
 
@@ -87,6 +52,8 @@ public class CurrentLocation extends AppCompatActivity {
     private String bearerToken;
     private List<Store> chosenStores;
     private static final int REQUEST_IMAGE_CAPTURE = 1;
+    private CurrentLocationWifiManager currentLocationWifiManager;
+
     private Button buttonCapture;
 
     BottomNavigationView bottomNavigationView;
@@ -169,7 +136,8 @@ public class CurrentLocation extends AppCompatActivity {
 
             // Navigate to Home activity
             Intent homeIntent = new Intent(CurrentLocation.this, Home.class);
-            setResult(RESULT_OK, homeIntent);
+            homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
             startActivity(homeIntent);
         });
 
@@ -185,7 +153,8 @@ public class CurrentLocation extends AppCompatActivity {
 
                         // Navigate to Home activity
                         Intent homeIntent = new Intent(CurrentLocation.this, Home.class);
-                        setResult(RESULT_OK, homeIntent);
+                        homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
                         startActivity(homeIntent);
                         return true;
                     case R.id.menu_navigate:
@@ -209,6 +178,7 @@ public class CurrentLocation extends AppCompatActivity {
         });
         buttonCapture = findViewById(R.id.button_capture);
         buttonCapture.setOnClickListener(v -> checkCameraPermission());
+        initializeWifiManager();
     }
 
     private void checkCameraPermission() {
@@ -292,6 +262,18 @@ public class CurrentLocation extends AppCompatActivity {
         }
         return false;
     }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Stop WiFi scan when activity is no longer visible
+        if (currentLocationWifiManager != null) {
+            currentLocationWifiManager.stopScan();
+        }
+    }
+    private void initializeWifiManager() {
+        currentLocationWifiManager = new CurrentLocationWifiManager(this);
+    }
+
 
     // Method to update the state of the confirm button
     private void updateButtonState(String v) {
