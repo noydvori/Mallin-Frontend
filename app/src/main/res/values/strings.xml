@@ -13,10 +13,8 @@
     <string name="BASE_URL">http://192.168.153.1:5000/api/</string>
     <string name="addContact">addContact</string>
     <string name="profilepic">profilePic</string>
-    <string name="app_name">YourAppName</string>
+    <string name="app_name">Mallin</string>
     <string name="google_cloud_vision_api_key">YOUR_API_KEY_HERE</string>
-    <string name="BaseUrl">http://10.0.2.2:12346/</string>
-    <string name="ServerPath">http://10.0.2.2</string>
     <string name="ServerPort">12346</string>
     <string name="settings">settings</string>
     <string name="select_picture" />
@@ -33,4 +31,5 @@
     <string name="floor_2">floor 2</string>
     <string name="open_string">Open</string>
     <string name="closed_string">Closed</string>
+    <string name="category_placeholder">category</string>
 </resources>
