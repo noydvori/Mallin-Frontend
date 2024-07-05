@@ -1,8 +1,12 @@
 package com.example.ex3.api;
 
+import android.net.wifi.ScanResult;
+
+import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
 import com.example.ex3.objects.NameAndPassword;
+import com.example.ex3.objects.Paths;
 import com.example.ex3.objects.User;
 import com.example.ex3.objects.UserInfo;
 import java.util.List;
@@ -62,8 +66,11 @@ public interface WebServiceAPI {
 
     @PUT("Users/favorites/remove")
     Call<Void> removeFromFavorites(@Header("Authorization") String token, @Body Store store);
-
-    Call<List<Store>> getClosestStores(String token, String ssid, String bssid, int rssi);
-    //Call<????> getCurrentLocation(String token, String ssid, String bssid, int rssi);
+    @GET("Navigation")
+    Call<Paths> getRout(String token, Store store, List<Store> stores);
+    @GET("Navigation/order")
+    Call<List<GraphNode>> getOrderedRout(String token, Store store, List<Store> stores);
+    @GET("Location")
+    Call<List<Store>> getClosestStores(String token, List<ScanResult> scanResults);
 
 }

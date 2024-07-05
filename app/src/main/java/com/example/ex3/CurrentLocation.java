@@ -1,25 +1,25 @@
 package com.example.ex3;
+
 import static com.example.ex3.MyApplication.context;
 
 import android.Manifest;
-
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
-import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -29,9 +29,12 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.ex3.api.CategoryAPI;
+import com.example.ex3.adapters.StoreAdapter;
+import com.example.ex3.api.NavigationAPI;
+import com.example.ex3.daos.CategoryDao;
 import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
+import com.example.ex3.localDB.AppDB;
 import com.example.ex3.managers.CurrentLocationWifiManager;
 import com.example.ex3.utils.UserPreferencesUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -39,10 +42,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.room.Room;
 
 public class CurrentLocation extends AppCompatActivity {
 
@@ -53,11 +56,13 @@ public class CurrentLocation extends AppCompatActivity {
     private List<Store> chosenStores;
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private CurrentLocationWifiManager currentLocationWifiManager;
-
+    private AppDB database;
+    private CategoryDao categoryDao;
     private Button buttonCapture;
+    private List<Store> allStores;
+    private ListView suggestionsList;
 
     BottomNavigationView bottomNavigationView;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,120 +70,153 @@ public class CurrentLocation extends AppCompatActivity {
         setContentView(R.layout.activity_current_location);
         bearerToken = UserPreferencesUtils.getToken(context);
         chosenStores = UserPreferencesUtils.getChosenStores(context);
-        CategoryAPI categoryAPI = CategoryAPI.getInstance();
 
-        CompletableFuture<Category> future = categoryAPI.getStoresByType(bearerToken, "all");
+        database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "DB")
+                .fallbackToDestructiveMigration()
+                .build();
+        categoryDao = database.categoryDao();
 
-        future.thenAccept(category -> {
-            for (Store store : category.getStoresList()) {
-                stringsStoresList.add(store.getStorename());
-            }
-            runOnUiThread(() -> {
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                        CurrentLocation.this,
-                        android.R.layout.select_dialog_item,
-                        stringsStoresList);
+        // Fetch categories in a background thread
+        new FetchCategoriesTask().execute();
 
-                AutoCompleteTextView actv = findViewById(R.id.autoCompleteTextView);
-                actv.setThreshold(1);
-                actv.setAdapter(adapter);
-                actv.setTextColor(Color.RED);
+        // Rest of your initialization code
+        initializeViews();
+        setupListeners();
+        initializeWifiManager();
+    }
 
-                // Set up listener to update button state when text changes
-                actv.addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                        // Not needed
+    // AsyncTask to fetch categories from the database
+    private class FetchCategoriesTask extends AsyncTask<Void, Void, Category> {
+
+        @Override
+        protected Category doInBackground(Void... voids) {
+            return categoryDao.getCategory("all");
+        }
+
+        @Override
+        protected void onPostExecute(Category category) {
+            if (category != null) {
+                allStores = category.getStoresList();
+                for (Store store : category.getStoresList()) {
+                    stringsStoresList.add(store.getStorename());
+                }
+                runOnUiThread(() -> {
+                    AutoCompleteTextView actv = findViewById(R.id.autoCompleteTextView);
+                    actv.setThreshold(1);
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                            CurrentLocation.this,
+                            android.R.layout.select_dialog_item,
+                            stringsStoresList);
+                    actv.setAdapter(adapter);
+                    actv.setTextColor(Color.RED);
+
+                    actv.addTextChangedListener(new TextWatcher() {
+                        @Override
+                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                            // Not needed
+                        }
+
+                        @Override
+                        public void onTextChanged(CharSequence s, int start, int before, int count) {
+                            updateButtonState(s.toString());
+                        }
+
+                        @Override
+                        public void afterTextChanged(Editable s) {
+                            // Not needed
+                        }
+                    });
+
+                    // Display first three stores in the ListView
+                    List<Store> firstThreeStores = new ArrayList<>();
+                    // TODO: Hi Lioz, i need you to check that the closest stores get to here...
+                    List<Store> closestStores = UserPreferencesUtils.getChosenStores(context);
+                    System.out.println(closestStores);
+                    for (int i = 0; i < Math.min(3, allStores.size()); i++) {
+                        firstThreeStores.add(allStores.get(i));
                     }
+                    StoreAdapter suggestionsAdapter = new StoreAdapter(
+                            CurrentLocation.this,
+                            firstThreeStores);
 
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-                        // Update button state when text changes
-                        updateButtonState(s.toString());
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {
-                        // Not needed
-                    }
+                    suggestionsList.setAdapter(suggestionsAdapter);
+                    suggestionsList.setOnItemClickListener((parent, view, position, id) -> {
+                        Store selectedStore = (Store) parent.getItemAtPosition(position);
+                        actv.setText(selectedStore.getStorename());
+                        updateButtonState(selectedStore.getStorename());
+                    });
                 });
-            });
-        }).exceptionally(throwable -> {
-            runOnUiThread(() ->
-                    Toast.makeText(CurrentLocation.this, "Error fetching stores", Toast.LENGTH_SHORT).show());
-            return null;
-        });
+            } else {
+                // Handle the case where no category was found
+                Toast.makeText(CurrentLocation.this, "No categories found", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 
-
+    // Initialize views and listeners
+    private void initializeViews() {
         buttonConfirm = findViewById(R.id.button_confirm);
-        buttonConfirm.setOnClickListener(v -> {
-            // Get the text from the AutoCompleteTextView
-            AutoCompleteTextView autoCompleteTextView = findViewById(R.id.autoCompleteTextView);
-            String location = autoCompleteTextView.getText().toString();
+        buttonConfirm.setEnabled(false);
+        buttonCapture = findViewById(R.id.button_capture);
+        suggestionsList = findViewById(R.id.suggestions_list);
+    }
 
-            // Check if location is correct before proceeding
-            if (isLocationCorrect(location)) {
-                if (chosenStores.size() == 1) {
-                    Intent intent = new Intent(CurrentLocation.this, NavigateActivity.class);
-                    startActivity(intent);
+    private void setupListeners() {
+        buttonConfirm.setOnClickListener(v -> {
+            AutoCompleteTextView autoCompleteTextView = findViewById(R.id.autoCompleteTextView);
+            String locationName = autoCompleteTextView.getText().toString();
+
+            if (isLocationCorrect(locationName)) {
+                Store location = getStoreByName(locationName);
+                UserPreferencesUtils.setLocation(location);
+                if (location != null) {
+                    if (chosenStores.size() == 1) {
+                        // TODO: Adi this is your function
+                        //fetchOrderedRout(location, chosenStores);
+                        Intent intent = new Intent(CurrentLocation.this, NavigateActivity.class);
+                        startActivity(intent);
+                    } else {
+                        // TODO: Adi this is your function
+                        //fetchRout(location, chosenStores);
+                        Intent intent = new Intent(CurrentLocation.this, ConfirmPath.class);
+                        startActivity(intent);
+                    }
                 } else {
-                    Intent intent = new Intent(CurrentLocation.this, ConfirmPath.class);
-                    startActivity(intent);
+                    Toast.makeText(CurrentLocation.this, "Store not found", Toast.LENGTH_SHORT).show();
                 }
             } else {
                 Toast.makeText(CurrentLocation.this, "Location is not correct", Toast.LENGTH_SHORT).show();
             }
         });
 
-        updateButtonState("");
         Button buttonBack = findViewById(R.id.button_back);
         buttonBack.setOnClickListener(v -> {
-
-            // Navigate to Home activity
             Intent homeIntent = new Intent(CurrentLocation.this, Home.class);
             homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
             startActivity(homeIntent);
         });
 
-        // Initialize the BottomNavigationView
-        bottomNavigationView = findViewById(R.id.bottom_nav_menu);
-
-        // Set up the item selected listener
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.menu_home:
-
-                        // Navigate to Home activity
-                        Intent homeIntent = new Intent(CurrentLocation.this, Home.class);
-                        homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-                        startActivity(homeIntent);
-                        return true;
-                    case R.id.menu_navigate:
-                        // Navigate to NavigateActivity and pass the token
-                        Intent navigateIntent = new Intent(CurrentLocation.this, NavigateActivity.class);
-
-
-                        startActivity(navigateIntent);
-                        return true;
-                    case R.id.menu_favorites:
-                        // Navigate to SettingsActivity and pass the token
-                        Intent favoritesIntent = new Intent(CurrentLocation.this, Favorites.class);
-
-
-                        // Assuming bearerToken is your token variable
-                        startActivity(favoritesIntent);
-                        return true;
-                }
-                return false;
-            }
-        });
-        buttonCapture = findViewById(R.id.button_capture);
         buttonCapture.setOnClickListener(v -> checkCameraPermission());
-        initializeWifiManager();
+
+        bottomNavigationView = findViewById(R.id.bottom_nav_menu);
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.menu_home:
+                    Intent homeIntent = new Intent(CurrentLocation.this, Home.class);
+                    homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(homeIntent);
+                    return true;
+                case R.id.menu_navigate:
+                    Intent navigateIntent = new Intent(CurrentLocation.this, NavigateActivity.class);
+                    startActivity(navigateIntent);
+                    return true;
+                case R.id.menu_favorites:
+                    Intent favoritesIntent = new Intent(CurrentLocation.this, Favorites.class);
+                    startActivity(favoritesIntent);
+                    return true;
+            }
+            return false;
+        });
     }
 
     private void checkCameraPermission() {
@@ -189,6 +227,24 @@ public class CurrentLocation extends AppCompatActivity {
         } else {
             dispatchTakePictureIntent();
         }
+    }
+
+    private void fetchRout(Store store, List<Store> stores) {
+        String token = UserPreferencesUtils.getToken(this);
+        NavigationAPI.getInstance().getRout(token, store, stores).thenAccept(paths -> {
+            UserPreferencesUtils.setPaths(this, paths);
+        }).exceptionally(throwable -> {
+            return null;
+        });
+    }
+
+    private void fetchOrderedRout(Store store, List<Store> stores) {
+        String token = UserPreferencesUtils.getToken(this);
+        NavigationAPI.getInstance().getOrderedRout(token, store, stores).thenAccept(nodes -> {
+            UserPreferencesUtils.setNodes(this, nodes);
+        }).exceptionally(throwable -> {
+            return null;
+        });
     }
 
     @Override
@@ -219,7 +275,6 @@ public class CurrentLocation extends AppCompatActivity {
             detectLogo(imageBitmap);
         }
     }
-
 
     private void detectLogo(Bitmap bitmap) {
         // Convert bitmap to base64
@@ -257,11 +312,9 @@ public class CurrentLocation extends AppCompatActivity {
 
     // Method to check if the location is correct
     private boolean isLocationCorrect(String v) {
-        if (stringsStoresList.contains(v)) {
-            return true;
-        }
-        return false;
+        return stringsStoresList.contains(v);
     }
+
     @Override
     protected void onStop() {
         super.onStop();
@@ -270,13 +323,22 @@ public class CurrentLocation extends AppCompatActivity {
             currentLocationWifiManager.stopScan();
         }
     }
+
     private void initializeWifiManager() {
         currentLocationWifiManager = new CurrentLocationWifiManager(this);
     }
 
-
     // Method to update the state of the confirm button
     private void updateButtonState(String v) {
         buttonConfirm.setEnabled(isLocationCorrect(v));
+    }
+
+    private Store getStoreByName(String storeName) {
+        for (Store store : allStores) {
+            if (store.getStorename().equals(storeName)) {
+                return store;
+            }
+        }
+        return null;
     }
 }
