@@ -1,9 +1,13 @@
 package com.example.ex3.utils;
 
+import static com.example.ex3.MyApplication.context;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.entities.Store;
+import com.example.ex3.objects.Paths;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -20,6 +24,11 @@ public class UserPreferencesUtils {
     private static final String FAVORITE_STORES_KEY = "FAVORITE_STORES";
 
     private static final Gson gson = new Gson();
+    private static final String NODES_PATH_KEY = "NODES_PATH";
+    private static final String STORES_PATH_KEY ="STORES_PATH" ;
+    private static final String LOCATION_KEY ="LOCATION" ;
+    private static final String CLOSEST_STORES_KEY ="CLOSEST_STORES" ;
+
 
     public static void setMallName(Context context, String mallName) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -49,6 +58,31 @@ public class UserPreferencesUtils {
         String json = gson.toJson(favoriteStores);
         editor.putString(FAVORITE_STORES_KEY, json);
         editor.apply();
+    }
+    public static void setPaths(Context context, Paths paths) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        String json1 = gson.toJson(paths.getNodes());
+        editor.putString(NODES_PATH_KEY, json1);
+        String json2 = gson.toJson(paths.getStores());
+        editor.putString(STORES_PATH_KEY, json2);
+        editor.apply();
+    }
+    public static void setNodes(Context context, List<GraphNode> nodes) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        String json1 = gson.toJson(nodes);
+        editor.putString(NODES_PATH_KEY, json1);
+        editor.apply();
+    }
+    public static List<Store> getStores(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String json = prefs.getString(STORES_PATH_KEY, null);
+        if (json == null) {
+            return new ArrayList<>();
+        }
+        Type type = new TypeToken<List<Store>>() {}.getType();
+        return gson.fromJson(json, type);
     }
 
     public static String getMallName(Context context) {
@@ -95,5 +129,39 @@ public class UserPreferencesUtils {
             favoriteStores.remove(store);
             setFavoriteStores(context, favoriteStores);
         }
+    }
+
+    public static Store getLocation(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String json = prefs.getString(LOCATION_KEY, null);
+        if (json == null) {
+            return null; // Return null or handle default location
+        }
+        return gson.fromJson(json, Store.class);
+    }
+
+    public static void setLocation(Store location) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        String json = gson.toJson(location);
+        editor.putString(LOCATION_KEY, json);
+        editor.apply();
+    }
+
+    public static void setClosestStores(Context context, List<Store> closestStores) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        String json = gson.toJson(closestStores);
+        editor.putString(CLOSEST_STORES_KEY, json);
+        editor.apply();
+    }
+    public static Store getClosestStores(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String json = prefs.getString(CLOSEST_STORES_KEY, null);
+        if (json == null) {
+            return null;
+        }
+        Type type = new TypeToken<List<Store>>() {}.getType();
+        return gson.fromJson(json, type);
     }
 }

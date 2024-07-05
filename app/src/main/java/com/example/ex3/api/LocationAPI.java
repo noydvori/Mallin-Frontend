@@ -2,6 +2,8 @@ package com.example.ex3.api;
 
 import static com.example.ex3.MyApplication.context;
 
+import android.net.wifi.ScanResult;
+
 import androidx.annotation.NonNull;
 
 import com.example.ex3.R;
@@ -34,8 +36,8 @@ public class LocationAPI {
         }
         return instance;
     }
-    public CompletableFuture<List<Store>> getClosestStores(String token, String SSID, String BSSID, int rssi) {
-        Call<List<Store>> call = webServiceAPI.getClosestStores(token, SSID, BSSID, rssi);
+    public CompletableFuture<List<Store>> getClosestStores(String token, List<ScanResult> scanResults) {
+        Call<List<Store>> call = webServiceAPI.getClosestStores(token, scanResults);
 
         CompletableFuture<List<Store>> future = new CompletableFuture<>();
 

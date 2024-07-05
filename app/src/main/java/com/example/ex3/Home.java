@@ -33,6 +33,7 @@ import com.example.ex3.daos.StoreDao;
 import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
 import com.example.ex3.localDB.AppDB;
+import com.example.ex3.managers.ClosestStoresWifiManager;
 import com.example.ex3.utils.UserPreferencesUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -65,6 +66,7 @@ public class Home extends AppCompatActivity{
     private AppDB database;
     private CategoryDao categoryDao;
     private StoreDao storeDao;
+    ClosestStoresWifiManager closestStoresWifiManager;
 
     private CategoryAdapter categoryAdapter;
     private RecyclerView tagsRecyclerView;
@@ -153,29 +155,30 @@ public class Home extends AppCompatActivity{
         CompletableFuture<List<Store>> future = categoryAPI.getStoresByTypePaged(token, storeType, page);
 
         future.thenAccept(storeList -> {
-            if (storeList != null && !storeList.isEmpty()) {
-                runOnUiThread(() -> {
-                    if(categories.isEmpty()) {
+            runOnUiThread(() -> {
+                if (storeList != null && !storeList.isEmpty()) {
+                    if (categories.isEmpty()) {
                         categories.add(new Category(storeType, storeList));
-                        categoryAdapter.notifyItemInserted(0);
+                        categoryAdapter.notifyDataSetChanged();
                     } else {
                         categories.get(0).getStoresList().addAll(storeList);
                         categoryAdapter.notifyItemChanged(0);
                     }
-                    remainingRequests--;
-                    if (remainingRequests == 0) {
-                        addCategoryInBackground(categories.get(0));
-                    }
-                });
-            } else {
+                }
                 remainingRequests--;
                 if (remainingRequests == 0) {
                     addCategoryInBackground(categories.get(0));
                 }
-            }
+            });
         }).exceptionally(ex -> {
-            showLoadingIndicator(false);
-            isLoading = false;
+            runOnUiThread(() -> {
+                remainingRequests--;
+                if (remainingRequests == 0) {
+                    addCategoryInBackground(categories.get(0));
+                }
+                showLoadingIndicator(false);
+                isLoading = false;
+            });
             return null;
         });
     }
@@ -283,13 +286,12 @@ public class Home extends AppCompatActivity{
             handler.post(() -> {
                 if (category != null && !category.getStoresList().isEmpty()) {
                     categories.add(category);
-                    showLoadingIndicator(false);
                     categoryAdapter.notifyDataSetChanged();
                 } else {
                     remainingRequests = 18;
                     currentPage = 0;
                     for(int i = 0; i < 18; i++) {
-                        fetchStoresByTypePaged(bearerToken,tag, currentPage);
+                        fetchStoresByTypePaged(bearerToken, tag, currentPage);
                         currentPage++;
                     }
                 }
@@ -297,6 +299,7 @@ public class Home extends AppCompatActivity{
             });
         });
     }
+
 
     private void addCategoryInBackground(Category category) {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -345,8 +348,7 @@ public class Home extends AppCompatActivity{
 
     private void handleNavigateButtonClick() {
         if (!chosenStores.isEmpty()) {
-
-            // Navigate to Home activity
+            fetchClosestStores();
             Intent homeIntent = new Intent(Home.this, CurrentLocation.class);
             setResult(RESULT_OK, homeIntent);
             startActivity(homeIntent);
@@ -390,5 +392,8 @@ public class Home extends AppCompatActivity{
             runOnUiThread(() -> Toast.makeText(Home.this, "Failed to fetch favorites", Toast.LENGTH_SHORT).show());
             return null;
         });
+    }
+    private void fetchClosestStores() {
+         closestStoresWifiManager = new ClosestStoresWifiManager(this);
     }
 }
