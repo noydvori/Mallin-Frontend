@@ -5,6 +5,7 @@ import android.net.wifi.ScanResult;
 import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
+import com.example.ex3.objects.LocationAndPath;
 import com.example.ex3.objects.NameAndPassword;
 import com.example.ex3.objects.Paths;
 import com.example.ex3.objects.User;
@@ -69,7 +70,9 @@ public interface WebServiceAPI {
     @GET("Navigation")
     Call<Paths> getRout(String token, Store store, List<Store> stores);
     @GET("Navigation/order")
-    Call<List<GraphNode>> getOrderedRout(String token, Store store, List<Store> stores);
+    Call<List<GraphNode>> getOrderedRout(
+            @Header("Authorization") String token, @Body LocationAndPath locationAndPath
+    );
     @GET("Location")
     Call<List<Store>> getClosestStores(String token, List<ScanResult> scanResults);
 

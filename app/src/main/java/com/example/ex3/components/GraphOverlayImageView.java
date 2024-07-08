@@ -28,10 +28,21 @@ public class GraphOverlayImageView extends SubsamplingScaleImageView {
 
         public void setGraph(Graph graph) {
             this.graph = graph;
+            //updateMultipliers();
             invalidate(); // Redraw the view when the graph changes
         }
+    private void updateMultipliers() {
+        if (graph != null && graph.getNodes() != null) {
+            int screenWidth = getWidth();
+            int screenHeight = getHeight();
+            for (GraphNode node : graph.getNodes()) {
+                node.updateMultiplier(screenWidth, screenHeight);
+            }
+        }
+    }
 
-        @Override
+
+    @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
             if (graph == null || graph.getNodes() == null  || graph.getNodes().size() == 0) {

@@ -131,7 +131,7 @@ public class UserPreferencesUtils {
         }
     }
 
-    public static Store getLocation(Context context) {
+    public static Store getLocation() {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String json = prefs.getString(LOCATION_KEY, null);
         if (json == null) {

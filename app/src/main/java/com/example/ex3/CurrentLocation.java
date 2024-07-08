@@ -172,7 +172,7 @@ public class CurrentLocation extends AppCompatActivity {
                 if (location != null) {
                     if (chosenStores.size() == 1) {
                         // TODO: Adi this is your function
-                        //fetchOrderedRout(location, chosenStores);
+                        fetchOrderedRout(location, chosenStores);
                         Intent intent = new Intent(CurrentLocation.this, NavigateActivity.class);
                         startActivity(intent);
                     } else {

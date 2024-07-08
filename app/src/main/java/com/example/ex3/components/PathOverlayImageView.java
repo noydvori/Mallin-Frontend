@@ -6,21 +6,18 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.util.AttributeSet;
-import android.util.Log;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.example.ex3.devtool.graph.Graph;
-import com.example.ex3.devtool.graph.GraphEdge;
 import com.example.ex3.devtool.graph.GraphNode;
-import com.example.ex3.devtool.graph.NodeStatus;
-
-import org.w3c.dom.Node;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
 public class PathOverlayImageView extends SubsamplingScaleImageView {
-    private Graph graph;
     private List<GraphNode> pathStores;
+    private GraphNode location;
+
     public PathOverlayImageView(Context context, AttributeSet attr) {
         super(context, attr);
     }
@@ -29,16 +26,28 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
         super(context);
     }
 
-    public void setGraph(Graph graph, List<GraphNode> pathStores) {
-        this.graph = graph;
+    public void setPath(List<GraphNode> pathStores) {
         this.pathStores = pathStores;
         invalidate(); // Redraw the view when the graph changes
+    }
+
+    public void setLocation(GraphNode location) {
+        this.location = location;
+        invalidate(); // Redraw the view when the location changes
+    }
+
+    private void centerOnLocation() {
+        if (location != null) {
+            PointF locationCenter = new PointF(location.getXMultpyed(), location.getYMultpyed());
+            setScaleAndCenter(getScale(), locationCenter);
+        }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (graph == null || graph.getNodes() == null || graph.getNodes().isEmpty() || pathStores.isEmpty()) {
+        if (pathStores.isEmpty()) {
+            Snackbar.make(findViewById(android.R.id.content), "Go to home to find your desired stores", Snackbar.LENGTH_SHORT).show();
             return;
         }
 
@@ -48,9 +57,9 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
 
         // Draw edges and nodes in pathStores
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.RED);
+        paint.setColor(Color.BLUE);
 
-        for (int i = 0; i < pathStores.size() - 2; i++) {
+        for (int i = 0; i < pathStores.size() - 1; i++) { // Changed from pathStores.size() - 2 to pathStores.size() - 1
             GraphNode node = pathStores.get(i);
             PointF center = sourceToViewCoord(node.getXMultpyed(), node.getYMultpyed());
             if (center != null) {
@@ -63,5 +72,13 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             }
         }
 
+        // Draw the current location if it is set
+        if (location != null) {
+            paint.setColor(Color.BLACK); // Change color for the location
+            PointF locationCenter = sourceToViewCoord(location.getXMultpyed(), location.getYMultpyed());
+            if (locationCenter != null) {
+                canvas.drawCircle(locationCenter.x, locationCenter.y, 50 * scale, paint); // Scale node size with the image
+            }
+        }
     }
 }
