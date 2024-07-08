@@ -17,6 +17,7 @@ import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.devtool.managers.CustomAccelerometerManager;
 import com.example.ex3.devtool.handlers.MapScalingHandler;
 import com.example.ex3.managers.NavigationWifiManager;
+import com.example.ex3.utils.UserPreferencesUtils;
 import com.example.ex3.viewModels.NavigateViewModel;
 import com.example.ex3.viewModels.NavigateViewModelFactory;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -28,6 +29,7 @@ public class NavigateActivity extends AppCompatActivity {
     private static final String mapActivity = "MapActivity";
     private NavigateViewModel navigateViewModel;
     private NavigationWifiManager navigationWifiManager;
+
     private BottomNavigationView bottomNavigationView;
 
     private GraphOverlayImageView mImageView;
@@ -44,6 +46,7 @@ public class NavigateActivity extends AppCompatActivity {
         tabLayout = findViewById(R.id.tab_layout);
         mImageView.setImage(ImageSource.resource(R.drawable.floor_1));
         Log.d(mapActivity, "start this app");
+
         customAccelerometerManager = new CustomAccelerometerManager(this);
         bottomNavigationView = findViewById(R.id.bottom_nav_menu);
         bottomNavigationView.getMenu().findItem(R.id.menu_navigate).setChecked(true);
@@ -109,6 +112,8 @@ public class NavigateActivity extends AppCompatActivity {
                 // Do nothing
             }
         });
+
+        ///setFloor(UserPreferencesUtils.getLocation().getFloor(), "Floor 0");
 
         // Set initial floor
         setFloor(0, "Floor 0");

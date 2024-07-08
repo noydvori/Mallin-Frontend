@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.example.ex3.R;
 import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.entities.Store;
+import com.example.ex3.objects.LocationAndPath;
 import com.example.ex3.objects.Paths;
 
 import java.util.List;
@@ -37,7 +38,8 @@ public class NavigationAPI {
         return instance;
     }
     public CompletableFuture<List<GraphNode>> getOrderedRout(String token, Store store, List<Store> stores) {
-        Call<List<GraphNode>> call = webServiceAPI.getOrderedRout(token, store, stores);
+        LocationAndPath locationAndPath = new LocationAndPath(store,stores);
+        Call<List<GraphNode>> call = webServiceAPI.getOrderedRout(token, locationAndPath);
 
         CompletableFuture<List<GraphNode>> future = new CompletableFuture<>();
 
