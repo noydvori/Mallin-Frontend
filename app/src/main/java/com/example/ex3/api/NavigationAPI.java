@@ -9,6 +9,7 @@ import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.entities.Store;
 import com.example.ex3.objects.LocationAndPath;
 import com.example.ex3.objects.Paths;
+import com.example.ex3.utils.UserPreferencesUtils;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -37,9 +38,10 @@ public class NavigationAPI {
         }
         return instance;
     }
-    public CompletableFuture<List<GraphNode>> getOrderedRout(String token, Store store, List<Store> stores) {
+    public CompletableFuture<List<GraphNode>> createOrderedRout(String token, Store store, List<Store> stores) {
         LocationAndPath locationAndPath = new LocationAndPath(store,stores);
-        Call<List<GraphNode>> call = webServiceAPI.getOrderedRout(token, locationAndPath);
+        String mallName = UserPreferencesUtils.getMallName(context);
+        Call<List<GraphNode>> call = webServiceAPI.createOrderedRout(token, mallName, locationAndPath);
 
         CompletableFuture<List<GraphNode>> future = new CompletableFuture<>();
 

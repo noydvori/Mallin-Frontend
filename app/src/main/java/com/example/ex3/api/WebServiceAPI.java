@@ -69,9 +69,11 @@ public interface WebServiceAPI {
     Call<Void> removeFromFavorites(@Header("Authorization") String token, @Body Store store);
     @GET("Navigation")
     Call<Paths> getRout(String token, Store store, List<Store> stores);
-    @GET("Navigation/order")
-    Call<List<GraphNode>> getOrderedRout(
-            @Header("Authorization") String token, @Body LocationAndPath locationAndPath
+    @POST("Navigation/order")
+    Call<List<GraphNode>> createOrderedRout(
+            @Header("Authorization") String token,
+            @Query("mallname") String mallname,
+            @Body LocationAndPath locationAndPath
     );
     @GET("Location")
     Call<List<Store>> getClosestStores(String token, List<ScanResult> scanResults);

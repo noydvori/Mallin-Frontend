@@ -240,7 +240,7 @@ public class CurrentLocation extends AppCompatActivity {
 
     private void fetchOrderedRout(Store store, List<Store> stores) {
         String token = UserPreferencesUtils.getToken(this);
-        NavigationAPI.getInstance().getOrderedRout(token, store, stores).thenAccept(nodes -> {
+        NavigationAPI.getInstance().createOrderedRout(token, store, stores).thenAccept(nodes -> {
             UserPreferencesUtils.setNodes(this, nodes);
         }).exceptionally(throwable -> {
             return null;
