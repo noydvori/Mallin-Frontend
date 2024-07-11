@@ -67,8 +67,12 @@ public interface WebServiceAPI {
 
     @PUT("Users/favorites/remove")
     Call<Void> removeFromFavorites(@Header("Authorization") String token, @Body Store store);
-    @GET("Navigation")
-    Call<Paths> getRout(String token, Store store, List<Store> stores);
+    @POST("Navigation/opt")
+    Call<Paths> createRout(
+            @Header("Authorization") String token,
+            @Query("mallname") String mallname,
+            @Body LocationAndPath locationAndPath
+    );
     @POST("Navigation/order")
     Call<List<GraphNode>> createOrderedRout(
             @Header("Authorization") String token,

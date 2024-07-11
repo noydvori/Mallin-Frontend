@@ -62,8 +62,10 @@ public class NavigationAPI {
         });
         return future;
     }
-    public CompletableFuture<Paths> getRout(String token, Store store, List<Store> stores) {
-        Call<Paths> call = webServiceAPI.getRout(token, store, stores);
+    public CompletableFuture<Paths> createRout(String token, Store store, List<Store> stores) {
+        LocationAndPath locationAndPath = new LocationAndPath(store,stores);
+        String mallName = UserPreferencesUtils.getMallName(context);
+        Call<Paths> call = webServiceAPI.createRout(token, mallName, locationAndPath);
 
         CompletableFuture<Paths> future = new CompletableFuture<>();
 
