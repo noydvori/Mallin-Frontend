@@ -8,6 +8,8 @@ public class SharedPreferencesAdapter {
     private String DATA_BASE_NAME = "DEV_TOOL_SHARED_PREFRENCES";
     private String IS_LOADED_DATA_BASE = "IS_LOADED_DATA_BASE";
 
+    private String NAME = "CLIENT_NAME";
+
     private SharedPreferences mSharedPreferences;
     private static SharedPreferencesAdapter sharedPreferencesAdapter;
 
@@ -31,8 +33,12 @@ public class SharedPreferencesAdapter {
        mSharedPreferences.edit().putBoolean(IS_LOADED_DATA_BASE,b).apply();
     }
 
+    public String getName() {
+        return mSharedPreferences.getString(NAME,null);
+    }
 
 
-
-
+    public void setName(String text) {
+         mSharedPreferences.edit().putString(NAME,text).apply();
+    }
 }

@@ -5,6 +5,7 @@ import android.hardware.SensorEvent;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -12,7 +13,6 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.ex3.api.WifiAPI;
 import com.example.ex3.components.GraphOverlayImageView;
-import com.example.ex3.devtool.dao.WifiDao;
 import com.example.ex3.devtool.database.GraphDatabase;
 import com.example.ex3.devtool.enteties.MagneticField;
 import com.example.ex3.devtool.enteties.Wifi;
@@ -29,12 +29,16 @@ import java.util.List;
 import java.util.Objects;
 
 public class DevToolViewModel extends ViewModel implements WifiCallBack, BluetoothCallBack, MagneticFieldCallBack {
+    private  MutableLiveData<Boolean> syncData = new MutableLiveData<>();
     private MutableLiveData<ArrayList<Graph>> mGraphs = new MutableLiveData<>();
     private MutableLiveData<Integer> selectedFloor = new MutableLiveData<>();
 
     private MutableLiveData<Integer> floorImage = new MutableLiveData<>();
 
     private MutableLiveData<GraphNode> selectedNode = new MutableLiveData<>();
+    private String mName;
+
+    private MutableLiveData<Boolean> resultsArrived = new MutableLiveData<>();
 
     private MutableLiveData<String> title = new MutableLiveData<>();
 
@@ -50,13 +54,14 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
     private GraphDatabase mDataBase;
     private  WifiAPI mWifiApi;
     private GraphNode savedNode;
-    public DevToolViewModel(GraphDatabase database) {
+    public DevToolViewModel(GraphDatabase database, String name) {
         mDataBase = database;
         selectedFloor.setValue(3);
         LiveData<List<GraphNode>> graphNodes0 = database.graphNodeDao().getNodesByFloor(0);
         LiveData<List<GraphNode>> graphNodes1 = database.graphNodeDao().getNodesByFloor(1);
         LiveData<List<GraphNode>> graphNodes2 = database.graphNodeDao().getNodesByFloor(2);
         LiveData<List<GraphNode>> graphNodes3 = database.graphNodeDao().getNodesByFloor(3);
+        resultsArrived.setValue(false);
         mWifiApi = WifiAPI.getInstance();
         floors.add(graphNodes0);
         floors.add(graphNodes1);
@@ -64,6 +69,7 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
         floors.add(graphNodes3);
         isScanLocked.setValue(false);
         title.setValue("Floor 0");
+        mName = name;
 
     }
 
@@ -170,10 +176,10 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
     @Override
     public void onWifiCallBack(List<android.net.wifi.ScanResult> wifiScanResults) {
         ArrayList<Wifi> wifiList = new ArrayList<>();
+        resultsArrived.setValue(true);
         wifiScanResults.forEach(result -> wifiList.add(new Wifi("lioz",result.SSID, result.BSSID, result.level,savedNode.getId())));
         new Thread(() -> {
             mDataBase.wifiDao().insertAll(wifiList);
-
         }).start();
     }
 
@@ -210,7 +216,6 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
             mDataBase.magneticFieldDao().deleteByNodeId(Objects.requireNonNull(selectedNode.getValue()).getId());
             selectedNode.getValue().setStatus(NodeStatus.none);
             mDataBase.graphNodeDao().update(selectedNode.getValue());
-
             mImageView.invalidate();
         }).start();
 
@@ -218,14 +223,12 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
 
     public void uploadData() {
         new Thread(() -> {
-            // Fetch all WiFi data from the DAO
+            syncData.setValue(true);
             List<Wifi> allWifiData = mDataBase.wifiDao().getAll();
+            DataSingleToneSender.getInstance().addWifiData(allWifiData);
+            DataSingleToneSender.getInstance().processBatches();
+            syncData.setValue(false);
 
-            // Add the data to the singleton instance
-            com.example.ex3.devtool.viewmodels.DataSingleToneSender.getInstance().addWifiData(allWifiData);
-
-            // Process the batches
-            com.example.ex3.devtool.viewmodels.DataSingleToneSender.getInstance().processBatches();
         }).start();
     }
 
@@ -254,5 +257,17 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
 //        }
 
         return batches;
+    }
+
+    public MutableLiveData<Boolean> getResultsArrived() {
+        return this.resultsArrived;
+    }
+
+    public MutableLiveData<Boolean> getSyncData() {
+        return syncData;
+    }
+
+    public void setSyncData(MutableLiveData<Boolean> syncData) {
+        this.syncData = syncData;
     }
 }

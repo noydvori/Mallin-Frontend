@@ -12,7 +12,7 @@
     <string name="chats">chats</string>
     <string name="addContact">addContact</string>
     <string name="profilepic">profilePic</string>
-    <string name="app_name">YourAppName</string>
+    <string name="app_name">MallIn</string>
     <string name="google_cloud_vision_api_key">YOUR_API_KEY_HERE</string>
     <string name="BaseUrl">http://10.0.2.2:12346/</string>
     <string name="ServerPath">http://10.0.2.2</string>
@@ -31,4 +31,6 @@
     <string name="floor_3">floor 3</string>
     <string name="floor_2">floor 2</string>
     <string name="sync_data">sync data</string>
+    <string name="saving_data_please_wait_were_you_are_standing">Saving Data, please wait in your place</string>
+    <string name="sync_data_please_don_t_close_the_app">Sync Data Please Don\'t close the app</string>
 </resources>

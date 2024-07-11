@@ -45,16 +45,18 @@ public class SplashScreen extends AppCompatActivity {
 //
 //            });
 //        }).start();
+
+        if(SharedPreferencesAdapter.getInstance(this).getName()==null) {
+            Intent intent = new Intent(this, DevtoolLogin.class);
+            startActivity(intent);
+            return;
+        }
         if(SharedPreferencesAdapter.getInstance(this).isDataLoaded()){
             Intent intent = new Intent(this, DevTool.class);
             startActivity(intent);
 
-
-
         }else {
             new LoadDataAsyncTask().execute();
-
-
         }
     }
 

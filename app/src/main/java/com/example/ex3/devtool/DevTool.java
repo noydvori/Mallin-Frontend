@@ -17,10 +17,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.example.ex3.R;
+import com.example.ex3.adapters.SharedPreferencesAdapter;
 import com.example.ex3.components.GraphOverlayImageView;
 import com.example.ex3.devtool.database.GraphDatabase;
 import com.example.ex3.devtool.graph.Graph;
@@ -32,6 +36,7 @@ import com.example.ex3.devtool.managers.CustomWifiManager;
 import com.example.ex3.devtool.handlers.MapScalingHandler;
 import com.example.ex3.devtool.handlers.MapTappingHandler;
 import com.example.ex3.devtool.graph.GraphNode;
+import com.example.ex3.devtool.popups.ProgressDialogFragment;
 import com.example.ex3.devtool.viewmodels.DevToolViewModel;
 import com.example.ex3.devtool.viewmodels.DevToolViewModelFactory;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -43,7 +48,9 @@ import java.util.Objects;
 public class DevTool extends AppCompatActivity {
 
     private Handler handler = new Handler(Looper.getMainLooper());
-    private static final int SCAN_INTERVAL = 4000; // 15 seconds
+    private static final int SCAN_INTERVAL = 1000; // 15 seconds
+    ProgressDialogFragment progressDialog;
+
     private static final String mapActivity = "MapActivity";
     private DevToolViewModel devToolViewModel;
     private MaterialToolbar mToolBar;
@@ -69,7 +76,8 @@ public class DevTool extends AppCompatActivity {
         setContentView(R.layout.acitivty_map);
         mToolBar = findViewById(R.id.devtool_toolbar);
         setSupportActionBar(mToolBar);
-        devToolViewModel = new ViewModelProvider(this, new DevToolViewModelFactory(GraphDatabase.getDatabase(this))).get(DevToolViewModel.class);
+        String name = SharedPreferencesAdapter.getInstance(this).getName();
+        devToolViewModel = new ViewModelProvider(this, new DevToolViewModelFactory(GraphDatabase.getDatabase(this),name)).get(DevToolViewModel.class);
          mImageView = findViewById(R.id.devtool_map);
         mMapTappingHandler = new MapTappingHandler(mImageView,devToolViewModel);
         mImageView.setImage(ImageSource.resource(R.drawable.floor_1));
@@ -83,6 +91,17 @@ public class DevTool extends AppCompatActivity {
             @Override
             public void onChanged(String s) {
                 mToolBar.setTitle(s);
+            }
+        });
+
+        devToolViewModel.getResultsArrived().observe(this,new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if(aBoolean) {
+                    devToolViewModel.getResultsArrived().setValue(false);
+                    dismissProgressDialog();
+                    Toast.makeText(getApplicationContext(),"Results arrived", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -166,7 +185,7 @@ public class DevTool extends AppCompatActivity {
         devToolViewModel.getGraphs().get(0).observe(this, new Observer<List<GraphNode>>() {
             @Override
             public void onChanged(List<GraphNode> graphNodes) {
-                graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
+         //       graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
                 if(devToolViewModel.getSelectedFloor().getValue() == 0) {
                     Graph graph = new Graph(devToolViewModel.getGraphs().get(0).getValue());
                     mMapTappingHandler.setGraph(graph);
@@ -179,7 +198,7 @@ public class DevTool extends AppCompatActivity {
         devToolViewModel.getGraphs().get(1).observe(this, new Observer<List<GraphNode>>() {
             @Override
             public void onChanged(List<GraphNode> graphNodes) {
-                graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
+              //  graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
                 if(devToolViewModel.getSelectedFloor().getValue() == 1) {
                     Graph graph = new Graph(devToolViewModel.getGraphs().get(1).getValue());
                     mMapTappingHandler.setGraph(graph);
@@ -192,7 +211,6 @@ public class DevTool extends AppCompatActivity {
         devToolViewModel.getGraphs().get(2).observe(this, new Observer<List<GraphNode>>() {
             @Override
             public void onChanged(List<GraphNode> graphNodes) {
-                graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
                 if(devToolViewModel.getSelectedFloor().getValue() == 2) {
                     Graph graph = new Graph(devToolViewModel.getGraphs().get(2).getValue());
                     mMapTappingHandler.setGraph(graph);
@@ -205,7 +223,7 @@ public class DevTool extends AppCompatActivity {
         devToolViewModel.getGraphs().get(3).observe(this, new Observer<List<GraphNode>>() {
             @Override
             public void onChanged(List<GraphNode> graphNodes) {
-                graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
+             //   graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
                 if(devToolViewModel.getSelectedFloor().getValue() == 3) {
                     Graph graph = new Graph(devToolViewModel.getGraphs().get(3).getValue());
                     mMapTappingHandler.setGraph(graph);
@@ -235,7 +253,7 @@ public class DevTool extends AppCompatActivity {
     }
 
     private void initializeBluetoothManager() {
-        customBluetoothManager = new CustomBluetoothManager(this,devToolViewModel);
+//        customBluetoothManager = new CustomBluetoothManager(this,devToolViewModel);
     }
 
     private void initiateBottomSheet() {
@@ -268,11 +286,13 @@ public class DevTool extends AppCompatActivity {
         mDeleteButton = bottomSheet.findViewById(R.id.button_delete);
         mSaveButton.setOnClickListener(view -> {
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+          //  progressDialog.show(getSupportFragmentManager(), "progress_dialog");
+            showProgressDialog(R.string.saving_data_please_wait_were_you_are_standing);
             initiateFullScan();
         });
 
         mDeleteButton.setOnClickListener(view -> {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+         //   bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
             devToolViewModel.deleteSelectedNodeData(mImageView);
 
         });
@@ -284,9 +304,12 @@ public class DevTool extends AppCompatActivity {
         devToolViewModel.setAllScanLocked(true);
          new Thread(() -> {
              devToolViewModel.updateSelectedNodeStatus(NodeStatus.selected);
-             customBluetoothManager.startScan();
+         //    customBluetoothManager.startScan();
+             if(customWifiManager == null) {
+                 customWifiManager = new CustomWifiManager(getApplicationContext(),devToolViewModel);
+             }
              customWifiManager.startScan();
-             customMagneticFieldManager.startInitialScan();
+         ///    customMagneticFieldManager.startInitialScan();
          }).start();
 
         handler.postDelayed(()->{
@@ -329,6 +352,7 @@ public class DevTool extends AppCompatActivity {
         } else if (id == R.id.floor_3) {
             setFloor(3, item.getTitle());
         }else if(id == R.id.sync_data) {
+            showProgressDialog(R.string.sync_data_please_don_t_close_the_app);
             devToolViewModel.uploadData();
         }
 
@@ -341,6 +365,22 @@ public class DevTool extends AppCompatActivity {
         }
         devToolViewModel.setSelectedFloor(i);
         devToolViewModel.setFloorImage(getFloorResource(i));
+    }
+
+    private void showProgressDialog(int textResource) {
+        if (progressDialog == null) {
+            progressDialog = new ProgressDialogFragment();
+        }
+        progressDialog.show(getSupportFragmentManager(), "progress_dialog");
+        TextView progressText = progressDialog.getView().findViewById(R.id.progressText);
+        progressText.setText(textResource);
+    }
+
+
+    private void dismissProgressDialog() {
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
     }
 
     @Override

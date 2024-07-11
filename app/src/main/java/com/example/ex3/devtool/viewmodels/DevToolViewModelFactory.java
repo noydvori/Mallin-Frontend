@@ -9,14 +9,16 @@ import com.example.ex3.devtool.database.GraphDatabase;
 
 public class DevToolViewModelFactory implements ViewModelProvider.Factory {
     GraphDatabase mGraphDatabase;
-    public DevToolViewModelFactory(GraphDatabase database) {
+    String name;
+    public DevToolViewModelFactory(GraphDatabase database,String name) {
         this.mGraphDatabase = database;
+        this.name =name;
     }
     @NonNull
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(DevToolViewModel.class)) {
-            return (T) new DevToolViewModel(mGraphDatabase);
+            return (T) new DevToolViewModel(mGraphDatabase,name);
         }
         throw new IllegalArgumentException("Unknown ViewModel class: " + modelClass.getName());
     }
