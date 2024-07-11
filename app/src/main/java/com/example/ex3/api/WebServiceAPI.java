@@ -1,19 +1,24 @@
 package com.example.ex3.api;
 
-import com.example.ex3.objects.Category;
+import android.net.wifi.ScanResult;
+
+import com.example.ex3.devtool.graph.GraphNode;
+import com.example.ex3.entities.Category;
+import com.example.ex3.entities.Store;
+import com.example.ex3.objects.LocationAndPath;
 import com.example.ex3.objects.NameAndPassword;
+import com.example.ex3.objects.Paths;
 import com.example.ex3.objects.User;
 import com.example.ex3.objects.UserInfo;
-
-import okhttp3.ResponseBody;
+import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
-import retrofit2.http.Url;
 
 public interface WebServiceAPI {
     @GET("Users")
@@ -31,5 +36,46 @@ public interface WebServiceAPI {
             @Path("storeType") String storeType,
             @Query("mallname") String mallname
     );
+
+    @GET("AzrieliStore/name/{storeName}")
+    Call<List<Store>> getStoresByName(
+            @Header("Authorization") String token,
+            @Path("storeName") String storeName,
+            @Query("mallname") String mallname
+    );
+
+    @GET("AzrieliStore/mallname/{mallname}")
+    Call<List<String>> getTypes(
+            @Header("Authorization") String token,
+            @Path("mallname") String mallname
+    );
+
+    @GET("Users")
+    Call<List<Store>> getFavorites(@Header("Authorization") String token);
+
+    @GET("AzrieliStore/type/{storeType}/paged")
+    Call<List<Store>> getStoresByTypePaged(
+            @Header("Authorization") String token,
+            @Path("storeType") String storeType,
+            @Query("mallname") String mallname,
+            @Query("page") int page,
+            @Query("limit") int limit
+    );
+
+    @PUT("Users/favorites/add")
+    Call<Void> addToFavorites(@Header("Authorization") String token, @Body Store store);
+
+    @PUT("Users/favorites/remove")
+    Call<Void> removeFromFavorites(@Header("Authorization") String token, @Body Store store);
+    @GET("Navigation")
+    Call<Paths> getRout(String token, Store store, List<Store> stores);
+    @POST("Navigation/order")
+    Call<List<GraphNode>> createOrderedRout(
+            @Header("Authorization") String token,
+            @Query("mallname") String mallname,
+            @Body LocationAndPath locationAndPath
+    );
+    @GET("Location")
+    Call<List<Store>> getClosestStores(String token, List<ScanResult> scanResults);
 
 }
