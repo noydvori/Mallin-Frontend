@@ -84,6 +84,15 @@ public class UserPreferencesUtils {
         Type type = new TypeToken<List<Store>>() {}.getType();
         return gson.fromJson(json, type);
     }
+    public static List<GraphNode> getNodes(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String json = prefs.getString(NODES_PATH_KEY, null);
+        if (json == null) {
+            return new ArrayList<>();
+        }
+        Type type = new TypeToken<List<GraphNode>>() {}.getType();
+        return gson.fromJson(json, type);
+    }
 
     public static String getMallName(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);

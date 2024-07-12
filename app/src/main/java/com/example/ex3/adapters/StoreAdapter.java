@@ -47,7 +47,7 @@ public class StoreAdapter extends ArrayAdapter<Store> {
 
         // Assuming you have a method to get the logo from the store object
         // logoImageView.setImageBitmap(store.getLogo());
-        storeNameTextView.setText(store.getStorename());
+        storeNameTextView.setText(store.getStoreName());
         String logoUrl = store.getLogoUrl();
         String modifiedUrl = convertLogoUrl(logoUrl);
         Picasso.get().load(modifiedUrl).into(logoImageView);

@@ -1,4 +1,5 @@
 package com.example.ex3;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -31,8 +32,8 @@ public class NavigateActivity extends AppCompatActivity {
     private NavigationWifiManager navigationWifiManager;
 
     private BottomNavigationView bottomNavigationView;
-
     private GraphOverlayImageView mImageView;
+    private List<GraphNode> route;
     private CustomAccelerometerManager customAccelerometerManager;
     private TabLayout tabLayout;
 
@@ -46,6 +47,18 @@ public class NavigateActivity extends AppCompatActivity {
         tabLayout = findViewById(R.id.tab_layout);
         mImageView.setImage(ImageSource.resource(R.drawable.floor_1));
         Log.d(mapActivity, "start this app");
+        route = UserPreferencesUtils.getNodes(this);
+
+        if (route != null && !route.isEmpty()) {
+            mImageView.setPath(route);
+            mImageView.setLocation(route.get(0));
+            int initialFloor = route.get(0).getFloor();
+            // Set initial floor based on the first node's floor
+            setFloor(initialFloor, "Floor " + initialFloor);
+        } else {
+            // Set default initial floor if no route is found
+            setFloor(0, "Floor 0");
+        }
 
         customAccelerometerManager = new CustomAccelerometerManager(this);
         bottomNavigationView = findViewById(R.id.bottom_nav_menu);
@@ -112,12 +125,9 @@ public class NavigateActivity extends AppCompatActivity {
                 // Do nothing
             }
         });
-
-        ///setFloor(UserPreferencesUtils.getLocation().getFloor(), "Floor 0");
-
-        // Set initial floor
-        setFloor(0, "Floor 0");
     }
+
+
     @Override
     protected void onStop() {
         super.onStop();
@@ -126,8 +136,6 @@ public class NavigateActivity extends AppCompatActivity {
             navigationWifiManager.stopScan();
         }
     }
-
-
 
     private void graphChangedListeners(GraphOverlayImageView imageView) {
         navigateViewModel.getSelectedFloor().observe(this, new Observer<Integer>() {
@@ -175,13 +183,16 @@ public class NavigateActivity extends AppCompatActivity {
         navigationWifiManager = new NavigationWifiManager(this);
     }
 
-
     public int getFloorResource(Integer floor) {
         switch (floor) {
-            case 0: return R.drawable.floor_0;
-            case 1: return R.drawable.floor_1;
-            case 2: return R.drawable.floor_2;
-            default: return R.drawable.floor_3;
+            case 0:
+                return R.drawable.floor_0;
+            case 1:
+                return R.drawable.floor_1;
+            case 2:
+                return R.drawable.floor_2;
+            default:
+                return R.drawable.floor_3;
         }
     }
 

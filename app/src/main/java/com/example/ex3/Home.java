@@ -166,7 +166,7 @@ public class Home extends AppCompatActivity{
                     }
                 }
                 remainingRequests--;
-                if (remainingRequests == 0) {
+                if (remainingRequests == 0 && categories.size() != 0) {
                     addCategoryInBackground(categories.get(0));
                 }
             });
@@ -285,6 +285,7 @@ public class Home extends AppCompatActivity{
             Category category = categoryDao.getCategory(tag);
             handler.post(() -> {
                 if (category != null && !category.getStoresList().isEmpty()) {
+                    categories.clear();
                     categories.add(category);
                     categoryAdapter.notifyDataSetChanged();
                 } else {
@@ -376,6 +377,7 @@ public class Home extends AppCompatActivity{
         updateBadge();
         categoryAdapter.updateChosenStores(chosenStores);
         bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
+        chosenStoresAdapter.notifyDataSetChanged();
     }
 
     private void fetchFavorites() {

@@ -14,6 +14,8 @@ import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
+import com.example.ex3.devtool.graph.GraphNode;
+
 import java.util.List;
 
 public class NavigationWifiManager {
@@ -84,8 +86,9 @@ public class NavigationWifiManager {
         sendScanResultsToServer(scanResults);
     }
 
-    private void sendScanResultsToServer(List<ScanResult> scanResults) {
+    private GraphNode sendScanResultsToServer(List<ScanResult> scanResults) {
         // Send the scan results to your server
         // Implement your logic here to send the scanResults to your server
+        return null;
     }
 }

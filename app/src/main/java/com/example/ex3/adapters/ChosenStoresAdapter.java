@@ -54,6 +54,11 @@ public class ChosenStoresAdapter extends RecyclerView.Adapter<ChosenStoresAdapte
         String modifiedUrl = convertLogoUrl(logoUrl);
         Picasso.get().load(modifiedUrl).into(holder.storeLogo);
         // Set click listener for the remove button
+        holder.removeButton.setOnClickListener(v -> {
+            stores.remove(position);
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, stores.size());
+        });
     }
 
     @Override
