@@ -36,7 +36,7 @@ public class GraphOverlayImageView extends SubsamplingScaleImageView {
             int screenWidth = getWidth();
             int screenHeight = getHeight();
             for (GraphNode node : graph.getNodes()) {
-                node.updateMultiplier(screenWidth, screenHeight);
+//                node.updateMultiplier(screenWidth, screenHeight);
             }
         }
     }

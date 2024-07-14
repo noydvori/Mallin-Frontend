@@ -2,6 +2,7 @@ package com.example.ex3.api;
 
 import android.net.wifi.ScanResult;
 
+import com.example.ex3.devtool.enteties.Wifi;
 import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
@@ -10,6 +11,9 @@ import com.example.ex3.objects.NameAndPassword;
 import com.example.ex3.objects.Paths;
 import com.example.ex3.objects.User;
 import com.example.ex3.objects.UserInfo;
+import com.example.ex3.objects.WifiScanResult;
+
+import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -75,7 +79,16 @@ public interface WebServiceAPI {
             @Query("mallname") String mallname,
             @Body LocationAndPath locationAndPath
     );
-    @GET("Location")
-    Call<List<Store>> getClosestStores(String token, List<ScanResult> scanResults);
+    @POST("/api/wifi/live/stores")
+    Call<List<Store>> getClosestStores(
+            @Header("Authorization") String token,
+            @Body ArrayList<WifiScanResult> scanResults
+    );
+
+    @POST("/api/wifi/live/location")
+    Call<GraphNode> getLiveLocation(
+            @Header("Authorization") String token,
+            @Body ArrayList<WifiScanResult> scanResults
+    );
 
 }

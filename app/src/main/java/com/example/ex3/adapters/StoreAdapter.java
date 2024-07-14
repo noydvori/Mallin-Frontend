@@ -54,4 +54,10 @@ public class StoreAdapter extends ArrayAdapter<Store> {
 
         return convertView;
     }
+
+    public void setStores(List<Store> stores) {
+        this.stores.clear();
+        this.stores.addAll(stores);
+        notifyDataSetChanged();
+    }
 }

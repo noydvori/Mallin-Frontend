@@ -33,6 +33,8 @@ public class GraphNode {
         this.floor = floor;
     }
 
+
+
     public float getMultplyer() {
         return this.multplyer;
     }
