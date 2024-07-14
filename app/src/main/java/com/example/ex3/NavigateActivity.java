@@ -2,6 +2,7 @@ package com.example.ex3;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import android.Manifest;
@@ -29,6 +30,7 @@ public class NavigateActivity extends AppCompatActivity {
     private static final String mapActivity = "MapActivity";
     private NavigateViewModel navigateViewModel;
     private NavigationWifiManager navigationWifiManager;
+    private MutableLiveData<GraphNode> node;
 
     private BottomNavigationView bottomNavigationView;
 
@@ -69,6 +71,13 @@ public class NavigateActivity extends AppCompatActivity {
             }
         });
 
+        navigateViewModel.getCurrentLocation().observe(this, new Observer<GraphNode>() {
+            @Override
+
+            public void onChanged(GraphNode node) {
+                Log.d("NavigateActivity","liveLocation: " + node);
+            }
+        });
         navigateViewModel.getFloorImage().observe(this, new Observer<Integer>() {
             @Override
             public void onChanged(Integer integer) {
@@ -166,13 +175,14 @@ public class NavigateActivity extends AppCompatActivity {
                 // Initialize the WiFi manager
                 initializeWifiManager();
             } else {
+
                 // Handle the case where the user denies the permission
             }
         }
     }
 
     private void initializeWifiManager() {
-        navigationWifiManager = new NavigationWifiManager(this);
+        navigationWifiManager = new NavigationWifiManager(this, navigateViewModel);
     }
 
 

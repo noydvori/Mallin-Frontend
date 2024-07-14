@@ -18,7 +18,7 @@ public class GraphNode {
     private String id;
 
     private String name;
-    private float multplyer = 2.6F;
+    private float multplyer = 1F;
 
     private float x, y;
 
@@ -26,12 +26,14 @@ public class GraphNode {
     private List<String> neighbors = new ArrayList<>();
 
     public GraphNode(String id, String name, float x, float y, int floor) {
-        this.id = id;
+        this.id =  id;
         this.name = name;
         this.x = x;
         this.y = y;
         this.floor = floor;
     }
+
+
 
     public float getMultplyer() {
         return this.multplyer;
@@ -40,7 +42,6 @@ public class GraphNode {
     public void setMultplyer(float multplyer) {
         this.multplyer = multplyer;
     }
-
     public float getX() {
         return x;
     }
@@ -57,13 +58,10 @@ public class GraphNode {
         return this.name;
     }
 
-    public int getFloor() {
-        return this.floor;
-    }
+    public int getFloor() { return  this.floor;}
+    public void setFloor(int floor) {this.floor = floor;}
 
-    public void setFloor(int floor) {
-        this.floor = floor;
-    }
+
 
     public NodeStatus getStatus() {
         return status;
@@ -74,13 +72,13 @@ public class GraphNode {
     }
 
     public float getXMultpyed() {
-        return this.x * multplyer;
+        return  this.x * 3.5f;
     }
 
     public float getYMultpyed() {
-        return this.y * multplyer;
-    }
+        return  this.y * 3.5f;
 
+    }
     @Override
     public String toString() {
         return "node: " + this.id + " name: " + this.name + " x= " + getX() + " y= " + getY();
@@ -96,12 +94,5 @@ public class GraphNode {
 
     public void setNeighbors(List<String> neighbors) {
         this.neighbors = neighbors;
-    }
-
-    // Update the multiplier based on the screen size
-    public void updateMultiplier(int screenWidth, int screenHeight) {
-        float baseScreenSize = 1080.0f; // Assume 1080p as the base screen size
-        float screenSize = Math.min(screenWidth, screenHeight);
-        this.multplyer = screenSize / baseScreenSize;
     }
 }

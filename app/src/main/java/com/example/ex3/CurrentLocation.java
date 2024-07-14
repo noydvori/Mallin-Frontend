@@ -35,8 +35,10 @@ import com.example.ex3.daos.CategoryDao;
 import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
 import com.example.ex3.localDB.AppDB;
-import com.example.ex3.managers.CurrentLocationWifiManager;
+import com.example.ex3.managers.StoresWifiManager;
 import com.example.ex3.utils.UserPreferencesUtils;
+import com.example.ex3.viewModels.CurrentLocationViewModel;
+import com.example.ex3.viewModels.CurrentLocationViewModelFactory;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.ByteArrayOutputStream;
@@ -45,6 +47,8 @@ import java.util.List;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.room.Room;
 
 public class CurrentLocation extends AppCompatActivity {
@@ -55,22 +59,25 @@ public class CurrentLocation extends AppCompatActivity {
     private String bearerToken;
     private List<Store> chosenStores;
     private static final int REQUEST_IMAGE_CAPTURE = 1;
-    private CurrentLocationWifiManager currentLocationWifiManager;
+    private StoresWifiManager currentLocationWifiManager;
     private AppDB database;
     private CategoryDao categoryDao;
     private Button buttonCapture;
     private List<Store> allStores;
     private ListView suggestionsList;
-
+    private CurrentLocationViewModel mViewModel;
     BottomNavigationView bottomNavigationView;
+    StoreAdapter suggestionsAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_current_location);
+        mViewModel = new ViewModelProvider(this, new CurrentLocationViewModelFactory()).get(CurrentLocationViewModel.class);
+
         bearerToken = UserPreferencesUtils.getToken(context);
         chosenStores = UserPreferencesUtils.getChosenStores(context);
-
         database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "DB")
                 .fallbackToDestructiveMigration()
                 .build();
@@ -78,7 +85,7 @@ public class CurrentLocation extends AppCompatActivity {
 
         // Fetch categories in a background thread
         new FetchCategoriesTask().execute();
-
+        Log.d("Current Location", "current location");
         // Rest of your initialization code
         initializeViews();
         setupListeners();
@@ -127,17 +134,36 @@ public class CurrentLocation extends AppCompatActivity {
                         }
                     });
 
-                    // Display first three stores in the ListView
-                    List<Store> firstThreeStores = new ArrayList<>();
-                    // TODO: Hi Lioz, i need you to check that the closest stores get to here...
-                    List<Store> closestStores = UserPreferencesUtils.getChosenStores(context);
-                    System.out.println(closestStores);
-                    for (int i = 0; i < Math.min(3, allStores.size()); i++) {
-                        firstThreeStores.add(allStores.get(i));
-                    }
-                    StoreAdapter suggestionsAdapter = new StoreAdapter(
+//                    // Display first three stores in the ListView
+//                    List<Store> firstThreeStores = new ArrayList<>();
+//                    // TODO: Hi Lioz, i need you to check that the closest stores get to here...
+//                    List<Store> closestStores = UserPreferencesUtils.getChosenStores(context);
+//                    System.out.println(closestStores);
+//                    for (int i = 0; i < Math.min(3, allStores.size()); i++) {
+//                        firstThreeStores.add(allStores.get(i));
+//                    }
+
+
+                     suggestionsAdapter = new StoreAdapter(
                             CurrentLocation.this,
-                            firstThreeStores);
+                            new ArrayList<>());
+
+                    mViewModel.getStores().observe(CurrentLocation.this, new Observer<List<Store>>() {
+                        @Override
+                        public void onChanged(List<Store> stores) {
+                            stores.forEach(store -> {
+                                Log.d("CurrentLocation: ",  "store" + store);
+                            });
+                            suggestionsList.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    suggestionsAdapter.setStores(stores);
+                                }
+                            });
+
+
+                        }
+                    });
 
                     suggestionsList.setAdapter(suggestionsAdapter);
                     suggestionsList.setOnItemClickListener((parent, view, position, id) -> {
@@ -170,6 +196,7 @@ public class CurrentLocation extends AppCompatActivity {
                 Store location = getStoreByName(locationName);
                 UserPreferencesUtils.setLocation(location);
                 if (location != null) {
+                    currentLocationWifiManager.stopScan();
                     if (chosenStores.size() == 1) {
                         // TODO: Adi this is your function
                         fetchOrderedRout(location, chosenStores);
@@ -325,7 +352,7 @@ public class CurrentLocation extends AppCompatActivity {
     }
 
     private void initializeWifiManager() {
-        currentLocationWifiManager = new CurrentLocationWifiManager(this);
+        currentLocationWifiManager = new StoresWifiManager(this, mViewModel);
     }
 
     // Method to update the state of the confirm button
