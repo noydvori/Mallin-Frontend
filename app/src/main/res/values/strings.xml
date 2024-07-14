@@ -11,7 +11,7 @@
     <string name="regiater_now">Regiater now</string>
     <string name="chats">chats</string>
     <string name="BASE_URL">http://10.0.0.7:5000/api/</string>
-    <string name="LIVE_LOCATION_URL">http://10.0.0.7:5231/api/</string>
+    <string name="LIVE_LOCATION_URL">http://209.182.238.169:5231/api/</string>
     <string name="addContact">addContact</string>
     <string name="profilepic">profilePic</string>
     <string name="app_name">Mallin</string>
