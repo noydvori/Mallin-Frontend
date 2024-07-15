@@ -198,13 +198,11 @@ public class CurrentLocation extends AppCompatActivity {
                 if (location != null) {
                     currentLocationWifiManager.stopScan();
                     if (chosenStores.size() == 1) {
-                        // TODO: Adi this is your function
                         fetchOrderedRout(location, chosenStores);
                         Intent intent = new Intent(CurrentLocation.this, NavigateActivity.class);
                         startActivity(intent);
                     } else {
-                        // TODO: Adi this is your function
-                        //fetchRout(location, chosenStores);
+                        fetchRout(location, chosenStores);
                         Intent intent = new Intent(CurrentLocation.this, ConfirmPath.class);
                         startActivity(intent);
                     }
@@ -258,7 +256,7 @@ public class CurrentLocation extends AppCompatActivity {
 
     private void fetchRout(Store store, List<Store> stores) {
         String token = UserPreferencesUtils.getToken(this);
-        NavigationAPI.getInstance().getRout(token, store, stores).thenAccept(paths -> {
+        NavigationAPI.getInstance().createRout(token, store, stores).thenAccept(paths -> {
             UserPreferencesUtils.setPaths(this, paths);
         }).exceptionally(throwable -> {
             return null;

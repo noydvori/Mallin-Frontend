@@ -14,6 +14,7 @@ import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
+import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.api.LocationAPI;
 import com.example.ex3.interfaces.LocationCallBack;
 import com.example.ex3.objects.WifiScanResult;
@@ -92,7 +93,6 @@ public class NavigationWifiManager {
         // Here you can send the scanResults to your server
         sendScanResultsToServer(wifiScanResults);
     }
-
     private void sendScanResultsToServer(ArrayList<WifiScanResult> scanResults) {
         LocationAPI.getInstance().getLiveLocation("", scanResults).thenAccept(node -> {
             mCallBack.onResponse(node);

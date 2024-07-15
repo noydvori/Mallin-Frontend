@@ -10,70 +10,70 @@ import android.util.Log;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.example.ex3.devtool.graph.Graph;
-import com.example.ex3.devtool.graph.GraphEdge;
 import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.devtool.graph.NodeStatus;
+import com.google.android.material.snackbar.Snackbar;
 
-import org.w3c.dom.Node;
+import java.util.List;
 
 public class GraphOverlayImageView extends SubsamplingScaleImageView {
-        private Graph graph;
-        public GraphOverlayImageView(Context context, AttributeSet attr) {
-            super(context, attr);
-        }
+    private Graph graph;
+    private List<GraphNode> pathStores;
+    private GraphNode location;
 
-        public GraphOverlayImageView(Context context) {
-            super(context);
-        }
+    public GraphOverlayImageView(Context context, AttributeSet attr) {
+        super(context, attr);
+    }
 
-        public void setGraph(Graph graph) {
-            this.graph = graph;
-            //updateMultipliers();
-            invalidate(); // Redraw the view when the graph changes
-        }
-    private void updateMultipliers() {
-        if (graph != null && graph.getNodes() != null) {
-            int screenWidth = getWidth();
-            int screenHeight = getHeight();
-            for (GraphNode node : graph.getNodes()) {
-//                node.updateMultiplier(screenWidth, screenHeight);
-            }
+    public void setGraph(Graph graph) {
+        this.graph = graph;
+        invalidate(); // Redraw the view when the graph changes
+    }
+
+    public void setPath(List<GraphNode> pathStores) {
+        this.pathStores = pathStores;
+        invalidate(); // Redraw the view when the path changes
+    }
+
+    public void setLocation(GraphNode location) {
+        this.location = location;
+        invalidate(); // Redraw the view when the location changes
+    }
+
+    private void centerOnLocation() {
+        if (location != null) {
+            PointF locationCenter = new PointF(location.getXMultpyed(), location.getYMultpyed());
+            setScaleAndCenter(getScale(), locationCenter);
         }
     }
 
-
     @Override
-        protected void onDraw(Canvas canvas) {
-            super.onDraw(canvas);
-            if (graph == null || graph.getNodes() == null  || graph.getNodes().size() == 0) {
-                return;
-            }
-            float scale = getScale();
-            Paint paint = new Paint();
-            paint.setColor(Color.RED); // Example color
-            paint.setStrokeWidth(10 * scale); // Scale the line width with the image
-            // Draw edges
-            for (GraphNode node : graph.getNodes()) {
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
 
-                for(String neighbor : node.getNeighbors()) {
+        float scale = getScale();
+        Paint paint = new Paint();
+        paint.setStrokeWidth(10 * scale); // Scale the line width with the image
+
+        // Draw the graph edges and nodes
+        if (graph != null && graph.getNodes() != null && !graph.getNodes().isEmpty()) {
+            paint.setColor(Color.RED);
+            for (GraphNode node : graph.getNodes()) {
+                for (String neighbor : node.getNeighbors()) {
                     GraphNode target = graph.getNode(neighbor);
-                    if(target == null) {
-                        continue;
-                    }
+                    if (target == null) continue;
                     PointF start = sourceToViewCoord(node.getXMultpyed(), node.getYMultpyed());
                     PointF end = sourceToViewCoord(target.getXMultpyed(), target.getYMultpyed());
                     Log.d("TEST", "point start: " + start +" end "  + end);
                     if (start != null && end != null) {
-                        if(node.getStatus()==NodeStatus.selected && target.getStatus()== NodeStatus.selected){
+                        if (node.getStatus() == NodeStatus.selected && target.getStatus() == NodeStatus.selected) {
                             paint.setColor(Color.GREEN);
-                        }else {
+                        } else {
                             paint.setColor(Color.RED);
-
                         }
                        canvas.drawLine(start.x, start.y, end.x, end.y, paint);
                     }
                 }
-
             }
 
             // Draw nodes
@@ -81,29 +81,42 @@ public class GraphOverlayImageView extends SubsamplingScaleImageView {
             for (GraphNode node : graph.getNodes()) {
                 PointF center = sourceToViewCoord(node.getXMultpyed(), node.getYMultpyed());
                 if (center != null) {
-                    if(node.getStatus() == NodeStatus.none) {
+                    if (node.getStatus() == NodeStatus.none) {
                         paint.setColor(Color.RED);
-
-                        canvas.drawCircle(center.x, center.y, 30 * scale, paint); // Scale node size with the image
-                    }else if(node.getStatus() == NodeStatus.selected){
+                        canvas.drawCircle(center.x, center.y, 30 * scale, paint);
+                    } else if (node.getStatus() == NodeStatus.selected) {
                         paint.setColor(Color.YELLOW);
-
-                        canvas.drawCircle(center.x , center.y , 40 * scale, paint); // Scale node size with the image=
+                        canvas.drawCircle(center.x, center.y, 40 * scale, paint);
                     }
                 }
             }
         }
 
+        // Draw the path
+        if (pathStores != null && !pathStores.isEmpty()) {
+            paint.setColor(Color.BLUE);
+            for (int i = 0; i < pathStores.size() - 1; i++) {
+                GraphNode node = pathStores.get(i);
+                PointF center = sourceToViewCoord(node.getXMultpyed(), node.getYMultpyed());
+                if (center != null) {
+                    canvas.drawCircle(center.x, center.y, 30 * scale, paint);
+                }
+                GraphNode nextNode = pathStores.get(i + 1);
+                PointF nextCenter = sourceToViewCoord(nextNode.getXMultpyed(), nextNode.getYMultpyed());
+                if (center != null && nextCenter != null) {
+                    canvas.drawLine(center.x, center.y, nextCenter.x, nextCenter.y, paint);
+                }
+            }
+        }
 
-}
-
-
-/*
-
-
-    public GraphOverlayImageView(Context context) {
-        super(context);
+        // Draw the current location
+        if (location != null) {
+            paint.setColor(Color.BLACK);
+            PointF locationCenter = sourceToViewCoord(location.getXMultpyed(), location.getYMultpyed());
+            if (locationCenter != null) {
+                canvas.drawCircle(locationCenter.x, locationCenter.y, 50 * scale, paint);
+            }
+            centerOnLocation();
+        }
     }
-
-
- */
+}

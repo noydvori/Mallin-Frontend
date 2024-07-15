@@ -77,7 +77,6 @@ public class GraphNode {
 
     public float getYMultpyed() {
         return  this.y * 3.5f;
-
     }
     @Override
     public String toString() {

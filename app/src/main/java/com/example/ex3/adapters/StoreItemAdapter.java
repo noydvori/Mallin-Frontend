@@ -143,8 +143,8 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
             Picasso.get().load(modifiedUrl).into(logoImageView);
 
             // Set open/closed status
-            openStatusTextView.setText(storeItem.isOpen() ? R.string.open_string : R.string.closed_string);
-            openStatusTextView.setBackgroundResource(storeItem.isOpen() ? R.drawable.bg_green_rounded : R.drawable.bg_red_rounded);
+            openStatusTextView.setText(R.string.open_string);
+            openStatusTextView.setBackgroundResource(R.drawable.bg_green_rounded);
 
             // Update icons based on store's state
             updateButtonIcons(this, storeItem);
