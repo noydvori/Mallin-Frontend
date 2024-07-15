@@ -44,16 +44,6 @@ public class GraphOverlayImageView extends SubsamplingScaleImageView {
         invalidate(); // Redraw the view when the location changes
     }
 
-    private void updateMultipliers() {
-        if (graph != null && graph.getNodes() != null) {
-            int screenWidth = getWidth();
-            int screenHeight = getHeight();
-            for (GraphNode node : graph.getNodes()) {
-                node.updateMultiplier(screenWidth, screenHeight);
-            }
-        }
-    }
-
     private void centerOnLocation() {
         if (location != null) {
             PointF locationCenter = new PointF(location.getXMultpyed(), location.getYMultpyed());

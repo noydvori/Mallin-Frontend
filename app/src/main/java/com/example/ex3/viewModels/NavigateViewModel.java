@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.ex3.components.GraphOverlayImageView;
+import com.example.ex3.components.PathOverlayImageView;
 import com.example.ex3.devtool.database.GraphDatabase;
 import com.example.ex3.devtool.enteties.MagneticField;
 import com.example.ex3.devtool.enteties.Wifi;
@@ -199,7 +200,7 @@ public class NavigateViewModel extends ViewModel implements WifiCallBack, Blueto
         }).start();
     }
 
-    public void deleteSelectedNodeData(GraphOverlayImageView mImageView) {
+    public void deleteSelectedNodeData(PathOverlayImageView mImageView) {
         new Thread(()->{
             Log.d("DevToolViewModel","deleting by Id: " + selectedNode.getValue().getId());
             mDataBase.wifiDao().deleteByNodeId(Objects.requireNonNull(selectedNode.getValue()).getId());

@@ -18,7 +18,7 @@ public class GraphNode {
     private String id;
 
     private String name;
-    private float multplyer = 2.6F;
+    private float multplyer = 2.7F;
 
     private float x, y;
 
@@ -74,11 +74,11 @@ public class GraphNode {
     }
 
     public float getXMultpyed() {
-        return this.x * multplyer;
+        return this.x * 2.7F;
     }
 
     public float getYMultpyed() {
-        return this.y * multplyer;
+        return this.y * 2.7F;
     }
 
     @Override
@@ -98,10 +98,4 @@ public class GraphNode {
         this.neighbors = neighbors;
     }
 
-    // Update the multiplier based on the screen size
-    public void updateMultiplier(int screenWidth, int screenHeight) {
-        float baseScreenSize = 1080.0f; // Assume 1080p as the base screen size
-        float screenSize = Math.min(screenWidth, screenHeight);
-        this.multplyer = screenSize / baseScreenSize;
-    }
 }

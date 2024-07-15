@@ -65,7 +65,6 @@ public class Home extends AppCompatActivity{
     private ChosenStoresAdapter chosenStoresAdapter;
     private AppDB database;
     private CategoryDao categoryDao;
-    private StoreDao storeDao;
     ClosestStoresWifiManager closestStoresWifiManager;
 
     private CategoryAdapter categoryAdapter;
@@ -207,6 +206,7 @@ public class Home extends AppCompatActivity{
         });
 
         tagsAdapter.setOnTagClickListener(tag -> fetchCategoryForTag(tag));
+
     }
 
     @Override
@@ -217,8 +217,10 @@ public class Home extends AppCompatActivity{
             chosenStoresAdapter.updateChosenStores(chosenStores);
             updateBadge();
             categoryAdapter.updateChosenStores(chosenStores);
+            chosenStoresAdapter.notifyDataSetChanged();
         }
     }
+
 
     private void fetchInitialData() {
         fetchTypes(bearerToken);
@@ -335,6 +337,7 @@ public class Home extends AppCompatActivity{
     @SuppressLint("NotifyDataSetChanged")
     private void toggleDrawer() {
         if (drawerLayout.isDrawerOpen(Gravity.END)) {
+            chosenStoresAdapter.notifyDataSetChanged();
             drawerLayout.closeDrawer(Gravity.END);
         } else {
             chosenStoresAdapter.notifyDataSetChanged();
