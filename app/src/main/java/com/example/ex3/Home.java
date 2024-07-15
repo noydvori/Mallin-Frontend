@@ -33,7 +33,7 @@ import com.example.ex3.daos.StoreDao;
 import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
 import com.example.ex3.localDB.AppDB;
-import com.example.ex3.managers.ClosestStoresWifiManager;
+import com.example.ex3.managers.StoresWifiManager;
 import com.example.ex3.utils.UserPreferencesUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -65,7 +65,6 @@ public class Home extends AppCompatActivity{
     private ChosenStoresAdapter chosenStoresAdapter;
     private AppDB database;
     private CategoryDao categoryDao;
-    ClosestStoresWifiManager closestStoresWifiManager;
 
     private CategoryAdapter categoryAdapter;
     private RecyclerView tagsRecyclerView;
@@ -352,7 +351,6 @@ public class Home extends AppCompatActivity{
 
     private void handleNavigateButtonClick() {
         if (!chosenStores.isEmpty()) {
-            fetchClosestStores();
             Intent homeIntent = new Intent(Home.this, CurrentLocation.class);
             setResult(RESULT_OK, homeIntent);
             startActivity(homeIntent);
@@ -397,8 +395,5 @@ public class Home extends AppCompatActivity{
             runOnUiThread(() -> Toast.makeText(Home.this, "Failed to fetch favorites", Toast.LENGTH_SHORT).show());
             return null;
         });
-    }
-    private void fetchClosestStores() {
-         closestStoresWifiManager = new ClosestStoresWifiManager(this);
     }
 }
