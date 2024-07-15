@@ -18,8 +18,6 @@ import java.util.List;
 
 public class GraphOverlayImageView extends SubsamplingScaleImageView {
     private Graph graph;
-    private List<GraphNode> pathStores;
-    private GraphNode location;
 
     public GraphOverlayImageView(Context context, AttributeSet attr) {
         super(context, attr);
@@ -28,23 +26,6 @@ public class GraphOverlayImageView extends SubsamplingScaleImageView {
     public void setGraph(Graph graph) {
         this.graph = graph;
         invalidate(); // Redraw the view when the graph changes
-    }
-
-    public void setPath(List<GraphNode> pathStores) {
-        this.pathStores = pathStores;
-        invalidate(); // Redraw the view when the path changes
-    }
-
-    public void setLocation(GraphNode location) {
-        this.location = location;
-        invalidate(); // Redraw the view when the location changes
-    }
-
-    private void centerOnLocation() {
-        if (location != null) {
-            PointF locationCenter = new PointF(location.getXMultpyed(), location.getYMultpyed());
-            setScaleAndCenter(getScale(), locationCenter);
-        }
     }
 
     @Override
@@ -75,7 +56,6 @@ public class GraphOverlayImageView extends SubsamplingScaleImageView {
                     }
                 }
             }
-
             // Draw nodes
             paint.setStyle(Paint.Style.FILL);
             for (GraphNode node : graph.getNodes()) {
@@ -92,31 +72,5 @@ public class GraphOverlayImageView extends SubsamplingScaleImageView {
             }
         }
 
-        // Draw the path
-        if (pathStores != null && !pathStores.isEmpty()) {
-            paint.setColor(Color.BLUE);
-            for (int i = 0; i < pathStores.size() - 1; i++) {
-                GraphNode node = pathStores.get(i);
-                PointF center = sourceToViewCoord(node.getXMultpyed(), node.getYMultpyed());
-                if (center != null) {
-                    canvas.drawCircle(center.x, center.y, 30 * scale, paint);
-                }
-                GraphNode nextNode = pathStores.get(i + 1);
-                PointF nextCenter = sourceToViewCoord(nextNode.getXMultpyed(), nextNode.getYMultpyed());
-                if (center != null && nextCenter != null) {
-                    canvas.drawLine(center.x, center.y, nextCenter.x, nextCenter.y, paint);
-                }
-            }
-        }
-
-        // Draw the current location
-        if (location != null) {
-            paint.setColor(Color.BLACK);
-            PointF locationCenter = sourceToViewCoord(location.getXMultpyed(), location.getYMultpyed());
-            if (locationCenter != null) {
-                canvas.drawCircle(locationCenter.x, locationCenter.y, 50 * scale, paint);
-            }
-            centerOnLocation();
-        }
     }
 }

@@ -40,7 +40,6 @@ public class NavigateActivity extends AppCompatActivity {
     private NavigateViewModel navigateViewModel;
     private Snackbar floorSnackbar;
 
-
     private NavigationWifiManager navigationWifiManager;
     private MutableLiveData<GraphNode> node;
 
@@ -69,19 +68,19 @@ public class NavigateActivity extends AppCompatActivity {
         route = UserPreferencesUtils.getNodes(this);
         mImageView.setInitialized(false);
 
-        int initialFloor = 0; // default floor
+        final int[] initialFloor = {0}; // default floor
 
         if (route != null && !route.isEmpty()) {
-            mImageView.setPath(route);
             mImageView.setInitialized(false);
-            mImageView.setLocation(route.get(0));
-            initialFloor = route.get(0).getFloor();
-            mImageView.setCurrentFloor(initialFloor);
+            mImageView.setPath(route);
+            //mImageView.setLocation(route.get(0));
+            //initialFloor = route.get(0).getFloor();
+            //mImageView.setCurrentFloor(initialFloor);
         }
-        setFloor(initialFloor, "Floor " + initialFloor);
+        setFloor(initialFloor[0], "Floor " + initialFloor[0]);
 
         // Show initial Snackbar
-        showFloorSnackbar(initialFloor);
+        showFloorSnackbar(initialFloor[0]);
 
         customAccelerometerManager = new CustomAccelerometerManager(this);
         bottomNavigationView = findViewById(R.id.bottom_nav_menu);
@@ -109,15 +108,14 @@ public class NavigateActivity extends AppCompatActivity {
             mImageView.setImage(ImageSource.resource(integer));
             mImageView.setOnImageEventListener(new MapScalingHandler(mImageView));
             mImageView.setOnTouchListener(mMapTappingHandler);
-
-        navigateViewModel.getCurrentLocation().observe(this, new Observer<GraphNode>() {
-            @Override
-
-            public void onChanged(GraphNode node) {
-                Log.d("NavigateActivity","liveLocation: " + node);
-            }
         });
-       
+
+        navigateViewModel.getCurrentLocation().observe(this, node -> {
+            Log.d("NavigateActivity", "liveLocation: " + node);
+            mImageView.setLocation(node);
+            initialFloor[0] = node.getFloor();
+            mImageView.setCurrentFloor(initialFloor[0]);
+        });
 
         graphChangedListeners(mImageView);
 
@@ -137,7 +135,7 @@ public class NavigateActivity extends AppCompatActivity {
         tabLayout.addTab(tabLayout.newTab().setText("Floor 3"));
 
         // Set the correct tab based on the initial floor
-        tabLayout.getTabAt(initialFloor).select();
+        tabLayout.getTabAt(initialFloor[0]).select();
 
         // Add TabSelectedListener to change image based on selected tab
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -161,7 +159,6 @@ public class NavigateActivity extends AppCompatActivity {
         });
     }
 
-
     @Override
     protected void onStop() {
         super.onStop();
@@ -172,67 +169,28 @@ public class NavigateActivity extends AppCompatActivity {
     }
 
     private void graphChangedListeners(PathOverlayImageView imageView) {
-        navigateViewModel.getSelectedFloor().observe(this, new Observer<Integer>() {
-            @Override
-            public void onChanged(Integer integer) {
-                if(navigateViewModel.getGraphs().get(integer).getValue()!=null) {
-                    navigateViewModel.getGraphs().get(integer).getValue().forEach(node-> Log.d("GraphOverlay", "node: " + node.getId() + " name: " + node.getName()));
-                    Graph graph = new Graph(navigateViewModel.getGraphs().get(integer).getValue());
-                    mMapTappingHandler.setGraph(graph);
-                }else {
-                    Log.d("DevTool" , "graph: " + integer + " is null");
-                }
-
-            }
-        });
-        navigateViewModel.getGraphs().get(0).observe(this, new Observer<List<GraphNode>>() {
-            @Override
-            public void onChanged(List<GraphNode> graphNodes) {
-                graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
-                if(navigateViewModel.getSelectedFloor().getValue() == 0) {
-                    Graph graph = new Graph(navigateViewModel.getGraphs().get(0).getValue());
-                    mMapTappingHandler.setGraph(graph);
-                }
-
+        navigateViewModel.getSelectedFloor().observe(this, integer -> {
+            if (navigateViewModel.getGraphs().get(integer).getValue() != null) {
+                navigateViewModel.getGraphs().get(integer).getValue().forEach(node -> Log.d("GraphOverlay", "node: " + node.getId() + " name: " + node.getName()));
+                Graph graph = new Graph(navigateViewModel.getGraphs().get(integer).getValue());
+                mMapTappingHandler.setGraph(graph);
+            } else {
+                Log.d("DevTool", "graph: " + integer + " is null");
             }
         });
 
-        navigateViewModel.getGraphs().get(1).observe(this, new Observer<List<GraphNode>>() {
-            @Override
-            public void onChanged(List<GraphNode> graphNodes) {
-                graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
-                if(navigateViewModel.getSelectedFloor().getValue() == 1) {
-                    Graph graph = new Graph(navigateViewModel.getGraphs().get(1).getValue());
+        for (int i = 0; i < 4; i++) {
+            int finalI = i;
+            navigateViewModel.getGraphs().get(i).observe(this, graphNodes -> {
+                graphNodes.forEach(node -> Log.d("Test", " node: " + node.getName()));
+                if (navigateViewModel.getSelectedFloor().getValue() == finalI) {
+                    Graph graph = new Graph(navigateViewModel.getGraphs().get(finalI).getValue());
                     mMapTappingHandler.setGraph(graph);
                 }
-
-            }
-        });
-
-        navigateViewModel.getGraphs().get(2).observe(this, new Observer<List<GraphNode>>() {
-            @Override
-            public void onChanged(List<GraphNode> graphNodes) {
-                graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
-                if(navigateViewModel.getSelectedFloor().getValue() == 2) {
-                    Graph graph = new Graph(navigateViewModel.getGraphs().get(2).getValue());
-                    mMapTappingHandler.setGraph(graph);
-                }
-
-            }
-        });
-
-        navigateViewModel.getGraphs().get(3).observe(this, new Observer<List<GraphNode>>() {
-            @Override
-            public void onChanged(List<GraphNode> graphNodes) {
-                graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
-                if(navigateViewModel.getSelectedFloor().getValue() == 3) {
-                    Graph graph = new Graph(navigateViewModel.getGraphs().get(3).getValue());
-                    mMapTappingHandler.setGraph(graph);
-                }
-
-            }
-        });
+            });
+        }
     }
+
     private void showFloorSnackbar(int currentFloor) {
         if (route == null || route.isEmpty()) return;
         GraphNode startNode = route.get(0);
@@ -257,7 +215,7 @@ public class NavigateActivity extends AppCompatActivity {
         } else {
             floorSnackbar = Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_INDEFINITE);
             View view = floorSnackbar.getView();
-            FrameLayout.LayoutParams params =(FrameLayout.LayoutParams)view.getLayoutParams();
+            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
             params.gravity = Gravity.TOP;
             view.setLayoutParams(params);
             floorSnackbar.show();
@@ -277,7 +235,6 @@ public class NavigateActivity extends AppCompatActivity {
                 // Initialize the WiFi manager
                 initializeWifiManager();
             } else {
-
                 // Handle the case where the user denies the permission
             }
         }
@@ -307,6 +264,7 @@ public class NavigateActivity extends AppCompatActivity {
         navigateViewModel.setSelectedFloor(i);
         navigateViewModel.setFloorImage(getFloorResource(i));
     }
+
     @Override
     protected void onResume() {
         super.onResume();

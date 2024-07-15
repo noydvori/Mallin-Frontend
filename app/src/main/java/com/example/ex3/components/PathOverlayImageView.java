@@ -48,6 +48,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
 
     public void setInitialized(boolean initialized) {
         isInitialized = initialized;
+        invalidate();
     }
 
     public void setLocation(GraphNode location) {
