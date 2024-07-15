@@ -14,17 +14,24 @@ import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
+import com.example.ex3.api.LocationAPI;
+import com.example.ex3.interfaces.StoresCallBack;
+import com.example.ex3.objects.WifiScanResult;
+
+import java.util.ArrayList;
 import java.util.List;
 
-public class CurrentLocationWifiManager {
-    private static final String TAG = "CurrentLocationWifiManager";
+public class StoresWifiManager {
+    private static final String TAG = "StoresWifiManager";
     private WifiManager wifiManager;
     private Handler handler = new Handler(Looper.getMainLooper());
-    private static final int SCAN_INTERVAL = 1000 * 5; // 5 seconds
     private Context context;
     private BroadcastReceiver scanResultsReceiver;
+    private StoresCallBack mCallback;
+    private boolean isReceiverRegistered = false;
 
-    public CurrentLocationWifiManager(Context context) {
+    public StoresWifiManager(Context context, StoresCallBack callBack) {
+        this.mCallback = callBack;
         this.context = context;
         wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
@@ -32,8 +39,26 @@ public class CurrentLocationWifiManager {
             wifiManager.setWifiEnabled(true);
         }
 
+        // Initialize the receiver
+        initializeReceiver();
+
         // Start scanning for WiFi networks
         startScan();
+    }
+
+    private void initializeReceiver() {
+        scanResultsReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
+                Log.d(TAG, "wifiManagerScan");
+                List<ScanResult> results = wifiManager.getScanResults();
+                handleScanResults(results);
+                stopScan(); // Stop the scan after receiving results
+            }
+        };
     }
 
     private void startScan() {
@@ -42,31 +67,22 @@ public class CurrentLocationWifiManager {
             return;
         }
 
-        // Register broadcast receiver to get scan results
-        scanResultsReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    return;
-                }
-                Log.d("LivewifiManager", "wifiManagerScan");
-                List<ScanResult> results = wifiManager.getScanResults();
-                handleScanResults(results);
-
-                // Schedule the next scan
-                handler.postDelayed(() -> wifiManager.startScan(), SCAN_INTERVAL);
-            }
-        };
-
-        context.registerReceiver(scanResultsReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        if (!isReceiverRegistered) {
+            // Register broadcast receiver to get scan results
+            context.registerReceiver(scanResultsReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+            isReceiverRegistered = true;
+        }
 
         // Start the first scan
         wifiManager.startScan();
     }
 
     public void stopScan() {
-        // Unregister the BroadcastReceiver to stop receiving scan results
-        context.unregisterReceiver(scanResultsReceiver);
+        if (isReceiverRegistered) {
+            // Unregister the BroadcastReceiver to stop receiving scan results
+            context.unregisterReceiver(scanResultsReceiver);
+            isReceiverRegistered = false;
+        }
         // Remove any pending callbacks to stop further scans
         handler.removeCallbacksAndMessages(null);
     }
@@ -74,19 +90,24 @@ public class CurrentLocationWifiManager {
     private void handleScanResults(List<ScanResult> scanResults) {
         // Process the scan results
         // Here you can send the scanResults to your server or perform any other actions with them
+        ArrayList<WifiScanResult> wifiScanResults = new ArrayList<>();
         for (ScanResult result : scanResults) {
             String SSID = result.SSID;
             String BSSID = result.BSSID;
             int rssi = result.level;
+            wifiScanResults.add(new WifiScanResult(SSID, BSSID, rssi));
             Log.d(TAG, "Wi-Fi stats: " + SSID + " BSSID: " + BSSID + " RSSI: " + rssi);
         }
 
         // Here you can send the scanResults to your server
-        sendScanResultsToServer(scanResults);
+        sendScanResultsToServer(wifiScanResults);
     }
 
-    private void sendScanResultsToServer(List<ScanResult> scanResults) {
-        // Send the scan results to your server
-        // Implement your logic here to send the scanResults to your server
+    private void sendScanResultsToServer(ArrayList<WifiScanResult> scanResults) {
+        Log.d(TAG, "send wifi results to server");
+        LocationAPI.getInstance().getClosestStores("", scanResults).thenAccept(store -> {
+            Log.d(TAG, "response from server");
+            mCallback.onResponse(store);
+        });
     }
 }

@@ -25,10 +25,6 @@ public class GraphOverlayImageView extends SubsamplingScaleImageView {
         super(context, attr);
     }
 
-    public GraphOverlayImageView(Context context) {
-        super(context);
-    }
-
     public void setGraph(Graph graph) {
         this.graph = graph;
         invalidate(); // Redraw the view when the graph changes
@@ -68,13 +64,14 @@ public class GraphOverlayImageView extends SubsamplingScaleImageView {
                     if (target == null) continue;
                     PointF start = sourceToViewCoord(node.getXMultpyed(), node.getYMultpyed());
                     PointF end = sourceToViewCoord(target.getXMultpyed(), target.getYMultpyed());
+                    Log.d("TEST", "point start: " + start +" end "  + end);
                     if (start != null && end != null) {
                         if (node.getStatus() == NodeStatus.selected && target.getStatus() == NodeStatus.selected) {
                             paint.setColor(Color.GREEN);
                         } else {
                             paint.setColor(Color.RED);
                         }
-                        canvas.drawLine(start.x, start.y, end.x, end.y, paint);
+                       canvas.drawLine(start.x, start.y, end.x, end.y, paint);
                     }
                 }
             }

@@ -2,6 +2,7 @@ package com.example.ex3.entities;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
@@ -45,6 +46,10 @@ public class Store implements Parcelable{
         this.storeType = storeType;
         this.isAddedToList = false;
         this.isFavorite = isFavorite;
+    }
+
+    public String toString() {
+        return "storename: " + this.storename + " working hours: " + this.workingHours + " categoryId: " + this.categoryId + " floor: " + this.floor + " logo: " + this.logoPic + " storeType: " + storeType;
     }
 
     @NonNull

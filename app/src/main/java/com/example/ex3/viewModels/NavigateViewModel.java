@@ -19,13 +19,14 @@ import com.example.ex3.devtool.interfaces.WifiCallBack;
 import com.example.ex3.devtool.graph.Graph;
 import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.devtool.graph.NodeStatus;
+import com.example.ex3.interfaces.LocationCallBack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-public class NavigateViewModel extends ViewModel implements WifiCallBack, BluetoothCallBack, MagneticFieldCallBack {
+public class NavigateViewModel extends ViewModel implements WifiCallBack, LocationCallBack,BluetoothCallBack, MagneticFieldCallBack {
     private MutableLiveData<ArrayList<Graph>> mGraphs = new MutableLiveData<>();
     private MutableLiveData<Integer> selectedFloor = new MutableLiveData<>();
 
@@ -39,7 +40,7 @@ public class NavigateViewModel extends ViewModel implements WifiCallBack, Blueto
     public static final String WIFI_LOCK =  "WIFI_LOCK";
 
     private HashMap<String, Boolean> scanLocks = new HashMap<>();
-
+    private MutableLiveData<GraphNode> currentLocation = new MutableLiveData<>();
     private MutableLiveData<Boolean> isScanLocked = new MutableLiveData<>();
 
     private ArrayList<LiveData<List<GraphNode>>> floors = new ArrayList<>();
@@ -212,4 +213,14 @@ public class NavigateViewModel extends ViewModel implements WifiCallBack, Blueto
         }).start();
 
     }
+
+    @Override
+    public void onResponse(GraphNode node) {
+        this.currentLocation.setValue(node);
+    }
+
+    public MutableLiveData<GraphNode> getCurrentLocation(){
+        return this.currentLocation;
+    }
+
 }

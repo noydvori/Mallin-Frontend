@@ -15,7 +15,11 @@ import android.util.Log;
 import androidx.core.app.ActivityCompat;
 
 import com.example.ex3.devtool.graph.GraphNode;
+import com.example.ex3.api.LocationAPI;
+import com.example.ex3.interfaces.LocationCallBack;
+import com.example.ex3.objects.WifiScanResult;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class NavigationWifiManager {
@@ -24,10 +28,12 @@ public class NavigationWifiManager {
     private Handler handler = new Handler(Looper.getMainLooper());
     private static final int SCAN_INTERVAL = 1000 * 5; // 5 seconds
     private Context context;
+    private LocationCallBack mCallBack;
     private BroadcastReceiver scanResultsReceiver;
 
-    public NavigationWifiManager(Context context) {
+    public NavigationWifiManager(Context context, LocationCallBack callBack) {
         this.context = context;
+        this.mCallBack = callBack;
         wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
         if (!wifiManager.isWifiEnabled()) {
@@ -75,20 +81,21 @@ public class NavigationWifiManager {
     private void handleScanResults(List<ScanResult> scanResults) {
         // Process the scan results
         // Here you can send the scanResults to your server or perform any other actions with them
+        ArrayList<WifiScanResult> wifiScanResults = new ArrayList<>();
         for (ScanResult result : scanResults) {
             String SSID = result.SSID;
             String BSSID = result.BSSID;
             int rssi = result.level;
+            wifiScanResults.add(new WifiScanResult(SSID, BSSID, rssi));
             Log.d(TAG, "Wi-Fi stats: " + SSID + " BSSID: " + BSSID + " RSSI: " + rssi);
         }
 
         // Here you can send the scanResults to your server
-        sendScanResultsToServer(scanResults);
+        sendScanResultsToServer(wifiScanResults);
     }
-
-    private GraphNode sendScanResultsToServer(List<ScanResult> scanResults) {
-        // Send the scan results to your server
-        // Implement your logic here to send the scanResults to your server
-        return null;
+    private void sendScanResultsToServer(ArrayList<WifiScanResult> scanResults) {
+        LocationAPI.getInstance().getLiveLocation("", scanResults).thenAccept(node -> {
+            mCallBack.onResponse(node);
+        });
     }
 }

@@ -31,11 +31,30 @@ public class SplashScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
         db = GraphDatabase.getDatabase(this);
+   //     ExportToXml exportToXml = new ExportToXml(this);
+
+    //    new Thread(exportToXml::exportDataToXml).start();
+
+//        new Thread(()->{
+//            db.wifiDao().getAll().forEach(wifi->{
+//                Log.d("SPlashScreen", " wifi: " + wifi.BSSID + " node: " + wifi.getNodeDataId());
+//            });
+//
+//            db.magneticFieldDao().getAll().forEach(magneticField -> {
+//                Log.d("SPlashScreen", " magneticField: x=" + magneticField.x + " y=" + magneticField.y + " z=" + magneticField.z + " node: " + magneticField.getNodeId());
+//
+//            });
+//        }).start();
         if(SharedPreferencesAdapter.getInstance(this).isDataLoaded()){
             Intent intent = new Intent(this, DevTool.class);
             startActivity(intent);
+
+
+
         }else {
             new LoadDataAsyncTask().execute();
+
+
         }
     }
 

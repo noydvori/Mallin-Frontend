@@ -3,6 +3,7 @@ package com.example.ex3;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import android.Manifest;
@@ -41,6 +42,7 @@ public class NavigateActivity extends AppCompatActivity {
 
 
     private NavigationWifiManager navigationWifiManager;
+    private MutableLiveData<GraphNode> node;
 
     private BottomNavigationView bottomNavigationView;
     private PathOverlayImageView mImageView;
@@ -107,7 +109,15 @@ public class NavigateActivity extends AppCompatActivity {
             mImageView.setImage(ImageSource.resource(integer));
             mImageView.setOnImageEventListener(new MapScalingHandler(mImageView));
             mImageView.setOnTouchListener(mMapTappingHandler);
+
+        navigateViewModel.getCurrentLocation().observe(this, new Observer<GraphNode>() {
+            @Override
+
+            public void onChanged(GraphNode node) {
+                Log.d("NavigateActivity","liveLocation: " + node);
+            }
         });
+       
 
         graphChangedListeners(mImageView);
 
@@ -267,13 +277,14 @@ public class NavigateActivity extends AppCompatActivity {
                 // Initialize the WiFi manager
                 initializeWifiManager();
             } else {
+
                 // Handle the case where the user denies the permission
             }
         }
     }
 
     private void initializeWifiManager() {
-        navigationWifiManager = new NavigationWifiManager(this);
+        navigationWifiManager = new NavigationWifiManager(this, navigateViewModel);
     }
 
     public int getFloorResource(Integer floor) {
