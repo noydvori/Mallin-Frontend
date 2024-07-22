@@ -42,8 +42,8 @@ public class LocationAPI {
         }
         return instance;
     }
-    public CompletableFuture<List<Store>> getClosestStores(String token, WifiResultsAndPath wifiResultsAndPath) {
-        Call<List<Store>> call = webServiceAPI.getClosestStores(token, wifiResultsAndPath);
+    public CompletableFuture<List<Store>> getClosestStores(String token, ArrayList<WifiScanResult> scanResults) {
+        Call<List<Store>> call = webServiceAPI.getClosestStores(token, scanResults);
         CompletableFuture<List<Store>> future = new CompletableFuture<>();
 
         call.enqueue(new Callback<List<Store>>() {
@@ -63,8 +63,8 @@ public class LocationAPI {
         });
         return future;
     }
-    public CompletableFuture<GraphNode> getLiveLocation(String token, ArrayList<WifiScanResult> scanResults) {
-        Call<GraphNode> call = webServiceAPI.getLiveLocation(token, scanResults);
+    public CompletableFuture<GraphNode> getLiveLocation(String token, WifiResultsAndPath wifiResultsAndPath) {
+        Call<GraphNode> call = webServiceAPI.getLiveLocation(token, wifiResultsAndPath);
         CompletableFuture<GraphNode> future = new CompletableFuture<>();
         Log.d("LocationAPI", "sendx response");
 

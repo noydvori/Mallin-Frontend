@@ -16,9 +16,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.example.ex3.api.LocationAPI;
 import com.example.ex3.interfaces.StoresCallBack;
-import com.example.ex3.objects.WifiResultsAndPath;
 import com.example.ex3.objects.WifiScanResult;
-import com.example.ex3.utils.UserPreferencesUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -100,15 +98,14 @@ public class StoresWifiManager {
             wifiScanResults.add(new WifiScanResult(SSID, BSSID, rssi));
             Log.d(TAG, "Wi-Fi stats: " + SSID + " BSSID: " + BSSID + " RSSI: " + rssi);
         }
-        WifiResultsAndPath wifiResultsAndPath = new WifiResultsAndPath(UserPreferencesUtils.getNodes(context), wifiScanResults);
 
         // Here you can send the scanResults to your server
-        sendScanResultsToServer(wifiResultsAndPath);
+        sendScanResultsToServer(wifiScanResults);
     }
 
-    private void sendScanResultsToServer(WifiResultsAndPath wifiResultsAndPath) {
+    private void sendScanResultsToServer(ArrayList<WifiScanResult> scanResults) {
         Log.d(TAG, "send wifi results to server");
-        LocationAPI.getInstance().getClosestStores("", wifiResultsAndPath).thenAccept(store -> {
+        LocationAPI.getInstance().getClosestStores("", scanResults).thenAccept(store -> {
             Log.d(TAG, "response from server");
             mCallback.onResponse(store);
         });

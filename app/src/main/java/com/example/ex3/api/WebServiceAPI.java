@@ -87,13 +87,13 @@ public interface WebServiceAPI {
     @POST("/api/wifi/live/stores")
     Call<List<Store>> getClosestStores(
             @Header("Authorization") String token,
-            @Body WifiResultsAndPath wifiResultsAndPath
-            );
+            @Body ArrayList<WifiScanResult> scanResults
+    );
 
     @POST("/api/wifi/live/location")
     Call<GraphNode> getLiveLocation(
             @Header("Authorization") String token,
-            @Body ArrayList<WifiScanResult> scanResults
-    );
+            @Body WifiResultsAndPath wifiResultsAndPath
+            );
 
 }
