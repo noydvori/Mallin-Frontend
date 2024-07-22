@@ -17,7 +17,9 @@ import androidx.core.app.ActivityCompat;
 import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.api.LocationAPI;
 import com.example.ex3.interfaces.LocationCallBack;
+import com.example.ex3.objects.WifiResultsAndPath;
 import com.example.ex3.objects.WifiScanResult;
+import com.example.ex3.utils.UserPreferencesUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,11 +92,13 @@ public class NavigationWifiManager {
             Log.d(TAG, "Wi-Fi stats: " + SSID + " BSSID: " + BSSID + " RSSI: " + rssi);
         }
 
+        WifiResultsAndPath wifiResultsAndPath = new WifiResultsAndPath(UserPreferencesUtils.getNodes(context), wifiScanResults);
+
         // Here you can send the scanResults to your server
-        sendScanResultsToServer(wifiScanResults);
+        sendScanResultsToServer(wifiResultsAndPath);
     }
-    private void sendScanResultsToServer(ArrayList<WifiScanResult> scanResults) {
-        LocationAPI.getInstance().getLiveLocation("", scanResults).thenAccept(node -> {
+    private void sendScanResultsToServer(WifiResultsAndPath wifiResultsAndPath) {
+        LocationAPI.getInstance().getLiveLocation("", wifiResultsAndPath).thenAccept(node -> {
             mCallBack.onResponse(node);
         });
     }
