@@ -11,6 +11,7 @@ import com.example.ex3.R;
 import com.example.ex3.devtool.enteties.Wifi;
 import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.entities.Store;
+import com.example.ex3.objects.WifiResultsAndPath;
 import com.example.ex3.objects.WifiScanResult;
 
 import java.util.ArrayList;
@@ -41,8 +42,8 @@ public class LocationAPI {
         }
         return instance;
     }
-    public CompletableFuture<List<Store>> getClosestStores(String token, ArrayList<WifiScanResult> scanResults) {
-        Call<List<Store>> call = webServiceAPI.getClosestStores(token, scanResults);
+    public CompletableFuture<List<Store>> getClosestStores(String token, WifiResultsAndPath wifiResultsAndPath) {
+        Call<List<Store>> call = webServiceAPI.getClosestStores(token, wifiResultsAndPath);
         CompletableFuture<List<Store>> future = new CompletableFuture<>();
 
         call.enqueue(new Callback<List<Store>>() {
