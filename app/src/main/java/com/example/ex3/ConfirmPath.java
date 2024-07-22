@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ex3.adapters.ConfirmPathAdapter;
+import com.example.ex3.api.NavigationAPI;
 import com.example.ex3.entities.Store;
 import com.example.ex3.utils.UserPreferencesUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -83,6 +84,7 @@ public class ConfirmPath extends AppCompatActivity {
 
         Button buttonConfirm = findViewById(R.id.button_confirm);
         buttonConfirm.setOnClickListener(v -> {
+            fetchOrderedRout(UserPreferencesUtils.getLocation(), chosenStores);
             List<Store> reorderedStores = adapter.getChosenStores();
             Intent intent = new Intent(ConfirmPath.this, NavigateActivity.class);
             startActivity(intent);
@@ -112,6 +114,14 @@ public class ConfirmPath extends AppCompatActivity {
                 }
                 return false;
             }
+        });
+    }
+    private void fetchOrderedRout(Store store, List<Store> stores) {
+        String token = UserPreferencesUtils.getToken(this);
+        NavigationAPI.getInstance().createOrderedRout(token, store, stores).thenAccept(nodes -> {
+            UserPreferencesUtils.setNodes(this, nodes);
+        }).exceptionally(throwable -> {
+            return null;
         });
     }
 

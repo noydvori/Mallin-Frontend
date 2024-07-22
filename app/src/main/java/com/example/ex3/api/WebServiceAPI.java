@@ -11,6 +11,7 @@ import com.example.ex3.objects.NameAndPassword;
 import com.example.ex3.objects.Paths;
 import com.example.ex3.objects.User;
 import com.example.ex3.objects.UserInfo;
+import com.example.ex3.objects.WifiResultsAndPath;
 import com.example.ex3.objects.WifiScanResult;
 
 import java.util.ArrayList;
@@ -86,8 +87,8 @@ public interface WebServiceAPI {
     @POST("/api/wifi/live/stores")
     Call<List<Store>> getClosestStores(
             @Header("Authorization") String token,
-            @Body ArrayList<WifiScanResult> scanResults
-    );
+            @Body WifiResultsAndPath wifiResultsAndPath
+            );
 
     @POST("/api/wifi/live/location")
     Call<GraphNode> getLiveLocation(
