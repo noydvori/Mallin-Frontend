@@ -10,6 +10,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -63,6 +64,7 @@ public class NavigateActivity extends AppCompatActivity {
         Log.d(mapActivity, "start this app");
         mMapTappingHandler = new NavigationMapTappingHandler(mImageView, navigateViewModel);
         centerButton = findViewById(R.id.center);
+
         centerButton.setOnClickListener(v -> mImageView.centerOnLocation());
 
         route = UserPreferencesUtils.getNodes(this);
@@ -73,9 +75,9 @@ public class NavigateActivity extends AppCompatActivity {
         if (route != null && !route.isEmpty()) {
             mImageView.setInitialized(false);
             mImageView.setPath(route);
-            //mImageView.setLocation(route.get(0));
-            //initialFloor = route.get(0).getFloor();
-            //mImageView.setCurrentFloor(initialFloor);
+            mImageView.setLocation(route.get(0));
+            initialFloor[0] = route.get(0).getFloor();
+            mImageView.setCurrentFloor(initialFloor[0]);
         }
         setFloor(initialFloor[0], "Floor " + initialFloor[0]);
 
@@ -114,7 +116,7 @@ public class NavigateActivity extends AppCompatActivity {
             Log.d("NavigateActivity", "liveLocation: " + node);
             mImageView.setLocation(node);
             initialFloor[0] = node.getFloor();
-            mImageView.setCurrentFloor(initialFloor[0]);
+            //mImageView.setCurrentFloor(initialFloor[0]);
         });
 
         graphChangedListeners(mImageView);
@@ -136,7 +138,9 @@ public class NavigateActivity extends AppCompatActivity {
 
         // Set the correct tab based on the initial floor
         tabLayout.getTabAt(initialFloor[0]).select();
-
+        new Handler().postDelayed(() -> {
+            mImageView.centerOnLocation();
+        }, 5000);
         // Add TabSelectedListener to change image based on selected tab
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -145,6 +149,9 @@ public class NavigateActivity extends AppCompatActivity {
                 mImageView.setCurrentFloor(position);
                 setFloor(position, "Floor " + position);
                 showFloorSnackbar(position); // Update the Snackbar message
+                new Handler().postDelayed(() -> {
+                    mImageView.centerOnLocation();
+                }, 1000);
             }
 
             @Override

@@ -154,7 +154,7 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
 
                 storeInteractionListener.onStoreAddedToList(storeItem);
                 UserPreferencesUtils.setChosenStores(context, chosenStores);
-
+notifyDataSetChanged();
                 updateButtonIcons(this, storeItem);
             });
 

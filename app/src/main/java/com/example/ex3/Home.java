@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,6 +17,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -102,7 +104,8 @@ public class Home extends AppCompatActivity{
         drawerLayout = findViewById(R.id.drawer_layout);
         chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
         chosenStoresRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        chosenStoresAdapter = new ChosenStoresAdapter(chosenStores);
+        chosenStoresAdapter = new ChosenStoresAdapter(this, chosenStores);
+
         chosenStoresRecyclerView.setAdapter(chosenStoresAdapter);
 
         tagsRecyclerView = findViewById(R.id.tags);
@@ -120,6 +123,16 @@ public class Home extends AppCompatActivity{
 
         SearchView searchView = findViewById(R.id.search_view);
         searchView.setBackgroundResource(R.drawable.bg_white_rounded);
+
+        searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchView.setIconified(false);
+                // Optional: request focus to show the keyboard if it's not already visible
+                searchView.requestFocus();
+            }
+        });
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -132,6 +145,14 @@ public class Home extends AppCompatActivity{
             public boolean onQueryTextChange(String newText) {
                 currentSearchQuery = newText.isEmpty() ? "" : newText;
                 fetchDataFromServer();
+
+                // Hide the keyboard when the search text is empty
+                if (newText.isEmpty()) {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
+                    }
+                }
                 return true;
             }
         });
@@ -179,6 +200,14 @@ public class Home extends AppCompatActivity{
             });
             return null;
         });
+    }
+    public void onChosenStoreRemoved() {
+        // Update chosenStores list
+        chosenStores = UserPreferencesUtils.getChosenStores(this);
+        // Notify the CategoryAdapter to update the UI
+        categoryAdapter.notifyDataSetChanged();
+        // Optionally, update the badge or other UI elements
+        updateBadge();
     }
 
 
@@ -337,9 +366,11 @@ public class Home extends AppCompatActivity{
     private void toggleDrawer() {
         if (drawerLayout.isDrawerOpen(Gravity.END)) {
             chosenStoresAdapter.notifyDataSetChanged();
+            categoryAdapter.notifyDataSetChanged();
             drawerLayout.closeDrawer(Gravity.END);
         } else {
             chosenStoresAdapter.notifyDataSetChanged();
+
             drawerLayout.openDrawer(Gravity.END);
         }
     }

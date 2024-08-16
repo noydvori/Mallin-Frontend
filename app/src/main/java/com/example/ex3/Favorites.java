@@ -60,7 +60,7 @@ public class Favorites extends AppCompatActivity{
         drawerLayout = findViewById(R.id.drawer_layout);
         chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
         chosenStoresRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        chosenStoresAdapter = new ChosenStoresAdapter(chosenStores);
+        chosenStoresAdapter = new ChosenStoresAdapter(this, chosenStores);
         chosenStoresRecyclerView.setAdapter(chosenStoresAdapter);
         // Initialize searchView
         SearchView searchView = findViewById(R.id.search_view);
@@ -138,7 +138,6 @@ public class Favorites extends AppCompatActivity{
 
                 }
                 UserPreferencesUtils.setChosenStores(context, chosenStores); // Save the updated list
-
                 updateBadge();
                 StoreItemAdapter.notifyDataSetChanged(); // Refresh the adapter to update the UI
             }
@@ -196,6 +195,15 @@ public class Favorites extends AppCompatActivity{
         });
         bottomNavigationView.getMenu().findItem(R.id.menu_favorites).setChecked(true);
 
+    }
+    public void onChosenStoreRemoved() {
+        // Update chosenStores list
+        chosenStores = UserPreferencesUtils.getChosenStores(this);
+        // Notify the CategoryAdapter to update the UI
+        chosenStoresAdapter.notifyDataSetChanged();
+        StoreItemAdapter.notifyDataSetChanged();
+        // Optionally, update the badge or other UI elements
+        updateBadge();
     }
 
     private void filter(String query) {

@@ -45,6 +45,7 @@ public class ConfirmPath extends AppCompatActivity {
 
         chosenStores = UserPreferencesUtils.getChosenStores(context);
         optimalOrder = new ArrayList<>(chosenStores);
+        //optimalOrder = UserPreferencesUtils.getStores(context);
 
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
