@@ -92,7 +92,6 @@ public class NavigateActivity extends AppCompatActivity {
             switch (item.getItemId()) {
                 case R.id.menu_home:
                     intent = new Intent(NavigateActivity.this, Home.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
                     return true;
                 case R.id.menu_navigate:
@@ -173,6 +172,7 @@ public class NavigateActivity extends AppCompatActivity {
         if (navigationWifiManager != null) {
             navigationWifiManager.stopScan();
         }
+
     }
 
     private void graphChangedListeners(PathOverlayImageView imageView) {

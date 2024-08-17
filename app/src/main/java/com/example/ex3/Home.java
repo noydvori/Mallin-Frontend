@@ -381,6 +381,7 @@ public class Home extends AppCompatActivity{
     }
 
     private void handleNavigateButtonClick() {
+        chosenStores = UserPreferencesUtils.getChosenStores(this);
         if (!chosenStores.isEmpty()) {
             Intent homeIntent = new Intent(Home.this, CurrentLocation.class);
             setResult(RESULT_OK, homeIntent);

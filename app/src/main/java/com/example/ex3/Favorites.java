@@ -6,12 +6,14 @@ import static androidx.core.content.ContextCompat.startActivity;
 
 import static com.example.ex3.MyApplication.context;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.SearchView;
 import android.widget.Switch;
@@ -65,6 +67,17 @@ public class Favorites extends AppCompatActivity{
         // Initialize searchView
         SearchView searchView = findViewById(R.id.search_view);
         searchView.setBackgroundResource(R.drawable.bg_white_rounded);
+        searchView.setBackgroundResource(R.drawable.bg_white_rounded);
+
+        searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchView.setIconified(false);
+                // Optional: request focus to show the keyboard if it's not already visible
+                searchView.requestFocus();
+            }
+        });
+
 
         // Set up search functionality
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -76,6 +89,12 @@ public class Favorites extends AppCompatActivity{
             @Override
             public boolean onQueryTextChange(String newText) {
                 filter(newText);
+                if (newText.isEmpty()) {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
+                    }
+                }
                 return true;
             }
         });
@@ -130,12 +149,8 @@ public class Favorites extends AppCompatActivity{
             public void onStoreAddedToList(Store store) {
                 if (chosenStores.contains(store)) {
                     chosenStores.remove(store);
-
-
-
                 } else {
                     chosenStores.add(store);
-
                 }
                 UserPreferencesUtils.setChosenStores(context, chosenStores); // Save the updated list
                 updateBadge();

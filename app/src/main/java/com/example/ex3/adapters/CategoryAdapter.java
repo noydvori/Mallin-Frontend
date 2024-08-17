@@ -68,22 +68,20 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         holder.categoryNameTextView.setText(category.getCategoryName());
 
         StoreItemAdapter storeItemAdapter = new StoreItemAdapter(context, category.getStoresList(), chosenStores,favStores, new StoreItemAdapter.OnStoreInteractionListener() {
-            @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onStoreAddedToList(Store store) {
                 if (chosenStores.contains(store)) {
                     chosenStores.remove(store);
                     UserPreferencesUtils.setChosenStores(context, chosenStores);
+
                 } else {
                     chosenStores.add(store);
                     UserPreferencesUtils.setChosenStores(context, chosenStores);
-
                 }
                 updateBadge();
                 notifyDataSetChanged();
             }
 
-            @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onStoreAddedToFavorites(Store store) {
                 String bearerToken = UserPreferencesUtils.getToken(context);

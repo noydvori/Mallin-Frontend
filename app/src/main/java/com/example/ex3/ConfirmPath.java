@@ -44,8 +44,8 @@ public class ConfirmPath extends AppCompatActivity {
         bearerToken = UserPreferencesUtils.getToken(context);
 
         chosenStores = UserPreferencesUtils.getChosenStores(context);
-        optimalOrder = new ArrayList<>(chosenStores);
-        //optimalOrder = UserPreferencesUtils.getStores(context);
+        //optimalOrder = new ArrayList<>(chosenStores);
+        optimalOrder = UserPreferencesUtils.getStores(context);
 
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -85,8 +85,9 @@ public class ConfirmPath extends AppCompatActivity {
 
         Button buttonConfirm = findViewById(R.id.button_confirm);
         buttonConfirm.setOnClickListener(v -> {
-            fetchOrderedRout(UserPreferencesUtils.getLocation(), chosenStores);
-            List<Store> reorderedStores = adapter.getChosenStores();
+            if(!toggleOptimal.isChecked()) {
+                fetchOrderedRout(UserPreferencesUtils.getLocation(), chosenStores);
+            }
             Intent intent = new Intent(ConfirmPath.this, NavigateActivity.class);
             startActivity(intent);
         });
