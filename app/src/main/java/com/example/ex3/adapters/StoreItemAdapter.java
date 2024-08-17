@@ -154,8 +154,10 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
 
                 storeInteractionListener.onStoreAddedToList(storeItem);
                 UserPreferencesUtils.setChosenStores(context, chosenStores);
-                notifyDataSetChanged();
                 updateButtonIcons(this, storeItem);
+                cardView.setCardBackgroundColor(chosenStores.contains(storeItem) ?
+                        ContextCompat.getColor(context, R.color.added_to_list_color) :
+                        ContextCompat.getColor(context, R.color.white));
             });
 
             // Add to Favorites Button Click Listener

@@ -22,13 +22,11 @@ public class UserPreferencesUtils {
     private static final String TOKEN_KEY = "TOKEN";
     private static final String CHOSEN_STORES_KEY = "CHOSEN_STORES";
     private static final String FAVORITE_STORES_KEY = "FAVORITE_STORES";
-
-    private static final Gson gson = new Gson();
     private static final String NODES_PATH_KEY = "NODES_PATH";
     private static final String STORES_PATH_KEY ="STORES_PATH" ;
     private static final String LOCATION_KEY ="LOCATION" ;
     private static final String CLOSEST_STORES_KEY ="CLOSEST_STORES" ;
-
+    private static final Gson gson = new Gson();
 
     public static void setMallName(Context context, String mallName) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);

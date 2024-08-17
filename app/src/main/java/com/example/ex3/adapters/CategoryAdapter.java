@@ -79,7 +79,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                     UserPreferencesUtils.setChosenStores(context, chosenStores);
                 }
                 updateBadge();
-                notifyDataSetChanged();
             }
 
             @Override
@@ -95,7 +94,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                     UserPreferencesUtils.addFavoriteStore(context, store);
 
                 }
-                notifyDataSetChanged();
             }
         });
         holder.storeItemRecyclerView.setAdapter(storeItemAdapter);
