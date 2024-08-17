@@ -25,6 +25,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     private List<Store> chosenStores;
     private List<Store> favStores;
     private final TextView badgeTextView;
+    private StoreItemAdapter storeItemAdapter;
 
     public CategoryAdapter(Context context, List<Category> categoryList, List<Store> chosenStores,List<Store> favStores, TextView badgeTextView) {
         this.context = context;
@@ -32,6 +33,10 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         this.chosenStores = chosenStores;
         this.badgeTextView = badgeTextView;
         this.favStores = favStores;
+    }
+
+    public void notifyOneStore (int position){
+        storeItemAdapter.notifyItemChanged(position);
     }
 
     private void updateBadge() {
@@ -67,7 +72,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         Category category = categoryList.get(position);
         holder.categoryNameTextView.setText(category.getCategoryName());
 
-        StoreItemAdapter storeItemAdapter = new StoreItemAdapter(context, category.getStoresList(), chosenStores,favStores, new StoreItemAdapter.OnStoreInteractionListener() {
+        storeItemAdapter = new StoreItemAdapter(context, category.getStoresList(), chosenStores,favStores, new StoreItemAdapter.OnStoreInteractionListener() {
             @Override
             public void onStoreAddedToList(Store store) {
                 if (chosenStores.contains(store)) {

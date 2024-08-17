@@ -181,12 +181,11 @@ public class Home extends AppCompatActivity{
                 if (storeList != null && !storeList.isEmpty()) {
                     if (categories.isEmpty()) {
                         categories.add(new Category(storeType, storeList));
-                        categoryAdapter.notifyItemChanged(0);
                     } else {
                         categories.get(0).getStoresList().addAll(storeList);
-                        categoryAdapter.notifyItemChanged(0);
                     }
                 }
+                categoryAdapter.notifyItemChanged(0);
                 remainingRequests--;
                 if (remainingRequests == 0 && !categories.isEmpty()) {
                     addCategoryInBackground(categories.get(0));
@@ -202,11 +201,12 @@ public class Home extends AppCompatActivity{
             return null;
         });
     }
-    public void onChosenStoreRemoved() {
+    public void onChosenStoreRemoved(Store store) {
         // Update chosenStores list
         chosenStores = UserPreferencesUtils.getChosenStores(this);
         // Notify the CategoryAdapter to update the UI
-        categoryAdapter.notifyItemRemoved(0);
+        int index = categories.get(0).getStoresList().indexOf(store);
+        categoryAdapter.notifyOneStore(index);
         // Optionally, update the badge or other UI elements
         updateBadge();
     }

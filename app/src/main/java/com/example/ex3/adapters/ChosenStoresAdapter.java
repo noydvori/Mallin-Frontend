@@ -71,13 +71,14 @@ public class ChosenStoresAdapter extends RecyclerView.Adapter<ChosenStoresAdapte
 
         // Set click listener for the remove button
         holder.removeButton.setOnClickListener(v -> {
+            Store removedStore = stores.get(position);
             stores.remove(position);
             UserPreferencesUtils.setChosenStores(context, stores); // Update shared preferences
             notifyItemRemoved(position); // Notify adapter
             notifyItemRangeChanged(position, stores.size()); // Notify adapter of range change
             // Notify Home/Favorites activity to update categories
             if (homeActivity != null) {
-                homeActivity.onChosenStoreRemoved();
+                homeActivity.onChosenStoreRemoved(removedStore);
             }
             if (favActivity != null) {
                 favActivity.onChosenStoreRemoved();
