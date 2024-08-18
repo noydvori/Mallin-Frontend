@@ -54,11 +54,8 @@ import java.util.stream.Collectors;
 public class Home extends AppCompatActivity{
 
     private static final int REQUEST_CODE_NAVIGATE = 2;
-    private static final int MAX_PAGES = 18;
-
     private static final int REQUEST_CODE_FAVORITES = 1;
-
-    private RecyclerView categoriesList;
+    private static final int MAX_PAGES = 18;
 
     private String bearerToken;
     private TextView badgeTextView;
@@ -67,19 +64,15 @@ public class Home extends AppCompatActivity{
     private String currentSearchQuery = "";
     private final List<String> tags = new ArrayList<>();
     private DrawerLayout drawerLayout;
-    private RecyclerView chosenStoresRecyclerView;
     private ChosenStoresAdapter chosenStoresAdapter;
     private CategoryDao categoryDao;
-
     private CategoryAdapter categoryAdapter;
     private RecyclerView tagsRecyclerView;
     private BottomNavigationView bottomNavigationView;
     private TagsAdapter tagsAdapter;
-    private List<Store> favoriteStores = new ArrayList<>();
-    boolean isLoading = false;
+    private List<Store> favoriteStores;
     private int currentPage;
     private int remainingRequests = MAX_PAGES;
-
 
 
     @Override
@@ -100,12 +93,16 @@ public class Home extends AppCompatActivity{
     }
 
     private void initializeUI() {
+        UserPreferencesUtils.removeChosenStores(this);
+        UserPreferencesUtils.removeClosestStores(this);
+        UserPreferencesUtils.removeStoresPath(this);
+        UserPreferencesUtils.removeNodesPath(this);
         bearerToken = UserPreferencesUtils.getToken(this);
         chosenStores = UserPreferencesUtils.getChosenStores(this);
         setContentView(R.layout.activity_stores_list);
 
         drawerLayout = findViewById(R.id.drawer_layout);
-        chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
+        RecyclerView chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
         chosenStoresRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         chosenStoresAdapter = new ChosenStoresAdapter(this, chosenStores);
 
@@ -160,7 +157,7 @@ public class Home extends AppCompatActivity{
             }
         });
 
-        categoriesList = findViewById(R.id.categories);
+        RecyclerView categoriesList = findViewById(R.id.categories);
         categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
         categoriesList.setLayoutManager(new LinearLayoutManager(this));
         categoryAdapter = new CategoryAdapter(this, categories, chosenStores, favoriteStores, badgeTextView);
@@ -171,7 +168,7 @@ public class Home extends AppCompatActivity{
         bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
     }
     private void fetchStoresByTypePaged(String token, String storeType, int page) {
-        showLoadingIndicator(true);
+
         CategoryAPI categoryAPI = CategoryAPI.getInstance();
 
         CompletableFuture<List<Store>> future = categoryAPI.getStoresByTypePaged(token, storeType, page);
@@ -259,12 +256,12 @@ public class Home extends AppCompatActivity{
 
 
     private void fetchDataFromServer() {
-        showLoadingIndicator(true);
         categories.clear();
+        TextView noResultsText = findViewById(R.id.no_results_text);
+        noResultsText.setVisibility(View.GONE); // Hide it at the start of each search
+
         if (Objects.equals(currentSearchQuery, "")) {
-            tagsRecyclerView.post(() -> {
-                getCategoryInBackground("all");
-            });
+            tagsRecyclerView.post(() -> getCategoryInBackground("all"));
         } else {
             fetchStoresByName(bearerToken, currentSearchQuery);
         }
@@ -279,6 +276,7 @@ public class Home extends AppCompatActivity{
 
     private void fetchStoresByName(String token, String query) {
         CategoryAPI categoryAPI = CategoryAPI.getInstance();
+        TextView noResultsText = findViewById(R.id.no_results_text); // Access the TextView
 
         CompletableFuture<List<Store>> future = categoryAPI.getStoresByName(token, query);
 
@@ -298,10 +296,14 @@ public class Home extends AppCompatActivity{
             }
             categories.clear();
             categories.addAll(c);
-            runOnUiThread(() -> categoryAdapter.notifyDataSetChanged());
-            showLoadingIndicator(false);
+
+            runOnUiThread(() -> {
+                categoryAdapter.notifyDataSetChanged();
+                noResultsText.setVisibility(c.isEmpty() ? View.VISIBLE : View.GONE);
+            });
+
         }).exceptionally(ex -> {
-            showLoadingIndicator(false);
+
             return null;
         });
     }
@@ -328,7 +330,7 @@ public class Home extends AppCompatActivity{
                         currentPage++;
                     }
                 }
-                showLoadingIndicator(false);
+
             });
         });
     }
@@ -343,7 +345,7 @@ public class Home extends AppCompatActivity{
             runOnUiThread(() -> {
                 categories.clear();
                 categories.add(category);
-                showLoadingIndicator(false);
+
             });
         });
     }
@@ -385,6 +387,7 @@ public class Home extends AppCompatActivity{
     }
 
     private void fetchFavorites() {
+        favoriteStores = new ArrayList<>();
         String token = UserPreferencesUtils.getToken(this);
         FavoritesAPI.getInstance().getFavorites(token).thenAccept(favoriteStores -> {
             UserPreferencesUtils.setFavoriteStores(this, favoriteStores);
@@ -400,6 +403,7 @@ public class Home extends AppCompatActivity{
         });
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void fetchTypes(String token) {
         TagAPI tagAPI = TagAPI.getInstance();
         CompletableFuture<List<String>> future = tagAPI.getTypes(token);

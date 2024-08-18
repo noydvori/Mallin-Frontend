@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import android.Manifest;
 import android.content.Intent;
@@ -21,7 +20,6 @@ import com.example.ex3.components.PathOverlayImageView;
 import com.example.ex3.devtool.database.GraphDatabase;
 import com.example.ex3.devtool.graph.Graph;
 import com.example.ex3.devtool.graph.GraphNode;
-import com.example.ex3.devtool.handlers.MapTappingHandler;
 import com.example.ex3.devtool.managers.CustomAccelerometerManager;
 import com.example.ex3.devtool.handlers.MapScalingHandler;
 import com.example.ex3.handlers.NavigationMapTappingHandler;
@@ -35,6 +33,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class NavigateActivity extends AppCompatActivity {
     private static final String mapActivity = "MapActivity";
@@ -70,19 +69,19 @@ public class NavigateActivity extends AppCompatActivity {
         route = UserPreferencesUtils.getNodes(this);
         mImageView.setInitialized(false);
 
-        final int[] initialFloor = {0}; // default floor
+        AtomicInteger initialFloor = new AtomicInteger(); // default floor
 
         if (route != null && !route.isEmpty()) {
             mImageView.setInitialized(false);
             mImageView.setPath(route);
             mImageView.setLocation(route.get(0));
-            initialFloor[0] = route.get(0).getFloor();
-            mImageView.setCurrentFloor(initialFloor[0]);
+            initialFloor.set(route.get(0).getFloor());
+            mImageView.setCurrentFloor(initialFloor.get());
         }
-        setFloor(initialFloor[0], "Floor " + initialFloor[0]);
+        setFloor(initialFloor.get(), "Floor " + initialFloor);
 
         // Show initial Snackbar
-        showFloorSnackbar(initialFloor[0]);
+        showFloorSnackbar(initialFloor.get());
 
         customAccelerometerManager = new CustomAccelerometerManager(this);
         bottomNavigationView = findViewById(R.id.bottom_nav_menu);
@@ -114,7 +113,7 @@ public class NavigateActivity extends AppCompatActivity {
         navigateViewModel.getCurrentLocation().observe(this, node -> {
             Log.d("NavigateActivity", "liveLocation: " + node);
             mImageView.setLocation(node);
-            initialFloor[0] = node.getFloor();
+            initialFloor.set(node.getFloor());
             //mImageView.setCurrentFloor(initialFloor[0]);
         });
 
@@ -136,7 +135,7 @@ public class NavigateActivity extends AppCompatActivity {
         tabLayout.addTab(tabLayout.newTab().setText("Floor 3"));
 
         // Set the correct tab based on the initial floor
-        tabLayout.getTabAt(initialFloor[0]).select();
+        tabLayout.getTabAt(initialFloor.get()).select();
         new Handler().postDelayed(() -> {
             mImageView.centerOnLocation();
         }, 5000);
@@ -200,13 +199,15 @@ public class NavigateActivity extends AppCompatActivity {
 
     private void showFloorSnackbar(int currentFloor) {
         if (route == null || route.isEmpty()) return;
-        GraphNode startNode = route.get(0);
+        int floorsToGo = 0;
+        for (int i = 0; i < route.size(); i++) {
+            if(route.get(i).getFloor() != currentFloor) {
+                floorsToGo = route.get(i).getFloor() - currentFloor;
+                break;
+            }
+        }
         GraphNode endNode = route.get(route.size() - 1);
-
-        int startFloor = startNode.getFloor();
         int endFloor = endNode.getFloor();
-
-        int floorsToGo = endFloor - currentFloor;
 
         String message;
         if (floorsToGo > 0) {

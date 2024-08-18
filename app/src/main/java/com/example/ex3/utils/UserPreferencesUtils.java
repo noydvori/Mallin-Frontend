@@ -102,6 +102,7 @@ public class UserPreferencesUtils {
         return prefs.getString(TOKEN_KEY, "");
     }
 
+
     public static List<Store> getChosenStores(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String json = prefs.getString(CHOSEN_STORES_KEY, null);
@@ -171,4 +172,88 @@ public class UserPreferencesUtils {
         Type type = new TypeToken<List<Store>>() {}.getType();
         return gson.fromJson(json, type);
     }
+    public static void removeMallName(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.remove(MALL_NAME_KEY);
+        editor.apply();
+    }
+
+    /**
+     * Removes the stored token.
+     * @param context The context to access SharedPreferences.
+     */
+    public static void removeToken(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.remove(TOKEN_KEY);
+        editor.apply();
+    }
+
+    /**
+     * Removes the stored chosen stores list.
+     * @param context The context to access SharedPreferences.
+     */
+    public static void removeChosenStores(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.remove(CHOSEN_STORES_KEY);
+        editor.apply();
+    }
+
+    /**
+     * Removes the stored favorite stores list.
+     * @param context The context to access SharedPreferences.
+     */
+    public static void removeFavoriteStores(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.remove(FAVORITE_STORES_KEY);
+        editor.apply();
+    }
+
+    /**
+     * Removes the stored nodes path.
+     * @param context The context to access SharedPreferences.
+     */
+    public static void removeNodesPath(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.remove(NODES_PATH_KEY);
+        editor.apply();
+    }
+
+    /**
+     * Removes the stored stores path.
+     * @param context The context to access SharedPreferences.
+     */
+    public static void removeStoresPath(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.remove(STORES_PATH_KEY);
+        editor.apply();
+    }
+
+    /**
+     * Removes the stored location.
+     * @param context The context to access SharedPreferences.
+     */
+    public static void removeLocation(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.remove(LOCATION_KEY);
+        editor.apply();
+    }
+
+    /**
+     * Removes the stored closest stores list.
+     * @param context The context to access SharedPreferences.
+     */
+    public static void removeClosestStores(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.remove(CLOSEST_STORES_KEY);
+        editor.apply();
+    }
+
 }

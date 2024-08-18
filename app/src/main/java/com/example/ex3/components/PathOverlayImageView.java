@@ -128,13 +128,14 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
                 }
             }
         }
-
-        // Draw finish icon on the last node
-        GraphNode lastNode = pathStores.get(pathStores.size() - 1);
-        if (lastNode.getFloor() == this.currentFloor) {
-            PointF lastCenter = sourceToViewCoord(lastNode.getXMultpyed(), lastNode.getYMultpyed());
-            if (lastCenter != null) {
-                drawFinishIcon(canvas, lastCenter, scale);
+        if (pathStores != null && !pathStores.isEmpty()) {
+            // Draw finish icon on the last node
+            GraphNode lastNode = pathStores.get(pathStores.size() - 1);
+            if (lastNode.getFloor() == this.currentFloor) {
+                PointF lastCenter = sourceToViewCoord(lastNode.getXMultpyed(), lastNode.getYMultpyed());
+                if (lastCenter != null) {
+                    drawFinishIcon(canvas, lastCenter, scale);
+                }
             }
         }
 
