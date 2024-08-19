@@ -242,6 +242,8 @@ public class CurrentLocation extends AppCompatActivity {
         NavigationAPI.getInstance().createRout(token, store, stores).thenAccept(paths -> {
             UserPreferencesUtils.setPaths(this, paths);
             runOnUiThread(() -> {
+                UserPreferencesUtils.setPaths(this, paths);
+
                 Intent intent = new Intent(CurrentLocation.this, ConfirmPath.class);
                 startActivity(intent);
             });

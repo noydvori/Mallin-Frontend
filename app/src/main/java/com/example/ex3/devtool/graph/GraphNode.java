@@ -78,6 +78,13 @@ public class GraphNode {
     public float getYMultpyed() {
         return  this.y * 3.5f;
     }
+    public float getXMultipliedForPath() {
+        return this.x * 2.6F;
+    }
+
+    public float getYMultipliedForPath() {
+        return this.y * 2.6F;
+    }
     @Override
     public String toString() {
         return "node: " + this.id + " name: " + this.name + " x= " + getX() + " y= " + getY();

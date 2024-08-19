@@ -62,7 +62,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
     public void centerOnLocation() {
         if (location != null) {
             // Calculate the adjusted center point, slightly lower than the middle
-            PointF locationCenter = new PointF(location.getXMultpyed(), location.getYMultpyed() - 1200); // Adjust the 200 value as needed
+            PointF locationCenter = new PointF(location.getXMultipliedForPath(), location.getYMultipliedForPath() - 1200); // Adjust the 200 value as needed
 
             // Attempt to create the animation builder
             AnimationBuilder animationBuilder = animateScaleAndCenter(getScale(), locationCenter);
@@ -80,7 +80,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
 
 
     private void centerOnTheMiddle() {
-        PointF locationCenter = new PointF(middle.getXMultpyed(), middle.getYMultpyed());
+        PointF locationCenter = new PointF(middle.getXMultipliedForPath(), middle.getYMultipliedForPath());
         setScaleAndCenter(getScale(), locationCenter);
     }
 
@@ -132,8 +132,8 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             for (int i = 0; i < pathStores.size() - 1; i++) {
                 GraphNode node = pathStores.get(i);
                 GraphNode nextNode = pathStores.get(i + 1);
-                PointF center = sourceToViewCoord(node.getXMultpyed(), node.getYMultpyed());
-                PointF nextCenter = sourceToViewCoord(nextNode.getXMultpyed(), nextNode.getYMultpyed());
+                PointF center = sourceToViewCoord(node.getXMultipliedForPath(), node.getYMultipliedForPath());
+                PointF nextCenter = sourceToViewCoord(nextNode.getXMultipliedForPath(), nextNode.getYMultipliedForPath());
                 if (center != null && nextCenter != null) {
                     if (node.getFloor() == this.currentFloor) {
                         paint.setColor(Color.parseColor("#CD8055CD"));
@@ -161,7 +161,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
 
         // Draw the current location
         if (location != null) {
-            PointF locationCenter = sourceToViewCoord(location.getXMultpyed(), location.getYMultpyed());
+            PointF locationCenter = sourceToViewCoord(location.getXMultipliedForPath(), location.getYMultipliedForPath());
             if (locationCenter != null && location.getFloor() == this.currentFloor) {
                 paint.setColor(Color.BLACK);
                 canvas.drawCircle(locationCenter.x, locationCenter.y, 65 * scale, paint);
