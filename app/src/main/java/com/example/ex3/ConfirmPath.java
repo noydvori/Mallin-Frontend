@@ -31,7 +31,6 @@ public class ConfirmPath extends AppCompatActivity {
     private List<Store> chosenStores;
     private String bearerToken;
     private List<Store> favoriteStores;
-    private List<Store> optimalOrder;
 
     private ToggleButton toggleOptimal;
     BottomNavigationView bottomNavigationView;
@@ -43,8 +42,8 @@ public class ConfirmPath extends AppCompatActivity {
 
         bearerToken = UserPreferencesUtils.getToken(context);
 
-        chosenStores = UserPreferencesUtils.getChosenStores(context);
-        optimalOrder = new ArrayList<>(chosenStores);
+        chosenStores = UserPreferencesUtils.getStores(context);
+
 
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -70,11 +69,11 @@ public class ConfirmPath extends AppCompatActivity {
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
         toggleOptimal = findViewById(R.id.toggle_optimal);
-        toggleOptimal.setChecked(true);
+        toggleOptimal.setChecked(false);
         toggleOptimal.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 chosenStores.clear();
-                chosenStores.addAll(optimalOrder);
+                chosenStores.addAll(UserPreferencesUtils.getStores(context));
                 adapter.notifyDataSetChanged();
                 Toast.makeText(ConfirmPath.this, "Order reset to optimal", Toast.LENGTH_SHORT).show();
             }
@@ -84,10 +83,12 @@ public class ConfirmPath extends AppCompatActivity {
 
         Button buttonConfirm = findViewById(R.id.button_confirm);
         buttonConfirm.setOnClickListener(v -> {
-            fetchOrderedRout(UserPreferencesUtils.getLocation(), chosenStores);
-            List<Store> reorderedStores = adapter.getChosenStores();
-            Intent intent = new Intent(ConfirmPath.this, NavigateActivity.class);
-            startActivity(intent);
+            if(!toggleOptimal.isChecked()) {
+                fetchOrderedRout(UserPreferencesUtils.getLocation(), chosenStores);
+            } else {
+                Intent intent = new Intent(ConfirmPath.this, NavigateActivity.class);
+                startActivity(intent);
+            }
         });
 
         Button buttonBack = findViewById(R.id.button_back);
@@ -120,19 +121,27 @@ public class ConfirmPath extends AppCompatActivity {
         String token = UserPreferencesUtils.getToken(this);
         NavigationAPI.getInstance().createOrderedRout(token, store, stores).thenAccept(nodes -> {
             UserPreferencesUtils.setNodes(this, nodes);
+            runOnUiThread(() -> {
+                Intent intent = new Intent(ConfirmPath.this, NavigateActivity.class);
+                startActivity(intent);
+            });
+
         }).exceptionally(throwable -> {
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Error fetching ordered route", Toast.LENGTH_SHORT).show();
+            });
             return null;
         });
     }
 
     private void checkToggleState() {
-        boolean isOptimal = chosenStores.equals(optimalOrder);
+        boolean isOptimal = chosenStores.equals(UserPreferencesUtils.getStores(context));
         toggleOptimal.setOnCheckedChangeListener(null); // Disable the listener temporarily
         toggleOptimal.setChecked(isOptimal);
         toggleOptimal.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 chosenStores.clear();
-                chosenStores.addAll(optimalOrder);
+                chosenStores.addAll(UserPreferencesUtils.getStores(context));
                 adapter.notifyDataSetChanged();
                 Toast.makeText(ConfirmPath.this, "Order reset to optimal", Toast.LENGTH_SHORT).show();
             }

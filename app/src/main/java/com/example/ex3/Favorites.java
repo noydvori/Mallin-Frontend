@@ -6,12 +6,14 @@ import static androidx.core.content.ContextCompat.startActivity;
 
 import static com.example.ex3.MyApplication.context;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.SearchView;
 import android.widget.Switch;
@@ -26,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ex3.adapters.CategoryAdapter;
 import com.example.ex3.adapters.ChosenStoresAdapter;
 import com.example.ex3.adapters.StoreItemAdapter;
+import com.example.ex3.api.FavoritesAPI;
 import com.example.ex3.entities.FavoriteStore;
 import com.example.ex3.entities.Store;
 import com.example.ex3.utils.UserPreferencesUtils;
@@ -46,25 +49,44 @@ public class Favorites extends AppCompatActivity{
     private RecyclerView chosenStoresRecyclerView;
     private ChosenStoresAdapter chosenStoresAdapter;
     private String bearerToken;
+    private TextView noResultsText;
     private SharedPreferences sharedPreferencesSettings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_favorites); // Move this line to the beginning
+
         bearerToken = UserPreferencesUtils.getToken(context);
         chosenStores = UserPreferencesUtils.getChosenStores(context);
+        noResultsText = findViewById(R.id.no_results_text); // Now this line will not throw an exception
         favoriteStores = UserPreferencesUtils.getFavoriteStores(context);
+        if(favoriteStores == null || favoriteStores.isEmpty() || favoriteStores.size() == 0){
+            noResultsText.setVisibility(View.VISIBLE);
+        }
+
         setContentView(R.layout.activity_favorites);
         bottomNavigationView = findViewById(R.id.bottom_nav_menu);
         badgeTextView = findViewById(R.id.locationBadge);
         drawerLayout = findViewById(R.id.drawer_layout);
         chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
         chosenStoresRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        chosenStoresAdapter = new ChosenStoresAdapter(chosenStores);
+        chosenStoresAdapter = new ChosenStoresAdapter(this, chosenStores);
         chosenStoresRecyclerView.setAdapter(chosenStoresAdapter);
         // Initialize searchView
         SearchView searchView = findViewById(R.id.search_view);
         searchView.setBackgroundResource(R.drawable.bg_white_rounded);
+        searchView.setBackgroundResource(R.drawable.bg_white_rounded);
+
+        searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchView.setIconified(false);
+                // Optional: request focus to show the keyboard if it's not already visible
+                searchView.requestFocus();
+            }
+        });
+
 
         // Set up search functionality
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -76,6 +98,12 @@ public class Favorites extends AppCompatActivity{
             @Override
             public boolean onQueryTextChange(String newText) {
                 filter(newText);
+                if (newText.isEmpty()) {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
+                    }
+                }
                 return true;
             }
         });
@@ -95,7 +123,7 @@ public class Favorites extends AppCompatActivity{
                 return true;
             }
         });
-        // Initialize the BottomNavigationView
+
 
         // Set up the item selected listener
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -130,32 +158,34 @@ public class Favorites extends AppCompatActivity{
             public void onStoreAddedToList(Store store) {
                 if (chosenStores.contains(store)) {
                     chosenStores.remove(store);
-
-
+                    UserPreferencesUtils.setChosenStores(context, chosenStores);
 
                 } else {
                     chosenStores.add(store);
-
+                    UserPreferencesUtils.setChosenStores(context, chosenStores);
                 }
-                UserPreferencesUtils.setChosenStores(context, chosenStores); // Save the updated list
-
                 updateBadge();
-                StoreItemAdapter.notifyDataSetChanged(); // Refresh the adapter to update the UI
             }
 
             @Override
             public void onStoreAddedToFavorites(Store store) {
+                String bearerToken = UserPreferencesUtils.getToken(context);
                 if (favoriteStores.contains(store)) {
                     favoriteStores.remove(store);
+                    if (favoriteStores.isEmpty()) {
+                        noResultsText.setVisibility(View.VISIBLE);
+                    }
+                    FavoritesAPI.getInstance().removeFromFavorites(bearerToken,store);
                     UserPreferencesUtils.removeFavoriteStore(context, store);
-
                 } else {
                     favoriteStores.add(store);
+                    FavoritesAPI.getInstance().addToFavorites(bearerToken, store);
                     UserPreferencesUtils.addFavoriteStore(context, store);
 
                 }
                 StoreItemAdapter.notifyDataSetChanged(); // Refresh the adapter to update the UI
-            }//         }
+
+            }
 
         });
         favoritesList.setAdapter(StoreItemAdapter);
@@ -195,7 +225,18 @@ public class Favorites extends AppCompatActivity{
             }
         });
         bottomNavigationView.getMenu().findItem(R.id.menu_favorites).setChecked(true);
-
+        if (favoriteStores == null || favoriteStores.isEmpty()) {
+            noResultsText.setVisibility(View.VISIBLE);
+        }
+    }
+    public void onChosenStoreRemoved() {
+        // Update chosenStores list
+        chosenStores = UserPreferencesUtils.getChosenStores(this);
+        // Notify the CategoryAdapter to update the UI
+        chosenStoresAdapter.notifyDataSetChanged();
+        StoreItemAdapter.notifyDataSetChanged();
+        // Optionally, update the badge or other UI elements
+        updateBadge();
     }
 
     private void filter(String query) {
@@ -206,6 +247,12 @@ public class Favorites extends AppCompatActivity{
             }
         }
         StoreItemAdapter.filterList(filteredList);
+
+        if (filteredList.isEmpty()) {
+            noResultsText.setVisibility(View.VISIBLE);
+        } else {
+            noResultsText.setVisibility(View.GONE);
+        }
     }
     private void updateBadge() {
         if (badgeTextView != null) {

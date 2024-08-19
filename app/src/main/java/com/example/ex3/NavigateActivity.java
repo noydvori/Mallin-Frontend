@@ -1,27 +1,21 @@
 package com.example.ex3;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
-
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.example.ex3.components.PathOverlayImageView;
 import com.example.ex3.devtool.database.GraphDatabase;
-import com.example.ex3.devtool.graph.Graph;
 import com.example.ex3.devtool.graph.GraphNode;
-import com.example.ex3.devtool.handlers.MapTappingHandler;
-import com.example.ex3.devtool.managers.CustomAccelerometerManager;
 import com.example.ex3.devtool.handlers.MapScalingHandler;
 import com.example.ex3.handlers.NavigationMapTappingHandler;
 import com.example.ex3.managers.NavigationWifiManager;
@@ -32,58 +26,57 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
-
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class NavigateActivity extends AppCompatActivity {
-    private static final String mapActivity = "MapActivity";
     private NavigateViewModel navigateViewModel;
     private Snackbar floorSnackbar;
-
     private NavigationWifiManager navigationWifiManager;
-    private MutableLiveData<GraphNode> node;
-
-    private BottomNavigationView bottomNavigationView;
     private PathOverlayImageView mImageView;
     private List<GraphNode> route;
-    private CustomAccelerometerManager customAccelerometerManager;
     private TabLayout tabLayout;
     private NavigationMapTappingHandler mMapTappingHandler;
-    FloatingActionButton centerButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigate);
 
-        navigateViewModel = new ViewModelProvider(this, new NavigateViewModelFactory(GraphDatabase.getDatabase(this))).get(NavigateViewModel.class);
+        // Initialize ViewModel
+        navigateViewModel = new ViewModelProvider(this, new NavigateViewModelFactory(GraphDatabase.getDatabase(this)))
+                .get(NavigateViewModel.class);
+
+        // Initialize UI components
         mImageView = findViewById(R.id.devtool_map);
         tabLayout = findViewById(R.id.tab_layout);
+        FloatingActionButton centerButton = findViewById(R.id.center);
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_nav_menu);
+
+        // Set initial image and handlers for the map
         mImageView.setImage(ImageSource.resource(R.drawable.floor_1));
-        Log.d(mapActivity, "start this app");
         mMapTappingHandler = new NavigationMapTappingHandler(mImageView, navigateViewModel);
-        centerButton = findViewById(R.id.center);
+
+        // Handle center button click
         centerButton.setOnClickListener(v -> mImageView.centerOnLocation());
 
+        // Retrieve and set the user's preferred route
         route = UserPreferencesUtils.getNodes(this);
-        mImageView.setInitialized(false);
-
-        final int[] initialFloor = {0}; // default floor
+        mImageView.setDestinations(UserPreferencesUtils.getStores(this));
+        AtomicInteger initialFloor = new AtomicInteger();
 
         if (route != null && !route.isEmpty()) {
-            mImageView.setInitialized(false);
             mImageView.setPath(route);
-            //mImageView.setLocation(route.get(0));
-            //initialFloor = route.get(0).getFloor();
-            //mImageView.setCurrentFloor(initialFloor);
+            mImageView.setLocation(route.get(0));
+            initialFloor.set(route.get(0).getFloor());
+            mImageView.setCurrentFloor(initialFloor.get());
         }
-        setFloor(initialFloor[0], "Floor " + initialFloor[0]);
 
-        // Show initial Snackbar
-        showFloorSnackbar(initialFloor[0]);
+        // Set the initial floor and show the SnackBar
+        setFloor(initialFloor.get(), "Floor " + initialFloor);
+        showFloorSnackbar(initialFloor.get());
 
-        customAccelerometerManager = new CustomAccelerometerManager(this);
-        bottomNavigationView = findViewById(R.id.bottom_nav_menu);
+        // Bottom Navigation Menu setup
         bottomNavigationView.getMenu().findItem(R.id.menu_navigate).setChecked(true);
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             Intent intent;
@@ -104,6 +97,7 @@ public class NavigateActivity extends AppCompatActivity {
             }
         });
 
+        // Observe LiveData changes
         navigateViewModel.getFloorImage().observe(this, integer -> {
             mImageView.setImage(ImageSource.resource(integer));
             mImageView.setOnImageEventListener(new MapScalingHandler(mImageView));
@@ -113,29 +107,32 @@ public class NavigateActivity extends AppCompatActivity {
         navigateViewModel.getCurrentLocation().observe(this, node -> {
             Log.d("NavigateActivity", "liveLocation: " + node);
             mImageView.setLocation(node);
-            initialFloor[0] = node.getFloor();
-            mImageView.setCurrentFloor(initialFloor[0]);
+            initialFloor.set(node.getFloor());
         });
 
-        graphChangedListeners(mImageView);
-
-        // Check and request permissions for location if needed
+        // Check and request permissions for location
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
         } else {
-            // Initialize the WiFi manager
             initializeWifiManager();
         }
 
-        // Add tabs to the TabLayout
+        // Setup the TabLayout with floor tabs
+        setupTabLayout(initialFloor.get());
+
+        // Center map on location after 5 seconds
+        new Handler().postDelayed(() -> mImageView.centerOnLocation(), 5000);
+    }
+
+    private void setupTabLayout(int initialFloor) {
         tabLayout.addTab(tabLayout.newTab().setText("Floor 0"));
         tabLayout.addTab(tabLayout.newTab().setText("Floor 1"));
         tabLayout.addTab(tabLayout.newTab().setText("Floor 2"));
         tabLayout.addTab(tabLayout.newTab().setText("Floor 3"));
 
         // Set the correct tab based on the initial floor
-        tabLayout.getTabAt(initialFloor[0]).select();
+        tabLayout.getTabAt(initialFloor).select();
 
         // Add TabSelectedListener to change image based on selected tab
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -144,7 +141,8 @@ public class NavigateActivity extends AppCompatActivity {
                 int position = tab.getPosition();
                 mImageView.setCurrentFloor(position);
                 setFloor(position, "Floor " + position);
-                showFloorSnackbar(position); // Update the Snackbar message
+                showFloorSnackbar(position);
+                new Handler().postDelayed(() -> mImageView.centerOnLocation(), 1000);
             }
 
             @Override
@@ -168,38 +166,38 @@ public class NavigateActivity extends AppCompatActivity {
         }
     }
 
-    private void graphChangedListeners(PathOverlayImageView imageView) {
-        navigateViewModel.getSelectedFloor().observe(this, integer -> {
-            if (navigateViewModel.getGraphs().get(integer).getValue() != null) {
-                navigateViewModel.getGraphs().get(integer).getValue().forEach(node -> Log.d("GraphOverlay", "node: " + node.getId() + " name: " + node.getName()));
-                Graph graph = new Graph(navigateViewModel.getGraphs().get(integer).getValue());
-                mMapTappingHandler.setGraph(graph);
-            } else {
-                Log.d("DevTool", "graph: " + integer + " is null");
-            }
-        });
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 
-        for (int i = 0; i < 4; i++) {
-            int finalI = i;
-            navigateViewModel.getGraphs().get(i).observe(this, graphNodes -> {
-                graphNodes.forEach(node -> Log.d("Test", " node: " + node.getName()));
-                if (navigateViewModel.getSelectedFloor().getValue() == finalI) {
-                    Graph graph = new Graph(navigateViewModel.getGraphs().get(finalI).getValue());
-                    mMapTappingHandler.setGraph(graph);
-                }
-            });
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 2) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                initializeWifiManager();
+            } else {
+                // Handle permission denial - do nothing.
+            }
         }
+    }
+
+    private void initializeWifiManager() {
+        navigationWifiManager = new NavigationWifiManager(this, navigateViewModel);
     }
 
     private void showFloorSnackbar(int currentFloor) {
         if (route == null || route.isEmpty()) return;
-        GraphNode startNode = route.get(0);
+        int floorsToGo = 0;
+        for (int i = 0; i < route.size(); i++) {
+            if(route.get(i).getFloor() != currentFloor) {
+                floorsToGo = route.get(i).getFloor() - currentFloor;
+                break;
+            }
+        }
         GraphNode endNode = route.get(route.size() - 1);
-
-        int startFloor = startNode.getFloor();
         int endFloor = endNode.getFloor();
-
-        int floorsToGo = endFloor - currentFloor;
 
         String message;
         if (floorsToGo > 0) {
@@ -221,27 +219,17 @@ public class NavigateActivity extends AppCompatActivity {
             floorSnackbar.show();
         }
 
-        // Dismiss the Snackbar when the user reaches the destination floor
         if (currentFloor == endFloor) {
             floorSnackbar.dismiss();
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 2) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Initialize the WiFi manager
-                initializeWifiManager();
-            } else {
-                // Handle the case where the user denies the permission
-            }
+    private void setFloor(int i, CharSequence title) {
+        if (title != null) {
+            navigateViewModel.setTitle(title.toString());
         }
-    }
-
-    private void initializeWifiManager() {
-        navigationWifiManager = new NavigationWifiManager(this, navigateViewModel);
+        navigateViewModel.setSelectedFloor(i);
+        navigateViewModel.setFloorImage(getFloorResource(i));
     }
 
     public int getFloorResource(Integer floor) {
@@ -254,23 +242,6 @@ public class NavigateActivity extends AppCompatActivity {
                 return R.drawable.floor_2;
             default:
                 return R.drawable.floor_3;
-        }
-    }
-
-    private void setFloor(int i, CharSequence title) {
-        if (title != null) {
-            navigateViewModel.setTitle(title.toString());
-        }
-        navigateViewModel.setSelectedFloor(i);
-        navigateViewModel.setFloorImage(getFloorResource(i));
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (route != null && !route.isEmpty()) {
-            mImageView.setInitialized(false);
-            mImageView.setLocation(route.get(0));
         }
     }
 }

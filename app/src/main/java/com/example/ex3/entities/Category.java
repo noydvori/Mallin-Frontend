@@ -65,4 +65,7 @@ public class Category {
     public void addStore(Store store) {
         storesList.add(store);
     }
+    public void addStores(List<Store> stores) {
+        storesList.addAll(stores);
+    }
 }

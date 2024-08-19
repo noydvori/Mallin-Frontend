@@ -82,6 +82,8 @@
                     android:layout_marginRight="20dp"
                     android:layout_marginBottom="16dp"
                     android:background="@color/background_search"
+
+                    android:clickable="true"
                     android:queryHint="Search here" />
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -93,7 +95,15 @@
                     android:orientation="horizontal"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/tag_item" />
-
+                <TextView
+                    android:id="@+id/no_results_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:text="No results found"
+                    android:textSize="18sp"
+                    android:visibility="gone"
+                    android:layout_marginTop="10dp"/>
                 <ProgressBar
                     android:id="@+id/progressBar"
                     android:layout_width="match_parent"

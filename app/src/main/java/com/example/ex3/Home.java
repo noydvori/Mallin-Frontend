@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,6 +17,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -45,14 +47,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class Home extends AppCompatActivity{
+
     private static final int REQUEST_CODE_NAVIGATE = 2;
-    private RecyclerView categoriesList;
     private static final int REQUEST_CODE_FAVORITES = 1;
+    private static final int MAX_PAGES = 18;
 
     private String bearerToken;
     private TextView badgeTextView;
@@ -61,20 +65,15 @@ public class Home extends AppCompatActivity{
     private String currentSearchQuery = "";
     private final List<String> tags = new ArrayList<>();
     private DrawerLayout drawerLayout;
-    private RecyclerView chosenStoresRecyclerView;
     private ChosenStoresAdapter chosenStoresAdapter;
-    private AppDB database;
     private CategoryDao categoryDao;
-
     private CategoryAdapter categoryAdapter;
     private RecyclerView tagsRecyclerView;
     private BottomNavigationView bottomNavigationView;
     private TagsAdapter tagsAdapter;
-    private List<Store> favoriteStores = new ArrayList<>();
-    boolean isLoading = false;
+    private List<Store> favoriteStores;
     private int currentPage;
-    private int remainingRequests = 18;
-
+    private int remainingRequests = MAX_PAGES;
 
 
     @Override
@@ -88,21 +87,31 @@ public class Home extends AppCompatActivity{
     }
 
     private void initializeDatabase() {
-        database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "DB")
+        AppDB database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "DB")
                 .fallbackToDestructiveMigration()
                 .build();
-        categoryDao = database.categoryDao();
+        Executor executor = Executors.newSingleThreadExecutor();
+
+        executor.execute(() -> {
+            categoryDao = database.categoryDao();
+            categoryDao.deleteAll();
+        });
     }
 
     private void initializeUI() {
+        UserPreferencesUtils.removeChosenStores(this);
+        UserPreferencesUtils.removeClosestStores(this);
+        UserPreferencesUtils.removeStoresPath(this);
+        UserPreferencesUtils.removeNodesPath(this);
         bearerToken = UserPreferencesUtils.getToken(this);
         chosenStores = UserPreferencesUtils.getChosenStores(this);
         setContentView(R.layout.activity_stores_list);
 
         drawerLayout = findViewById(R.id.drawer_layout);
-        chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
+        RecyclerView chosenStoresRecyclerView = findViewById(R.id.chosenStoresRecyclerView);
         chosenStoresRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        chosenStoresAdapter = new ChosenStoresAdapter(chosenStores);
+        chosenStoresAdapter = new ChosenStoresAdapter(this, chosenStores);
+
         chosenStoresRecyclerView.setAdapter(chosenStoresAdapter);
 
         tagsRecyclerView = findViewById(R.id.tags);
@@ -120,6 +129,16 @@ public class Home extends AppCompatActivity{
 
         SearchView searchView = findViewById(R.id.search_view);
         searchView.setBackgroundResource(R.drawable.bg_white_rounded);
+
+        searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchView.setIconified(false);
+                // Optional: request focus to show the keyboard if it's not already visible
+                searchView.requestFocus();
+            }
+        });
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -132,11 +151,19 @@ public class Home extends AppCompatActivity{
             public boolean onQueryTextChange(String newText) {
                 currentSearchQuery = newText.isEmpty() ? "" : newText;
                 fetchDataFromServer();
+
+                // Hide the keyboard when the search text is empty
+                if (newText.isEmpty()) {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
+                    }
+                }
                 return true;
             }
         });
 
-        categoriesList = findViewById(R.id.categories);
+        RecyclerView categoriesList = findViewById(R.id.categories);
         categoriesList.setBackgroundResource(R.drawable.bg_dark_rounded);
         categoriesList.setLayoutManager(new LinearLayoutManager(this));
         categoryAdapter = new CategoryAdapter(this, categories, chosenStores, favoriteStores, badgeTextView);
@@ -147,7 +174,7 @@ public class Home extends AppCompatActivity{
         bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
     }
     private void fetchStoresByTypePaged(String token, String storeType, int page) {
-        showLoadingIndicator(true);
+
         CategoryAPI categoryAPI = CategoryAPI.getInstance();
 
         CompletableFuture<List<Store>> future = categoryAPI.getStoresByTypePaged(token, storeType, page);
@@ -157,14 +184,13 @@ public class Home extends AppCompatActivity{
                 if (storeList != null && !storeList.isEmpty()) {
                     if (categories.isEmpty()) {
                         categories.add(new Category(storeType, storeList));
-                        categoryAdapter.notifyDataSetChanged();
                     } else {
                         categories.get(0).getStoresList().addAll(storeList);
-                        categoryAdapter.notifyItemChanged(0);
                     }
                 }
+                categoryAdapter.notifyItemChanged(0);
                 remainingRequests--;
-                if (remainingRequests == 0 && categories.size() != 0) {
+                if (remainingRequests == 0 && !categories.isEmpty()) {
                     addCategoryInBackground(categories.get(0));
                 }
             });
@@ -174,17 +200,26 @@ public class Home extends AppCompatActivity{
                 if (remainingRequests == 0) {
                     addCategoryInBackground(categories.get(0));
                 }
-                showLoadingIndicator(false);
-                isLoading = false;
             });
             return null;
         });
+    }
+    public void onChosenStoreRemoved(Store store) {
+        // Update chosenStores list
+        chosenStores = UserPreferencesUtils.getChosenStores(this);
+        // Notify the CategoryAdapter to update the UI
+        int index = categories.get(0).getStoresList().indexOf(store);
+        categoryAdapter.notifyOneStore(index);
+        // Optionally, update the badge or other UI elements
+        updateBadge();
     }
 
 
     private void initializeListeners() {
         findViewById(R.id.locationIcon).setOnClickListener(v -> toggleDrawer());
-        findViewById(R.id.favorites_icon).setOnClickListener(v -> navigateToFavorites());
+        findViewById(R.id.favorites_icon).setOnClickListener(v -> {
+            Intent intent = new Intent(Home.this, Favorites.class);
+            startActivityForResult(intent, REQUEST_CODE_FAVORITES);});
 
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
                     Intent intent;
@@ -216,7 +251,6 @@ public class Home extends AppCompatActivity{
             chosenStoresAdapter.updateChosenStores(chosenStores);
             updateBadge();
             categoryAdapter.updateChosenStores(chosenStores);
-            chosenStoresAdapter.notifyDataSetChanged();
         }
     }
 
@@ -228,12 +262,12 @@ public class Home extends AppCompatActivity{
 
 
     private void fetchDataFromServer() {
-        showLoadingIndicator(true);
         categories.clear();
+        TextView noResultsText = findViewById(R.id.no_results_text);
+        noResultsText.setVisibility(View.GONE); // Hide it at the start of each search
+
         if (Objects.equals(currentSearchQuery, "")) {
-            tagsRecyclerView.post(() -> {
-                getCategoryInBackground("all");
-            });
+            tagsRecyclerView.post(() -> getCategoryInBackground("all"));
         } else {
             fetchStoresByName(bearerToken, currentSearchQuery);
         }
@@ -248,6 +282,7 @@ public class Home extends AppCompatActivity{
 
     private void fetchStoresByName(String token, String query) {
         CategoryAPI categoryAPI = CategoryAPI.getInstance();
+        TextView noResultsText = findViewById(R.id.no_results_text); // Access the TextView
 
         CompletableFuture<List<Store>> future = categoryAPI.getStoresByName(token, query);
 
@@ -267,10 +302,15 @@ public class Home extends AppCompatActivity{
             }
             categories.clear();
             categories.addAll(c);
-            runOnUiThread(() -> categoryAdapter.notifyDataSetChanged());
-            showLoadingIndicator(false);
+
+            runOnUiThread(() -> {
+                categoryAdapter.notifyDataSetChanged();
+                noResultsText.setVisibility(c.isEmpty() ? View.VISIBLE : View.GONE);
+            });
+
         }).exceptionally(ex -> {
-            showLoadingIndicator(false);
+
+            noResultsText.setVisibility(View.VISIBLE);
             return null;
         });
     }
@@ -290,14 +330,14 @@ public class Home extends AppCompatActivity{
                     categories.add(category);
                     categoryAdapter.notifyDataSetChanged();
                 } else {
-                    remainingRequests = 18;
+                    remainingRequests = MAX_PAGES;
                     currentPage = 0;
-                    for(int i = 0; i < 18; i++) {
+                    for(int i = 0; i < MAX_PAGES; i++) {
                         fetchStoresByTypePaged(bearerToken, tag, currentPage);
                         currentPage++;
                     }
                 }
-                showLoadingIndicator(false);
+
             });
         });
     }
@@ -312,20 +352,8 @@ public class Home extends AppCompatActivity{
             runOnUiThread(() -> {
                 categories.clear();
                 categories.add(category);
-                showLoadingIndicator(false);
-            });
-        });
-    }
 
-    private void fetchTypes(String token) {
-        TagAPI tagAPI = TagAPI.getInstance();
-        CompletableFuture<List<String>> future = tagAPI.getTypes(token);
-        future.thenAccept(list -> {
-            tags.addAll(list);
-            tagsAdapter.notifyDataSetChanged();
-        }).exceptionally(ex -> {
-            showSnackbar("Error fetching types");
-            return null;
+            });
         });
     }
 
@@ -336,7 +364,6 @@ public class Home extends AppCompatActivity{
     @SuppressLint("NotifyDataSetChanged")
     private void toggleDrawer() {
         if (drawerLayout.isDrawerOpen(Gravity.END)) {
-            chosenStoresAdapter.notifyDataSetChanged();
             drawerLayout.closeDrawer(Gravity.END);
         } else {
             chosenStoresAdapter.notifyDataSetChanged();
@@ -344,13 +371,8 @@ public class Home extends AppCompatActivity{
         }
     }
 
-    private void navigateToFavorites() {
-        Intent favIntent = new Intent(Home.this, Favorites.class);
-        startActivity(favIntent);
-    }
-
     private void handleNavigateButtonClick() {
-        if (!chosenStores.isEmpty()) {
+        if (!UserPreferencesUtils.getChosenStores(this).isEmpty()) {
             Intent homeIntent = new Intent(Home.this, CurrentLocation.class);
             setResult(RESULT_OK, homeIntent);
             startActivity(homeIntent);
@@ -370,18 +392,9 @@ public class Home extends AppCompatActivity{
             }
         }
     }
-    @Override
-    protected void onResume() {
-        super.onResume();
-        chosenStores = UserPreferencesUtils.getChosenStores(this);
-        chosenStoresAdapter.updateChosenStores(chosenStores);
-        updateBadge();
-        categoryAdapter.updateChosenStores(chosenStores);
-        bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
-        chosenStoresAdapter.notifyDataSetChanged();
-    }
 
     private void fetchFavorites() {
+        favoriteStores = new ArrayList<>();
         String token = UserPreferencesUtils.getToken(this);
         FavoritesAPI.getInstance().getFavorites(token).thenAccept(favoriteStores -> {
             UserPreferencesUtils.setFavoriteStores(this, favoriteStores);
@@ -395,5 +408,28 @@ public class Home extends AppCompatActivity{
             runOnUiThread(() -> Toast.makeText(Home.this, "Failed to fetch favorites", Toast.LENGTH_SHORT).show());
             return null;
         });
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private void fetchTypes(String token) {
+        TagAPI tagAPI = TagAPI.getInstance();
+        CompletableFuture<List<String>> future = tagAPI.getTypes(token);
+        future.thenAccept(list -> {
+            tags.addAll(list);
+            tagsAdapter.notifyDataSetChanged();
+        }).exceptionally(ex -> {
+            showSnackbar("Error fetching types");
+            return null;
+        });
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        chosenStores = UserPreferencesUtils.getChosenStores(this);
+        chosenStoresAdapter.updateChosenStores(chosenStores);
+        categoryAdapter.updateChosenStores(chosenStores);
+        categoryAdapter.notifyDataSetChanged();
+        bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
+        updateBadge();
     }
 }

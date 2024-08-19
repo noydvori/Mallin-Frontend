@@ -58,11 +58,9 @@ public class CurrentLocation extends AppCompatActivity {
     private List<String> stringsStoresList = new ArrayList<>();
     private String bearerToken;
     private List<Store> chosenStores;
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
     private StoresWifiManager currentLocationWifiManager;
     private AppDB database;
     private CategoryDao categoryDao;
-    private Button buttonCapture;
     private List<Store> allStores;
     private ListView suggestionsList;
     private CurrentLocationViewModel mViewModel;
@@ -83,7 +81,7 @@ public class CurrentLocation extends AppCompatActivity {
                 .build();
         categoryDao = database.categoryDao();
 
-        // Fetch categories in a background thread
+
         new FetchCategoriesTask().execute();
         Log.d("Current Location", "current location");
         // Rest of your initialization code
@@ -115,7 +113,7 @@ public class CurrentLocation extends AppCompatActivity {
                             android.R.layout.select_dialog_item,
                             stringsStoresList);
                     actv.setAdapter(adapter);
-                    actv.setTextColor(Color.RED);
+                    actv.setTextColor(Color.DKGRAY);
 
                     actv.addTextChangedListener(new TextWatcher() {
                         @Override
@@ -183,8 +181,7 @@ public class CurrentLocation extends AppCompatActivity {
     private void initializeViews() {
         buttonConfirm = findViewById(R.id.button_confirm);
         buttonConfirm.setEnabled(false);
-        buttonCapture = findViewById(R.id.button_capture);
-        suggestionsList = findViewById(R.id.suggestions_list);
+       suggestionsList = findViewById(R.id.suggestions_list);
     }
 
     private void setupListeners() {
@@ -199,12 +196,8 @@ public class CurrentLocation extends AppCompatActivity {
                     currentLocationWifiManager.stopScan();
                     if (chosenStores.size() == 1) {
                         fetchOrderedRout(location, chosenStores);
-                        Intent intent = new Intent(CurrentLocation.this, NavigateActivity.class);
-                        startActivity(intent);
                     } else {
                         fetchRout(location, chosenStores);
-                        Intent intent = new Intent(CurrentLocation.this, ConfirmPath.class);
-                        startActivity(intent);
                     }
                 } else {
                     Toast.makeText(CurrentLocation.this, "Store not found", Toast.LENGTH_SHORT).show();
@@ -221,7 +214,6 @@ public class CurrentLocation extends AppCompatActivity {
             startActivity(homeIntent);
         });
 
-        buttonCapture.setOnClickListener(v -> checkCameraPermission());
 
         bottomNavigationView = findViewById(R.id.bottom_nav_menu);
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
@@ -244,21 +236,21 @@ public class CurrentLocation extends AppCompatActivity {
         });
     }
 
-    private void checkCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
-        } else {
-            dispatchTakePictureIntent();
-        }
-    }
 
     private void fetchRout(Store store, List<Store> stores) {
         String token = UserPreferencesUtils.getToken(this);
         NavigationAPI.getInstance().createRout(token, store, stores).thenAccept(paths -> {
             UserPreferencesUtils.setPaths(this, paths);
+            runOnUiThread(() -> {
+                UserPreferencesUtils.setPaths(this, paths);
+
+                Intent intent = new Intent(CurrentLocation.this, ConfirmPath.class);
+                startActivity(intent);
+            });
         }).exceptionally(throwable -> {
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Error fetching optimal route", Toast.LENGTH_SHORT).show();
+            });
             return null;
         });
     }
@@ -267,39 +259,20 @@ public class CurrentLocation extends AppCompatActivity {
         String token = UserPreferencesUtils.getToken(this);
         NavigationAPI.getInstance().createOrderedRout(token, store, stores).thenAccept(nodes -> {
             UserPreferencesUtils.setNodes(this, nodes);
+            runOnUiThread(() -> {
+                Intent intent = new Intent(CurrentLocation.this, ConfirmPath.class);
+                startActivity(intent);
+            });
+
         }).exceptionally(throwable -> {
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Error fetching ordered route", Toast.LENGTH_SHORT).show();
+            });
             return null;
         });
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                dispatchTakePictureIntent();
-            } else {
-                Toast.makeText(this, "Camera permission is required to take a photo", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
 
-    private void dispatchTakePictureIntent() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            detectLogo(imageBitmap);
-        }
-    }
 
     private void detectLogo(Bitmap bitmap) {
         // Convert bitmap to base64
