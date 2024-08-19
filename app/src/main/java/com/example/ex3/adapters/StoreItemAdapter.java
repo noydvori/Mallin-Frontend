@@ -129,7 +129,7 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
                 } else {
                     chosenStores.add(storeItem);
                 }
-               storeInteractionListener.onStoreAddedToList(storeItem);
+                storeInteractionListener.onStoreAddedToList(storeItem);
                 updateButtonIcons(this, storeItem);
                 cardView.setCardBackgroundColor(isAdded ?
                         ContextCompat.getColor(context, R.color.white) :
@@ -151,7 +151,6 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
 
             // Add to List Button Click Listener
             btnAddToList.setOnClickListener(v -> {
-
                 storeInteractionListener.onStoreAddedToList(storeItem);
                 UserPreferencesUtils.setChosenStores(context, chosenStores);
                 updateButtonIcons(this, storeItem);
@@ -162,7 +161,6 @@ public class StoreItemAdapter extends RecyclerView.Adapter<StoreItemAdapter.Stor
 
             // Add to Favorites Button Click Listener
             btnAddToFavorites.setOnClickListener(v -> {
-
                 storeInteractionListener.onStoreAddedToFavorites(storeItem);
                 UserPreferencesUtils.setFavoriteStores(context, favStores);
                 updateButtonIcons(this, storeItem);

@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -89,7 +90,12 @@ public class Home extends AppCompatActivity{
         AppDB database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "DB")
                 .fallbackToDestructiveMigration()
                 .build();
-        categoryDao = database.categoryDao();
+        Executor executor = Executors.newSingleThreadExecutor();
+
+        executor.execute(() -> {
+            categoryDao = database.categoryDao();
+            categoryDao.deleteAll();
+        });
     }
 
     private void initializeUI() {
@@ -304,6 +310,7 @@ public class Home extends AppCompatActivity{
 
         }).exceptionally(ex -> {
 
+            noResultsText.setVisibility(View.VISIBLE);
             return null;
         });
     }
@@ -421,6 +428,7 @@ public class Home extends AppCompatActivity{
         chosenStores = UserPreferencesUtils.getChosenStores(this);
         chosenStoresAdapter.updateChosenStores(chosenStores);
         categoryAdapter.updateChosenStores(chosenStores);
+        categoryAdapter.notifyDataSetChanged();
         bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
         updateBadge();
     }

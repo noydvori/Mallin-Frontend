@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ex3.adapters.CategoryAdapter;
 import com.example.ex3.adapters.ChosenStoresAdapter;
 import com.example.ex3.adapters.StoreItemAdapter;
+import com.example.ex3.api.FavoritesAPI;
 import com.example.ex3.entities.FavoriteStore;
 import com.example.ex3.entities.Store;
 import com.example.ex3.utils.UserPreferencesUtils;
@@ -48,14 +49,22 @@ public class Favorites extends AppCompatActivity{
     private RecyclerView chosenStoresRecyclerView;
     private ChosenStoresAdapter chosenStoresAdapter;
     private String bearerToken;
+    private TextView noResultsText;
     private SharedPreferences sharedPreferencesSettings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_favorites); // Move this line to the beginning
+
         bearerToken = UserPreferencesUtils.getToken(context);
         chosenStores = UserPreferencesUtils.getChosenStores(context);
+        noResultsText = findViewById(R.id.no_results_text); // Now this line will not throw an exception
         favoriteStores = UserPreferencesUtils.getFavoriteStores(context);
+        if(favoriteStores == null || favoriteStores.isEmpty() || favoriteStores.size() == 0){
+            noResultsText.setVisibility(View.VISIBLE);
+        }
+
         setContentView(R.layout.activity_favorites);
         bottomNavigationView = findViewById(R.id.bottom_nav_menu);
         badgeTextView = findViewById(R.id.locationBadge);
@@ -114,7 +123,7 @@ public class Favorites extends AppCompatActivity{
                 return true;
             }
         });
-        // Initialize the BottomNavigationView
+
 
         // Set up the item selected listener
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -149,27 +158,34 @@ public class Favorites extends AppCompatActivity{
             public void onStoreAddedToList(Store store) {
                 if (chosenStores.contains(store)) {
                     chosenStores.remove(store);
+                    UserPreferencesUtils.setChosenStores(context, chosenStores);
+
                 } else {
                     chosenStores.add(store);
+                    UserPreferencesUtils.setChosenStores(context, chosenStores);
                 }
-                UserPreferencesUtils.setChosenStores(context, chosenStores); // Save the updated list
                 updateBadge();
-                StoreItemAdapter.notifyDataSetChanged(); // Refresh the adapter to update the UI
             }
 
             @Override
             public void onStoreAddedToFavorites(Store store) {
+                String bearerToken = UserPreferencesUtils.getToken(context);
                 if (favoriteStores.contains(store)) {
                     favoriteStores.remove(store);
+                    if (favoriteStores.isEmpty()) {
+                        noResultsText.setVisibility(View.VISIBLE);
+                    }
+                    FavoritesAPI.getInstance().removeFromFavorites(bearerToken,store);
                     UserPreferencesUtils.removeFavoriteStore(context, store);
-
                 } else {
                     favoriteStores.add(store);
+                    FavoritesAPI.getInstance().addToFavorites(bearerToken, store);
                     UserPreferencesUtils.addFavoriteStore(context, store);
 
                 }
                 StoreItemAdapter.notifyDataSetChanged(); // Refresh the adapter to update the UI
-            }//         }
+
+            }
 
         });
         favoritesList.setAdapter(StoreItemAdapter);
@@ -209,7 +225,9 @@ public class Favorites extends AppCompatActivity{
             }
         });
         bottomNavigationView.getMenu().findItem(R.id.menu_favorites).setChecked(true);
-
+        if (favoriteStores == null || favoriteStores.isEmpty()) {
+            noResultsText.setVisibility(View.VISIBLE);
+        }
     }
     public void onChosenStoreRemoved() {
         // Update chosenStores list
@@ -229,6 +247,12 @@ public class Favorites extends AppCompatActivity{
             }
         }
         StoreItemAdapter.filterList(filteredList);
+
+        if (filteredList.isEmpty()) {
+            noResultsText.setVisibility(View.VISIBLE);
+        } else {
+            noResultsText.setVisibility(View.GONE);
+        }
     }
     private void updateBadge() {
         if (badgeTextView != null) {

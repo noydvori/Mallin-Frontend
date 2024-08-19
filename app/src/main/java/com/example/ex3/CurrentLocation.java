@@ -81,7 +81,7 @@ public class CurrentLocation extends AppCompatActivity {
                 .build();
         categoryDao = database.categoryDao();
 
-        // Fetch categories in a background thread
+
         new FetchCategoriesTask().execute();
         Log.d("Current Location", "current location");
         // Rest of your initialization code
@@ -113,7 +113,7 @@ public class CurrentLocation extends AppCompatActivity {
                             android.R.layout.select_dialog_item,
                             stringsStoresList);
                     actv.setAdapter(adapter);
-                    actv.setTextColor(Color.RED);
+                    actv.setTextColor(Color.DKGRAY);
 
                     actv.addTextChangedListener(new TextWatcher() {
                         @Override
@@ -196,12 +196,8 @@ public class CurrentLocation extends AppCompatActivity {
                     currentLocationWifiManager.stopScan();
                     if (chosenStores.size() == 1) {
                         fetchOrderedRout(location, chosenStores);
-                        Intent intent = new Intent(CurrentLocation.this, NavigateActivity.class);
-                        startActivity(intent);
                     } else {
                         fetchRout(location, chosenStores);
-                        Intent intent = new Intent(CurrentLocation.this, ConfirmPath.class);
-                        startActivity(intent);
                     }
                 } else {
                     Toast.makeText(CurrentLocation.this, "Store not found", Toast.LENGTH_SHORT).show();
@@ -245,8 +241,14 @@ public class CurrentLocation extends AppCompatActivity {
         String token = UserPreferencesUtils.getToken(this);
         NavigationAPI.getInstance().createRout(token, store, stores).thenAccept(paths -> {
             UserPreferencesUtils.setPaths(this, paths);
-
+            runOnUiThread(() -> {
+                Intent intent = new Intent(CurrentLocation.this, ConfirmPath.class);
+                startActivity(intent);
+            });
         }).exceptionally(throwable -> {
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Error fetching optimal route", Toast.LENGTH_SHORT).show();
+            });
             return null;
         });
     }
@@ -255,7 +257,15 @@ public class CurrentLocation extends AppCompatActivity {
         String token = UserPreferencesUtils.getToken(this);
         NavigationAPI.getInstance().createOrderedRout(token, store, stores).thenAccept(nodes -> {
             UserPreferencesUtils.setNodes(this, nodes);
+            runOnUiThread(() -> {
+                Intent intent = new Intent(CurrentLocation.this, ConfirmPath.class);
+                startActivity(intent);
+            });
+
         }).exceptionally(throwable -> {
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Error fetching ordered route", Toast.LENGTH_SHORT).show();
+            });
             return null;
         });
     }

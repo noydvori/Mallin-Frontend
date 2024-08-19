@@ -85,10 +85,10 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
     }
 
     private void drawFinishIcon(Canvas canvas, PointF point, float scale) {
-        Drawable finishIcon = getResources().getDrawable(R.drawable.finish_icon, null);
+        Drawable finishIcon = getResources().getDrawable(R.drawable.destination, null);
         if (finishIcon != null) {
             // Adjust the icon size by changing the scaling factor
-            int iconSize = (int) (200 * scale); // Increase the icon size
+            int iconSize = (int) (250 * scale); // Increase the icon size
             int left = (int) (point.x - iconSize / 2);
             int top = (int) (point.y - iconSize);
             int right = (int) (point.x + iconSize / 2);
@@ -98,6 +98,26 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             finishIcon.draw(canvas);
         }
     }
+    private void drawDiamond(Canvas canvas, PointF center, float size, Paint paint) {
+        float halfSize = size / 2;
+
+        // Define the points of the diamond
+        float[] points = {
+                center.x, center.y - halfSize,  // Top
+                center.x + halfSize, center.y,  // Right
+                center.x, center.y + halfSize,  // Bottom
+                center.x - halfSize, center.y   // Left
+        };
+
+        // Draw the diamond
+        canvas.drawLines(new float[] {
+                points[0], points[1], points[2], points[3],  // Top to Right
+                points[2], points[3], points[4], points[5],  // Right to Bottom
+                points[4], points[5], points[6], points[7],  // Bottom to Left
+                points[6], points[7], points[0], points[1]   // Left to Top
+        }, paint);
+    }
+
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -116,7 +136,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
                 PointF nextCenter = sourceToViewCoord(nextNode.getXMultpyed(), nextNode.getYMultpyed());
                 if (center != null && nextCenter != null) {
                     if (node.getFloor() == this.currentFloor) {
-                        paint.setColor(Color.BLUE);
+                        paint.setColor(Color.parseColor("#CD8055CD"));
                         canvas.drawLine(center.x, center.y, nextCenter.x, nextCenter.y, paint);
 
                         // Check if this node represents a chosen store by matching names
@@ -141,10 +161,15 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
 
         // Draw the current location
         if (location != null) {
-            paint.setColor(Color.BLUE);
             PointF locationCenter = sourceToViewCoord(location.getXMultpyed(), location.getYMultpyed());
             if (locationCenter != null && location.getFloor() == this.currentFloor) {
+                paint.setColor(Color.BLACK);
+                canvas.drawCircle(locationCenter.x, locationCenter.y, 65 * scale, paint);
+                paint.setColor(Color.WHITE);
+                canvas.drawCircle(locationCenter.x, locationCenter.y, 60 * scale, paint);
+                paint.setColor(Color.parseColor("#8055CD"));
                 canvas.drawCircle(locationCenter.x, locationCenter.y, 40 * scale, paint);
+
             }
         }
 

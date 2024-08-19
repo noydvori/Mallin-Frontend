@@ -36,12 +36,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class NavigateActivity extends AppCompatActivity {
-    private static final String mapActivity = "MapActivity";
     private NavigateViewModel navigateViewModel;
     private Snackbar floorSnackbar;
 
     private NavigationWifiManager navigationWifiManager;
-    private MutableLiveData<GraphNode> node;
 
     private BottomNavigationView bottomNavigationView;
     private PathOverlayImageView mImageView;
@@ -60,7 +58,6 @@ public class NavigateActivity extends AppCompatActivity {
         mImageView = findViewById(R.id.devtool_map);
         tabLayout = findViewById(R.id.tab_layout);
         mImageView.setImage(ImageSource.resource(R.drawable.floor_1));
-        Log.d(mapActivity, "start this app");
         mMapTappingHandler = new NavigationMapTappingHandler(mImageView, navigateViewModel);
         centerButton = findViewById(R.id.center);
 
@@ -80,7 +77,7 @@ public class NavigateActivity extends AppCompatActivity {
         }
         setFloor(initialFloor.get(), "Floor " + initialFloor);
 
-        // Show initial Snackbar
+        // Show initial Snack bar
         showFloorSnackbar(initialFloor.get());
 
         customAccelerometerManager = new CustomAccelerometerManager(this);
@@ -91,6 +88,7 @@ public class NavigateActivity extends AppCompatActivity {
             switch (item.getItemId()) {
                 case R.id.menu_home:
                     intent = new Intent(NavigateActivity.this, Home.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
                     return true;
                 case R.id.menu_navigate:
@@ -146,7 +144,7 @@ public class NavigateActivity extends AppCompatActivity {
                 int position = tab.getPosition();
                 mImageView.setCurrentFloor(position);
                 setFloor(position, "Floor " + position);
-                showFloorSnackbar(position); // Update the Snackbar message
+                showFloorSnackbar(position); // Update the Snack-bar message
                 new Handler().postDelayed(() -> {
                     mImageView.centerOnLocation();
                 }, 1000);

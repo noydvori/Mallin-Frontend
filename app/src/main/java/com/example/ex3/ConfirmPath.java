@@ -87,9 +87,10 @@ public class ConfirmPath extends AppCompatActivity {
         buttonConfirm.setOnClickListener(v -> {
             if(!toggleOptimal.isChecked()) {
                 fetchOrderedRout(UserPreferencesUtils.getLocation(), chosenStores);
+            } else {
+                Intent intent = new Intent(ConfirmPath.this, NavigateActivity.class);
+                startActivity(intent);
             }
-            Intent intent = new Intent(ConfirmPath.this, NavigateActivity.class);
-            startActivity(intent);
         });
 
         Button buttonBack = findViewById(R.id.button_back);
@@ -122,7 +123,15 @@ public class ConfirmPath extends AppCompatActivity {
         String token = UserPreferencesUtils.getToken(this);
         NavigationAPI.getInstance().createOrderedRout(token, store, stores).thenAccept(nodes -> {
             UserPreferencesUtils.setNodes(this, nodes);
+            runOnUiThread(() -> {
+                Intent intent = new Intent(ConfirmPath.this, NavigateActivity.class);
+                startActivity(intent);
+            });
+
         }).exceptionally(throwable -> {
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Error fetching ordered route", Toast.LENGTH_SHORT).show();
+            });
             return null;
         });
     }
