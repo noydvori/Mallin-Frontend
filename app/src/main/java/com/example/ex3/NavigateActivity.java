@@ -2,6 +2,7 @@ package com.example.ex3;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import android.Manifest;
 import android.content.Intent;
@@ -65,11 +66,14 @@ public class NavigateActivity extends AppCompatActivity {
         mImageView.setDestinations(UserPreferencesUtils.getStores(this));
         AtomicInteger initialFloor = new AtomicInteger();
 
+
         if (route != null && !route.isEmpty()) {
+            mImageView.setCurrentFloor(route.get(0).getFloor());
+
             mImageView.setPath(route);
             mImageView.setLocation(route.get(0));
+
             initialFloor.set(route.get(0).getFloor());
-            mImageView.setCurrentFloor(initialFloor.get());
         }
 
         // Set the initial floor and show the SnackBar
@@ -104,10 +108,13 @@ public class NavigateActivity extends AppCompatActivity {
             mImageView.setOnTouchListener(mMapTappingHandler);
         });
 
-        navigateViewModel.getCurrentLocation().observe(this, node -> {
-            Log.d("NavigateActivity", "liveLocation: " + node);
-            mImageView.setLocation(node);
-            initialFloor.set(node.getFloor());
+        navigateViewModel.getCurrentLocation().observe(this, new Observer<GraphNode>() {
+            @Override
+            public void onChanged(GraphNode node) {
+                Log.d("NavigateActivity","liveLocation: " + node);
+                mImageView.setLocation(node);
+                initialFloor.set(node.getFloor());
+            }
         });
 
         // Check and request permissions for location
@@ -168,6 +175,7 @@ public class NavigateActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        mImageView.setDestinations(UserPreferencesUtils.getStores(this));
         super.onResume();
     }
 
@@ -242,6 +250,4 @@ public class NavigateActivity extends AppCompatActivity {
                 return R.drawable.floor_2;
             default:
                 return R.drawable.floor_3;
-        }
-    }
-}
+        }}}
