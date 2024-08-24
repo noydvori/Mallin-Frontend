@@ -65,11 +65,14 @@ public class NavigateActivity extends AppCompatActivity {
         mImageView.setDestinations(UserPreferencesUtils.getStores(this));
         AtomicInteger initialFloor = new AtomicInteger();
 
+
         if (route != null && !route.isEmpty()) {
+            mImageView.setCurrentFloor(route.get(0).getFloor());
+
             mImageView.setPath(route);
             mImageView.setLocation(route.get(0));
+
             initialFloor.set(route.get(0).getFloor());
-            mImageView.setCurrentFloor(initialFloor.get());
         }
 
         // Set the initial floor and show the SnackBar
@@ -168,6 +171,7 @@ public class NavigateActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        mImageView.setDestinations(UserPreferencesUtils.getStores(this));
         super.onResume();
     }
 
@@ -242,6 +246,4 @@ public class NavigateActivity extends AppCompatActivity {
                 return R.drawable.floor_2;
             default:
                 return R.drawable.floor_3;
-        }
-    }
-}
+        }}}

@@ -260,7 +260,7 @@ public class CurrentLocation extends AppCompatActivity {
         NavigationAPI.getInstance().createOrderedRout(token, store, stores).thenAccept(nodes -> {
             UserPreferencesUtils.setNodes(this, nodes);
             runOnUiThread(() -> {
-                Intent intent = new Intent(CurrentLocation.this, ConfirmPath.class);
+                Intent intent = new Intent(CurrentLocation.this, NavigateActivity.class);
                 startActivity(intent);
             });
 

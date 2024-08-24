@@ -71,6 +71,9 @@ public class NavigateViewModel extends ViewModel implements WifiCallBack, Locati
         this.selectedFloor.setValue(selectedFloor);
     }
 
+    public void Rotate(){
+    }
+
     public ArrayList<LiveData<List<GraphNode>>> getGraphs() {
         return floors;
     }
