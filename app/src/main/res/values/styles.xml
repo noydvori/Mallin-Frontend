@@ -49,6 +49,9 @@
 
     </style>
 
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here -->
+    </style>
 
     <style name="OutLinedEditTextStyle.Spinner">
         <item name="android:fontFamily">@font/poppins_regular</item>
