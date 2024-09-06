@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.example.ex3.components.PathOverlayImageView;
@@ -54,33 +55,57 @@ public class NavigateActivity extends AppCompatActivity {
         FloatingActionButton centerButton = findViewById(R.id.center);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_nav_menu);
 
-        // Set initial image and handlers for the map
+        // Set the initial floor image
         mImageView.setImage(ImageSource.resource(R.drawable.floor_1));
-        mMapTappingHandler = new NavigationMapTappingHandler(mImageView, navigateViewModel);
 
-        // Handle center button click
-        centerButton.setOnClickListener(v -> mImageView.centerOnLocation());
+        // Center map on location every 5 seconds
+        Handler handler = new Handler();
+        Runnable centerRunnable = new Runnable() {
+            @Override
+            public void run() {
+                mImageView.centerOnLocation();
+                handler.postDelayed(this, 5000); // חזור על הפעולה כל 5 שניות
+            }
+        };
+        handler.post(centerRunnable);
 
-        // Retrieve and set the user's preferred route
-        route = UserPreferencesUtils.getNodes(this);
-        mImageView.setDestinations(UserPreferencesUtils.getStores(this));
-        AtomicInteger initialFloor = new AtomicInteger();
+        // Set up the ViewTreeObserver to listen for when the mImageView is fully loaded
+        mImageView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                // Ensure the listener is removed to avoid repeated calls
+                mImageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
+                // Perform operations on mImageView only after it has been fully loaded
+                mMapTappingHandler = new NavigationMapTappingHandler(mImageView, navigateViewModel);
 
-        if (route != null && !route.isEmpty()) {
-            mImageView.setCurrentFloor(route.get(0).getFloor());
+                // Handle center button click
+                centerButton.setOnClickListener(v -> mImageView.centerOnLocation());
 
-            mImageView.setPath(route);
-            mImageView.setLocation(route.get(0));
+                // Retrieve and set the user's preferred route
+                route = UserPreferencesUtils.getNodes(NavigateActivity.this);
+                mImageView.setDestinations(UserPreferencesUtils.getStores(NavigateActivity.this));
+                AtomicInteger initialFloor = new AtomicInteger();
 
-            initialFloor.set(route.get(0).getFloor());
-        }
+                if (route != null && !route.isEmpty()) {
+                    mImageView.setCurrentFloor(route.get(0).getFloor());
 
-        // Set the initial floor and show the SnackBar
-        setFloor(initialFloor.get(), "Floor " + initialFloor);
-        showFloorSnackbar(initialFloor.get());
+                    mImageView.setPath(route);
+                    mImageView.setLocation(route.get(0));
 
-        // Bottom Navigation Menu setup
+                    initialFloor.set(route.get(0).getFloor());
+                }
+
+                // Set the initial floor and show the SnackBar
+                setFloor(initialFloor.get(), "Floor " + initialFloor);
+                showFloorSnackbar(initialFloor.get());
+
+                // Set up TabLayout and other UI elements as before
+                setupTabLayout(initialFloor.get());
+            }
+        });
+
+        // Bottom Navigation Menu setup (unchanged)
         bottomNavigationView.getMenu().findItem(R.id.menu_navigate).setChecked(true);
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             Intent intent;
@@ -101,7 +126,7 @@ public class NavigateActivity extends AppCompatActivity {
             }
         });
 
-        // Observe LiveData changes
+        // Observe LiveData changes (unchanged)
         navigateViewModel.getFloorImage().observe(this, integer -> {
             mImageView.setImage(ImageSource.resource(integer));
             mImageView.setOnImageEventListener(new MapScalingHandler(mImageView));
@@ -111,26 +136,21 @@ public class NavigateActivity extends AppCompatActivity {
         navigateViewModel.getCurrentLocation().observe(this, new Observer<GraphNode>() {
             @Override
             public void onChanged(GraphNode node) {
-                Log.d("NavigateActivity","liveLocation: " + node);
+                Log.d("NavigateActivity", "liveLocation: " + node);
                 mImageView.setLocation(node);
-                initialFloor.set(node.getFloor());
             }
         });
 
-        // Check and request permissions for location
+        // Check and request permissions for location (unchanged)
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
         } else {
             initializeWifiManager();
         }
-
-        // Setup the TabLayout with floor tabs
-        setupTabLayout(initialFloor.get());
-
-        // Center map on location after 5 seconds
-        new Handler().postDelayed(() -> mImageView.centerOnLocation(), 5000);
     }
+
+
 
     private void setupTabLayout(int initialFloor) {
         tabLayout.addTab(tabLayout.newTab().setText("Floor 0"));

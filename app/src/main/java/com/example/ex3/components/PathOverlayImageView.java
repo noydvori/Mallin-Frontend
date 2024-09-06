@@ -13,10 +13,13 @@ import com.example.ex3.R;
 import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.entities.Store;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PathOverlayImageView extends SubsamplingScaleImageView {
     private List<GraphNode> pathStores;
+    private List<GraphNode> passed;
+
 
     private float angle = 0;
     private GraphNode location;
@@ -41,12 +44,18 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
     // Setter for the path, triggers a redraw when changed
     public void setPath(List<GraphNode> pathStores) {
         this.pathStores = pathStores;
+        this.passed = new ArrayList<>();
         invalidate(); // Redraw the view when the path changes
     }
 
     // Setter for the current location, triggers a redraw when changed
     public void setLocation(GraphNode location) {
         this.location = location;
+        GraphNode first = pathStores.get(0);
+        if(distanceBetween(first, location) < 0.1){
+            passed.add(first);
+            pathStores.remove(first);
+        }
         invalidate(); // Redraw the view when the location changes
     }
 
@@ -189,13 +198,55 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             // Rotate the canvas around the center of the screen
             PointF locationCenter = sourceToViewCoord(location.getXMultipliedForPath(), location.getYMultipliedForPath());
 
-            if (locationCenter != null) {
-                // Apply rotation around the center of the canvas
+            if (location != null && locationCenter != null) {
                 canvas.rotate(angle, locationCenter.x, locationCenter.y);
             }
         }
         super.draw(canvas);
+        if (passed != null && !passed.isEmpty()) {
+            for (int i = 0; i < passed.size() - 1; i++) {
+                GraphNode node = passed.get(i);
+                GraphNode nextNode = passed.get(i + 1);
+                PointF center = sourceToViewCoord(node.getXMultipliedForPath(), node.getYMultipliedForPath());
+                PointF nextCenter = sourceToViewCoord(nextNode.getXMultipliedForPath(), nextNode.getYMultipliedForPath());
 
+                if (center != null && nextCenter != null) {
+                    if (node.getFloor() == this.currentFloor && node != pathStores.get(pathStores.size() - 1)) {
+                        float angle = calculateAngleBetweenNodes(node, nextNode);
+
+                        // Draw the path line
+                        //if (passed.contains(nextNode)) {
+                        //    paint.setColor(Color.LTGRAY);
+                        //} else {
+                        paint.setColor(Color.LTGRAY);
+                    }
+                    canvas.drawLine(center.x, center.y, nextCenter.x, nextCenter.y, paint);
+
+                    if (isStoreChosenByName(node.getName())) {
+                        drawDestinationIcon(canvas, center, scale, (-1) * this.angle);
+                    }
+                }
+            }
+        }
+        if (location != null && pathStores != null && passed != null && !pathStores.isEmpty() && !passed.isEmpty()){
+            if(passed.get(passed.size()-1).getFloor() == this.currentFloor && location.getFloor() == this.currentFloor) {
+                paint.setColor(Color.LTGRAY);
+                PointF center = sourceToViewCoord(passed.get(passed.size()-1).getXMultipliedForPath(), passed.get(passed.size()-1).getYMultipliedForPath());
+                PointF nextCenter = sourceToViewCoord(location.getXMultipliedForPath(), location.getYMultipliedForPath());
+                if(center != null && nextCenter !=null) {
+                    canvas.drawLine(center.x, center.y, nextCenter.x, nextCenter.y, paint);
+
+                }
+            }
+            if(pathStores.get(0).getFloor() == this.currentFloor && location.getFloor() == this.currentFloor) {
+                paint.setColor(Color.parseColor("#CD8055CD")); // Purple
+                PointF center2 = sourceToViewCoord(location.getXMultipliedForPath(), location.getYMultipliedForPath());
+                PointF nextCenter2 = sourceToViewCoord(pathStores.get(0).getXMultipliedForPath(), pathStores.get(0).getYMultipliedForPath());
+                if(center2 != null && nextCenter2 !=null) {
+                    canvas.drawLine(center2.x, center2.y, nextCenter2.x, nextCenter2.y, paint);
+                }
+            }
+        }
         // Draw the path connecting nodes on the current floor
         if (pathStores != null && !pathStores.isEmpty()) {
             for (int i = 0; i < pathStores.size() - 1; i++) {
@@ -209,12 +260,13 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
                         float angle = calculateAngleBetweenNodes(node, nextNode);
 
                         // Draw the path line
-                        if (nodeHasBeenPassed(nextNode)) {
-                            paint.setColor(Color.LTGRAY);
-                        } else {
+                        //if (passed.contains(nextNode)) {
+                        //    paint.setColor(Color.LTGRAY);
+                        //} else {
                             paint.setColor(Color.parseColor("#CD8055CD")); // Purple
-                        }
                         canvas.drawLine(center.x, center.y, nextCenter.x, nextCenter.y, paint);
+
+                    }
 
                         if (isStoreChosenByName(node.getName())) {
                             drawDestinationIcon(canvas, center, scale, (-1) * this.angle);
@@ -222,7 +274,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
                     }
                 }
             }
-        }
+
 
         // Draw the finish icon on the last node of the path
         if (pathStores != null && !pathStores.isEmpty()) {

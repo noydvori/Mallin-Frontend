@@ -322,24 +322,24 @@ public class Home extends AppCompatActivity{
     public void getCategoryInBackground(String tag) {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
-        executorService.execute(() -> {
-            Category category = categoryDao.getCategory(tag);
+        //executorService.execute(() -> {
+            //Category category = categoryDao.getCategory(tag);
             handler.post(() -> {
-                if (category != null && !category.getStoresList().isEmpty()) {
-                    categories.clear();
-                    categories.add(category);
-                    categoryAdapter.notifyDataSetChanged();
-                } else {
+                //if (category != null && !category.getStoresList().isEmpty()) {
+                //    categories.clear();
+                //    categories.add(category);
+                //    categoryAdapter.notifyDataSetChanged();
+                //} else {
                     remainingRequests = MAX_PAGES;
                     currentPage = 0;
                     for(int i = 0; i < MAX_PAGES; i++) {
                         fetchStoresByTypePaged(bearerToken, tag, currentPage);
                         currentPage++;
                     }
-                }
+                //}
 
             });
-        });
+        //});
     }
 
 
