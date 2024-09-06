@@ -371,9 +371,8 @@ public class DevTool extends AppCompatActivity {
         if (progressDialog == null) {
             progressDialog = new ProgressDialogFragment();
         }
+        progressDialog.setTextResource(textResource); // Set the desired text
         progressDialog.show(getSupportFragmentManager(), "progress_dialog");
-        TextView progressText = progressDialog.getView().findViewById(R.id.progressText);
-        progressText.setText(textResource);
     }
 
 

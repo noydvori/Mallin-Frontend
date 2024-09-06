@@ -24,7 +24,7 @@ public class WifiAPI {
 
     private WifiAPI() {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://209.182.238.169:5231/api/")
+                .baseUrl("http://10.0.0.6:5231/api/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         webServiceAPI = retrofit.create(WebServiceAPI.class);

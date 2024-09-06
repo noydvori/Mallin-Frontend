@@ -11,11 +11,13 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
 import com.example.ex3.devtool.interfaces.WifiCallBack;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CustomWifiManager {
@@ -42,14 +44,23 @@ public class CustomWifiManager {
                 if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     return;
                 }
+                StringBuilder log = new StringBuilder();
+                List<StringBuilder> logs = new ArrayList<>();
+                int counter = 0;
                 List<ScanResult> results = wifiManager.getScanResults();
                 for (ScanResult result : results) {
                     // Extract information from result
                     String SSID = result.SSID;
                     String BSSID = result.BSSID;
                     int rssi = result.level;
+                    if(counter < 3){
+                        log.append(SSID).append(":").append(rssi).append('\n');
+                    }
                     Log.d(TAG, "Wi-Fi stats: " + SSID + " BSSID: " + BSSID + " RSSI: " + rssi);
                 }
+
+                Toast.makeText(context, log.toString(), Toast.LENGTH_SHORT).show();
+
 
                 mOnScanCallback.onWifiCallBack(results);
                 // Schedule the next scan

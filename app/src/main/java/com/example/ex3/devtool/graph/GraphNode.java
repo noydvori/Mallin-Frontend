@@ -70,11 +70,11 @@ public class GraphNode {
     }
 
     public float getXMultpyed() {
-        return  this.x * 2.7f;
+        return  this.x * 2.62f;
     }
 
     public float getYMultpyed() {
-        return  this.y * 2.7f;
+        return  this.y * 2.62f;
     }
     @Override
     public String toString() {

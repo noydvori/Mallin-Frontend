@@ -23,7 +23,7 @@
 				<attribute key="text" type="String">&#x5d0;&#x5d5;&#x5e8;&#x5d1;&#x5e0;&#x5d9;&#x5e7;&#x5d4;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">tr</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -59,7 +59,7 @@
 				<attribute key="text" type="String">&#x5de;&#x5dc;&#x5d5;&#x5df; &#x5e7;&#x5e8;&#x5d0;&#x5d5;&#x5df; &#x5e4;&#x5dc;&#x5d0;&#x5d6;&#x5d4;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -79,7 +79,7 @@
 				<attribute key="text" type="String">&#x5de;&#x5d5;&#x5e0;&#x5d9;&#x5d5;&#x5ea;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -99,7 +99,7 @@
 				<attribute key="text" type="String">&#x5de;&#x5e2;&#x5d1;&#x5e8;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -119,7 +119,7 @@
 				<attribute key="text" type="String">&#x5de;&#x5e2;&#x5d1;&#x5e8;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -139,7 +139,7 @@
 				<attribute key="text" type="String">&#x5de;&#x5e2;&#x5d1;&#x5e8;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -159,12 +159,12 @@
 				<attribute key="text" type="String">&#x5de;&#x5e2;&#x5d1;&#x5e8;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
 			<attribute key="id" type="int">08</attribute>
-			<attribute key="label" type="String">&#x5de;&#x5e2;&#x5d1;&#x5e8;</attribute>
+			<attribute key="label" type="String">Stairs 0A</attribute>
 			<section name="graphics">
 				<attribute key="x" type="double">1263.5182524949787</attribute>
 				<attribute key="y" type="double">1290.39453125</attribute>
@@ -176,10 +176,10 @@
 				<attribute key="outline" type="String">#000000</attribute>
 			</section>
 			<section name="LabelGraphics">
-				<attribute key="text" type="String">&#x5de;&#x5e2;&#x5d1;&#x5e8;</attribute>
+				<attribute key="text" type="String">Stairs 0A</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -215,7 +215,7 @@
 				<attribute key="text" type="String">&#x5dd;&#x5e8;&#x5d7; &#x5e0;&#x5d5;&#x5d7;&#x5d5;&#x5ea;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">t</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -235,7 +235,7 @@
 				<attribute key="text" type="String">BFRESH</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -255,7 +255,7 @@
 				<attribute key="text" type="String">&#x5de;&#x5d9;&#x5e1;&#x5d8;&#x5e8; &#x5e7;&#x5d5;&#x5d5;&#x5d9;&#x5e7;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -275,7 +275,7 @@
 				<attribute key="text" type="String">&#x5d2;&#x5d5;&#x5dc;&#x5d3;&#x5d4;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -295,7 +295,7 @@
 				<attribute key="text" type="String">DNA</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -315,7 +315,7 @@
 				<attribute key="text" type="String">&#x5e1;&#x5d5;&#x5d2;&#x5d5;&#x5d3;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -335,7 +335,7 @@
 				<attribute key="text" type="String">&#x5d1;&#x5e0;&#x5e7; &#x5de;&#x5d3;&#x5db;&#x5e0;&#x5ea;&#x5d9;&#x5dc;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -355,7 +355,7 @@
 				<attribute key="text" type="String">&#x5d1;&#x5e7;&#x5e8;&#x5d5;&#x5d1; &#x5d0;&#x5d1;&#x5d5;&#x5dc;&#x5e2;&#x5e4;&#x5d9;&#x5d4;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -375,7 +375,7 @@
 				<attribute key="text" type="String">&#x5d1;&#x5e8;&#x5d0;&#x5d3;&#x5dc;&#x5d9;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -395,7 +395,7 @@
 				<attribute key="text" type="String">MINIMAX</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -415,7 +415,7 @@
 				<attribute key="text" type="String">&#x5e9;&#x5d5;&#x5e4;&#x5e8;&#x5e1;&#x5dc;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -435,7 +435,7 @@
 				<attribute key="text" type="String">&#x5de;&#x5e2;&#x5d1;&#x5e8;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -455,7 +455,7 @@
 				<attribute key="text" type="String">&#x5de;&#x5e2;&#x5d1;&#x5e8;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -475,7 +475,7 @@
 				<attribute key="text" type="String">&#x5de;&#x5e2;&#x5d1;&#x5e8;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -495,7 +495,7 @@
 				<attribute key="text" type="String">&#x5d0;&#x5d5;&#x5de;&#x5d0;&#x5d9;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
 			</section>
 		</section>
 		<section name="node">
@@ -515,7 +515,27 @@
 				<attribute key="text" type="String">&#x5de;&#x5e9;&#x5d8;&#x5e8;&#x5d4;</attribute>
 				<attribute key="fontSize" type="int">12</attribute>
 				<attribute key="fontName" type="String">Dialog</attribute>
-				<attribute key="model"/>
+				<attribute key="anchor" type="String">c</attribute>
+			</section>
+		</section>
+		<section name="node">
+			<attribute key="id" type="int">026</attribute>
+			<attribute key="label" type="String">pass</attribute>
+			<section name="graphics">
+				<attribute key="x" type="double">1579.3330547795788</attribute>
+				<attribute key="y" type="double">1255.8167288113605</attribute>
+				<attribute key="w" type="double">30.0</attribute>
+				<attribute key="h" type="double">30.0</attribute>
+				<attribute key="type" type="String">octagon</attribute>
+				<attribute key="raisedBorder" type="boolean">false</attribute>
+				<attribute key="fill" type="String">#FFCC00</attribute>
+				<attribute key="outline" type="String">#000000</attribute>
+			</section>
+			<section name="LabelGraphics">
+				<attribute key="text" type="String">pass</attribute>
+				<attribute key="fontSize" type="int">12</attribute>
+				<attribute key="fontName" type="String">Dialog</attribute>
+				<attribute key="anchor" type="String">bl</attribute>
 			</section>
 		</section>
 		<section name="edge">
@@ -631,8 +651,8 @@
 				<attribute key="configuration" type="String">AutoFlippingLabel</attribute>
 				<attribute key="contentWidth" type="double">30.1796875</attribute>
 				<attribute key="contentHeight" type="double">18.701171875</attribute>
-				<attribute key="model"/>
-				<attribute key="position"/>
+				<attribute key="model" type="String">six_pos</attribute>
+				<attribute key="position" type="String">tail</attribute>
 			</section>
 		</section>
 		<section name="edge">
@@ -972,5 +992,481 @@
 				<attribute key="xTarget" type="double">-0.3683183050534353</attribute>
 			</section>
 		</section>
+		<section name="edge">
+			<attribute key="source" type="int">011</attribute>
+			<attribute key="target" type="int">026</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">026</attribute>
+			<attribute key="target" type="int">08</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">021</attribute>
+			<attribute key="target" type="int">026</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">012</attribute>
+			<attribute key="target" type="int">026</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">010</attribute>
+			<attribute key="target" type="int">00</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">00</attribute>
+			<attribute key="target" type="int">023</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">00</attribute>
+			<attribute key="target" type="int">012</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">015</attribute>
+			<attribute key="target" type="int">022</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">00</attribute>
+			<attribute key="target" type="int">015</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">00</attribute>
+			<attribute key="target" type="int">014</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">00</attribute>
+			<attribute key="target" type="int">023</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">00</attribute>
+			<attribute key="target" type="int">011</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">00</attribute>
+			<attribute key="target" type="int">026</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">00</attribute>
+			<attribute key="target" type="int">08</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">00</attribute>
+			<attribute key="target" type="int">03</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">00</attribute>
+			<attribute key="target" type="int">021</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">03</attribute>
+			<attribute key="target" type="int">021</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">03</attribute>
+			<attribute key="target" type="int">04</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">021</attribute>
+			<attribute key="target" type="int">023</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">021</attribute>
+			<attribute key="target" type="int">022</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">021</attribute>
+			<attribute key="target" type="int">014</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">021</attribute>
+			<attribute key="target" type="int">015</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">021</attribute>
+			<attribute key="target" type="int">012</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">021</attribute>
+			<attribute key="target" type="int">025</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">021</attribute>
+			<attribute key="target" type="int">024</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">021</attribute>
+			<attribute key="target" type="int">013</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">021</attribute>
+			<attribute key="target" type="int">02</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">010</attribute>
+			<attribute key="target" type="int">011</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">010</attribute>
+			<attribute key="target" type="int">023</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">010</attribute>
+			<attribute key="target" type="int">022</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">010</attribute>
+			<attribute key="target" type="int">014</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">010</attribute>
+			<attribute key="target" type="int">026</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">010</attribute>
+			<attribute key="target" type="int">025</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">010</attribute>
+			<attribute key="target" type="int">024</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">010</attribute>
+			<attribute key="target" type="int">013</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">02</attribute>
+			<attribute key="target" type="int">013</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">02</attribute>
+			<attribute key="target" type="int">025</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">025</attribute>
+			<attribute key="target" type="int">013</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">02</attribute>
+			<attribute key="target" type="int">08</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">02</attribute>
+			<attribute key="target" type="int">026</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">02</attribute>
+			<attribute key="target" type="int">011</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">02</attribute>
+			<attribute key="target" type="int">023</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">02</attribute>
+			<attribute key="target" type="int">015</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">02</attribute>
+			<attribute key="target" type="int">022</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">02</attribute>
+			<attribute key="target" type="int">03</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">04</attribute>
+			<attribute key="target" type="int">07</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">026</attribute>
+			<attribute key="target" type="int">025</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">026</attribute>
+			<attribute key="target" type="int">024</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">026</attribute>
+			<attribute key="target" type="int">015</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">026</attribute>
+			<attribute key="target" type="int">023</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">04</attribute>
+			<attribute key="target" type="int">013</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">04</attribute>
+			<attribute key="target" type="int">024</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">04</attribute>
+			<attribute key="target" type="int">025</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">04</attribute>
+			<attribute key="target" type="int">012</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">04</attribute>
+			<attribute key="target" type="int">026</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">04</attribute>
+			<attribute key="target" type="int">023</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">04</attribute>
+			<attribute key="target" type="int">022</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">04</attribute>
+			<attribute key="target" type="int">015</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">06</attribute>
+			<attribute key="target" type="int">013</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">06</attribute>
+			<attribute key="target" type="int">024</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">06</attribute>
+			<attribute key="target" type="int">025</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">012</attribute>
+			<attribute key="target" type="int">024</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">012</attribute>
+			<attribute key="target" type="int">013</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">011</attribute>
+			<attribute key="target" type="int">025</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">011</attribute>
+			<attribute key="target" type="int">024</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
+		<section name="edge">
+			<attribute key="source" type="int">011</attribute>
+			<attribute key="target" type="int">013</attribute>
+			<section name="graphics">
+				<attribute key="fill" type="String">#000000</attribute>
+			</section>
+		</section>
 	</section>
-</section>
+
+    <section name="edge">
+        <attribute key="source" type="int">08</attribute>
+        <attribute key="target" type="int">123</attribute>
+        <section name="graphics">
+            <attribute key="fill" type="String">#000000</attribute>
+        </section>
+        <section name="edgeAnchor">
+            <attribute key="xSource" type="double">-0.8691188281340297</attribute>
+            <attribute key="ySource" type="double">0.26464952075496817</attribute>
+            <attribute key="xTarget" type="double">0.47153990334165125</attribute>
+            <attribute key="yTarget" type="double">0.4747132888954866</attribute>
+        </section>
+    </section>
+    </section>

@@ -178,6 +178,7 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
         ArrayList<Wifi> wifiList = new ArrayList<>();
         resultsArrived.setValue(true);
         wifiScanResults.forEach(result -> wifiList.add(new Wifi("lioz",result.SSID, result.BSSID, result.level,savedNode.getId())));
+        String logString = "";
         new Thread(() -> {
             mDataBase.wifiDao().insertAll(wifiList);
         }).start();
@@ -222,13 +223,14 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
     }
 
     public void uploadData() {
+        syncData.setValue(true);
         new Thread(() -> {
-            syncData.setValue(true);
             List<Wifi> allWifiData = mDataBase.wifiDao().getAll();
             DataSingleToneSender.getInstance().addWifiData(allWifiData);
             DataSingleToneSender.getInstance().processBatches();
-            syncData.setValue(false);
-
+            new Handler(Looper.getMainLooper()).post(() -> {
+                syncData.setValue(false);
+            });
         }).start();
     }
 
