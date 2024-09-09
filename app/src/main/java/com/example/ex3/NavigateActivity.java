@@ -61,12 +61,16 @@ public class NavigateActivity extends AppCompatActivity {
         // Center map on location every 5 seconds
         Handler handler = new Handler();
         Runnable centerRunnable = new Runnable() {
-            @Override
-            public void run() {
-                mImageView.centerOnLocation();
-                handler.postDelayed(this, 5000); // חזור על הפעולה כל 5 שניות
-            }
-        };
+                @Override
+                public void run() {
+                    mImageView.centerOnLocation();
+                    if(route != null && !route.isEmpty()) {
+                        mImageView.setLocation(route.get(0));
+                    }
+                    handler.postDelayed(this, 5000); // חזור על הפעולה כל 5 שניות
+                }
+            };
+
         handler.post(centerRunnable);
 
         // Set up the ViewTreeObserver to listen for when the mImageView is fully loaded
@@ -251,6 +255,7 @@ public class NavigateActivity extends AppCompatActivity {
             floorSnackbar.dismiss();
         }
     }
+
 
     private void setFloor(int i, CharSequence title) {
         if (title != null) {

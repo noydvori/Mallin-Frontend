@@ -427,7 +427,9 @@ public class Home extends AppCompatActivity{
         super.onResume();
         chosenStores = UserPreferencesUtils.getChosenStores(this);
         chosenStoresAdapter.updateChosenStores(chosenStores);
+        favoriteStores = UserPreferencesUtils.getFavoriteStores(this);
         categoryAdapter.updateChosenStores(chosenStores);
+        categoryAdapter.updateFavoriteStores(favoriteStores);
         categoryAdapter.notifyDataSetChanged();
         bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
         updateBadge();
