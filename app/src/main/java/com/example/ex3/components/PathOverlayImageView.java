@@ -88,8 +88,11 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
                 }
             }
             // Fetch new path from server in the background (pseudo-code)
-            fetchRedirection(location, stores);
-            dialog.dismiss();
+            // Fetch new path from server in the background
+            fetchRedirection(location, stores, () -> {
+                // Code to execute when redirection is complete, e.g., dismissing the dialog
+                dialog.dismiss();
+            });
         }
             }
 
@@ -388,13 +391,17 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
         }
         return false;
     }
-    private void fetchRedirection(GraphNode node, List<Store> stores) {
+    private void fetchRedirection(GraphNode node, List<Store> stores, Runnable onComplete) {
         String token = UserPreferencesUtils.getToken(getContext());
         NavigationAPI.getInstance().createRedirection(token, node, stores).thenAccept(nodes -> {
             UserPreferencesUtils.setNodes(getContext(), nodes);
             setPath(nodes);
-        });
 
+            // Execute the runnable task when redirection is complete
+            if (onComplete != null) {
+                onComplete.run();
+            }
+        });
     }
 }
 
