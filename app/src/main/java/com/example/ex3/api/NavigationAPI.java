@@ -8,6 +8,7 @@ import com.example.ex3.R;
 import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.entities.Store;
 import com.example.ex3.objects.LocationAndPath;
+import com.example.ex3.objects.NodeAndPath;
 import com.example.ex3.objects.Paths;
 import com.example.ex3.utils.UserPreferencesUtils;
 
@@ -81,6 +82,31 @@ public class NavigationAPI {
 
             @Override
             public void onFailure(@NonNull Call<Paths> call, @NonNull Throwable t) {
+                future.completeExceptionally(t);
+            }
+        });
+        return future;
+    }
+
+    public CompletableFuture<List<GraphNode>> createRedirection(String token, GraphNode node, List<Store> stores) {
+        NodeAndPath nodeAndPath = new NodeAndPath(node,stores);
+        String mallName = UserPreferencesUtils.getMallName(context);
+        Call<List<GraphNode>> call = webServiceAPI.createRedirection(token, mallName, nodeAndPath);
+
+        CompletableFuture<List<GraphNode>> future = new CompletableFuture<>();
+
+        call.enqueue(new Callback<List<GraphNode>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<GraphNode>> call, @NonNull Response<List<GraphNode>> response) {
+                if (response.isSuccessful()) {
+                    future.complete(response.body());
+                } else {
+                    future.completeExceptionally(new Exception("Failed to get closest stores"));
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<GraphNode>> call, @NonNull Throwable t) {
                 future.completeExceptionally(t);
             }
         });

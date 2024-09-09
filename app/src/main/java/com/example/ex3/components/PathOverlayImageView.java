@@ -28,6 +28,7 @@ import com.example.ex3.utils.UserPreferencesUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import retrofit2.Callback;
 
@@ -74,28 +75,22 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
                 passed.add(first);
                 pathStores.remove(first);
             }
-        //if (distanceBetween(first, location) > 100) {
-        //    // Show the redirecting dialog
-        //    RedirectingDialogFragment dialog = new RedirectingDialogFragment();
-        //    dialog.show(((FragmentActivity) getContext()).getSupportFragmentManager(), "Redirecting");
-        //    // Fetch new path from server in the background (pseudo-code)
-        //    fetchNewPathFromServer(new Callback() {
-        //        @Override
-        //        public void onResponse(List<GraphNode> newPath) {
-        //            // Update pathStores with the new path
-        //            pathStores.clear();
-        //            pathStores.addAll(newPath);
-        //            // Dismiss the dialog when done
-        //            dialog.dismiss();
-        //        }
-        //        @Override
-        //        public void onError() {
-        //            // Handle any errors during the path reload
-        //            dialog.dismiss();
-        //            Toast.makeText(getContext(), "Failed to reload path", Toast.LENGTH_SHORT).show();
-        //        }
-        //    });
-        //}
+        if (distanceBetween(first, location) >= 0) {
+            // Show the redirecting dialog
+            RedirectingDialogFragment dialog = new RedirectingDialogFragment();
+            dialog.show(((FragmentActivity) getContext()).getSupportFragmentManager(), "Redirecting");
+            List<Store> stores = new ArrayList<>();
+            for(GraphNode node: pathStores) {
+                for(Store destination : destinations) {
+                    if(Objects.equals(node.getName(), destination.getStoreName())) {
+                        stores.add(destination);
+                    }
+                }
+            }
+            // Fetch new path from server in the background (pseudo-code)
+            fetchRedirection(location, stores);
+            dialog.dismiss();
+        }
             }
 
         invalidate(); // Redraw the view when the location changes
@@ -393,4 +388,13 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
         }
         return false;
     }
+    private void fetchRedirection(GraphNode node, List<Store> stores) {
+        String token = UserPreferencesUtils.getToken(getContext());
+        NavigationAPI.getInstance().createRedirection(token, node, stores).thenAccept(nodes -> {
+            UserPreferencesUtils.setNodes(getContext(), nodes);
+            setPath(nodes);
+        });
+
+    }
 }
+
