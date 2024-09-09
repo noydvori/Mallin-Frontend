@@ -39,6 +39,8 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
     private GraphNode location;
     private List<Store> destinations;
     private int currentFloor;
+    private boolean isRedirecting = false;
+
 
     // Constructors to initialize the view
     public PathOverlayImageView(Context context, AttributeSet attr) {
@@ -68,6 +70,12 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
 
     // Setter for the current location, triggers a redraw when changed
     public void setLocation(GraphNode location) {
+        // אם מתבצע כרגע REDIRECTING לא נעדכן מיקום
+        if (isRedirecting) {
+            return; // לא לעשות כלום אם מתבצע REDIRECTING
+        }
+        // הפעלת תהליך ה-Redirecting
+        isRedirecting = true; // להגדיר שה-REDIRECTING התחיל
         this.location = location;
         if(pathStores != null && !pathStores.isEmpty()) {
             GraphNode first = pathStores.get(0);
@@ -400,6 +408,8 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             // Execute the runnable task when redirection is complete
             if (onComplete != null) {
                 onComplete.run();
+                // הפעלת תהליך ה-Redirecting
+                isRedirecting = false; // להגדיר שה-REDIRECTING התחיל
             }
         });
     }
