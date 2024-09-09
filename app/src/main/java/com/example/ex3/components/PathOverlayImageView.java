@@ -54,6 +54,10 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
         invalidate(); // Redraw the view when the floor changes
     }
 
+    public int getCurrentFloor() {
+        return currentFloor;
+    }
+
     // Setter for the path, triggers a redraw when changed
     public void setPath(List<GraphNode> pathStores) {
         this.pathStores = pathStores;
@@ -65,12 +69,12 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
     public void setLocation(GraphNode location) {
         this.location = location;
         if(pathStores != null && !pathStores.isEmpty()) {
-        GraphNode first = pathStores.get(0);
-        if(distanceBetween(first, location) < 5){
-            passed.add(first);
-            pathStores.remove(first);
-        }
-        //if (distanceBetween(first, location) > 90) {
+            GraphNode first = pathStores.get(0);
+            if(distanceBetween(first, location) < 5){
+                passed.add(first);
+                pathStores.remove(first);
+            }
+        //if (distanceBetween(first, location) > 100) {
         //    // Show the redirecting dialog
         //    RedirectingDialogFragment dialog = new RedirectingDialogFragment();
         //    dialog.show(((FragmentActivity) getContext()).getSupportFragmentManager(), "Redirecting");
@@ -280,17 +284,12 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
                 PointF center = sourceToViewCoord(node.getXMultipliedForPath(), node.getYMultipliedForPath());
                 PointF nextCenter = sourceToViewCoord(nextNode.getXMultipliedForPath(), nextNode.getYMultipliedForPath());
 
-                if (center != null && nextCenter != null && pathStores != null && !pathStores.isEmpty()) {
-                    if (node.getFloor() == this.currentFloor && node != pathStores.get(pathStores.size() - 1)) {
-                        float angle = calculateAngleBetweenNodes(node, nextNode);
-
-                        // Draw the path line
-                        //if (passed.contains(nextNode)) {
-                        //    paint.setColor(Color.LTGRAY);
-                        //} else {
+                if (center != null && nextCenter != null && passed != null && !passed.isEmpty()) {
+                    if (node.getFloor() == this.currentFloor) {
                         paint.setColor(Color.LTGRAY);
+                        canvas.drawLine(center.x, center.y, nextCenter.x, nextCenter.y, paint);
+
                     }
-                    canvas.drawLine(center.x, center.y, nextCenter.x, nextCenter.y, paint);
 
                     if (isStoreChosenByName(node.getName())) {
                         drawDestinationIcon(canvas, center, scale, (-1) * this.currentAngle);
@@ -299,8 +298,8 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             }
         }
         if (location != null && pathStores != null && passed != null && !pathStores.isEmpty() && !passed.isEmpty()){
-            if(passed.get(passed.size()-1).getFloor() == this.currentFloor && location.getFloor() == this.currentFloor) {
-                paint.setColor(Color.LTGRAY);
+            if(pathStores.get(0).getFloor() == this.currentFloor && passed.get(passed.size()-1).getFloor() == this.currentFloor && location.getFloor() == this.currentFloor) {
+                paint.setColor(Color.GRAY);
                 PointF center = sourceToViewCoord(passed.get(passed.size()-1).getXMultipliedForPath(), passed.get(passed.size()-1).getYMultipliedForPath());
                 PointF nextCenter = sourceToViewCoord(location.getXMultipliedForPath(), location.getYMultipliedForPath());
                 if(center != null && nextCenter !=null) {
@@ -327,25 +326,15 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
 
                 if (center != null && nextCenter != null) {
                     if (node.getFloor() == this.currentFloor && node != pathStores.get(pathStores.size() - 1)) {
-                        float angle = calculateAngleBetweenNodes(node, nextNode);
-
-                        // Draw the path line
-                        //if (passed.contains(nextNode)) {
-                        //    paint.setColor(Color.LTGRAY);
-                        //} else {
-                            paint.setColor(Color.parseColor("#CD8055CD")); // Purple
+                        paint.setColor(Color.parseColor("#CD8055CD")); // Purple
                         canvas.drawLine(center.x, center.y, nextCenter.x, nextCenter.y, paint);
-
-                    }
-
                         if (isStoreChosenByName(node.getName())) {
                             drawDestinationIcon(canvas, center, scale, (-1) * this.currentAngle);
                         }
                     }
                 }
             }
-
-
+        }
         // Draw the finish icon on the last node of the path
         if (pathStores != null && !pathStores.isEmpty()) {
             GraphNode lastNode = pathStores.get(pathStores.size() - 1);
@@ -356,7 +345,6 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
                 }
             }
         }
-
         // Rest of the draw method for the location indicator
         if (location != null) {
             PointF locationCenter = sourceToViewCoord(location.getXMultipliedForPath(), location.getYMultipliedForPath());
@@ -369,7 +357,6 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
                 canvas.drawCircle(locationCenter.x, locationCenter.y, 40 * scale, paint);
             }
         }
-
         canvas.restore();
     }
     @Override
@@ -405,42 +392,5 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             }
         }
         return false;
-    }
-
-    // Helper method to check if a node has been passed
-    private boolean nodeHasBeenPassed(GraphNode node) {
-        return location != null && distanceBetween(node, location) < 0.1;
-    }
-
-    // Helper method to find the closest node to the current location
-    private GraphNode getClosestNode() {
-        if (pathStores == null || pathStores.isEmpty()) {
-            return null;
-        }
-
-        GraphNode closestNode = null;
-        float minDistance = Float.MAX_VALUE;
-
-        for (GraphNode node : passed) {
-            float distance = distanceBetween(node, location);
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestNode = node;
-            }
-        }
-        return closestNode;
-    }
-
-    // Helper method to get the next node after the closest node
-    private GraphNode getNextNode(GraphNode closestNode) {
-        if (closestNode == null || pathStores == null || pathStores.isEmpty()) {
-            return null;
-        }
-
-        int index = pathStores.indexOf(closestNode);
-        if (index == -1 || index + 1 >= pathStores.size()) {
-            return null;
-        }
-        return pathStores.get(index + 1);
     }
 }

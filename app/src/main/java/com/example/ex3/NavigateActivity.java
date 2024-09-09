@@ -66,6 +66,10 @@ public class NavigateActivity extends AppCompatActivity {
                     mImageView.centerOnLocation();
                     if(route != null && !route.isEmpty()) {
                         mImageView.setLocation(route.get(0));
+                        if(route != null && !route.isEmpty() && route.get(0).getFloor() != mImageView.getCurrentFloor()) {
+                            tabLayout.getTabAt(route.get(0).getFloor()).select();
+                            mImageView.setCurrentFloor(route.get(0).getFloor());
+                        }
                     }
                     handler.postDelayed(this, 5000); // חזור על הפעולה כל 5 שניות
                 }
@@ -142,6 +146,11 @@ public class NavigateActivity extends AppCompatActivity {
             public void onChanged(GraphNode node) {
                 Log.d("NavigateActivity", "liveLocation: " + node);
                 mImageView.setLocation(node);
+                //If i want to change maps according to the location- may be annoying...
+                //if(node.getFloor() != mImageView.getCurrentFloor()) {
+                //    tabLayout.getTabAt(node.getFloor()).select();
+                //    mImageView.setCurrentFloor(node.getFloor());
+                //}
             }
         });
 
