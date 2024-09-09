@@ -291,7 +291,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
 
                     }
 
-                    if (isStoreChosenByName(node.getName())) {
+                    if (isStoreChosenByName(node.getName()) && node.getFloor() == this.currentFloor) {
                         drawDestinationIcon(canvas, center, scale, (-1) * this.currentAngle);
                     }
                 }
