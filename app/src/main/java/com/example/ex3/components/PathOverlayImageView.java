@@ -75,7 +75,6 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             return; // לא לעשות כלום אם מתבצע REDIRECTING
         }
         // הפעלת תהליך ה-Redirecting
-        isRedirecting = true; // להגדיר שה-REDIRECTING התחיל
         this.location = location;
         if(pathStores != null && !pathStores.isEmpty()) {
             GraphNode first = pathStores.get(0);
@@ -83,7 +82,9 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
                 passed.add(first);
                 pathStores.remove(first);
             }
-        if (distanceBetween(first, location) >= 0) {
+        if (distanceBetween(first, location) > 100) {
+            isRedirecting = true; // להגדיר שה-REDIRECTING התחיל
+
             // Show the redirecting dialog
             RedirectingDialogFragment dialog = new RedirectingDialogFragment();
             dialog.show(((FragmentActivity) getContext()).getSupportFragmentManager(), "Redirecting");
@@ -100,6 +101,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             fetchRedirection(location, stores, () -> {
                 // Code to execute when redirection is complete, e.g., dismissing the dialog
                 dialog.dismiss();
+                isRedirecting = false; // להגדיר שה-REDIRECTING התחיל
             });
         }
             }
@@ -136,7 +138,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
     public void centerOnLocation() {
         if (location != null) {
             // Calculate the adjusted center point, slightly lower than the middle
-            PointF locationCenter = new PointF(location.getXMultipliedForPath(), location.getYMultipliedForPath() - 1200);
+            PointF locationCenter = new PointF(location.getXMultipliedForPath(), location.getYMultipliedForPath());
 
             // Attempt to create the animation builder
             AnimationBuilder animationBuilder = animateScaleAndCenter(getScale(), locationCenter);
@@ -409,7 +411,6 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             if (onComplete != null) {
                 onComplete.run();
                 // הפעלת תהליך ה-Redirecting
-                isRedirecting = false; // להגדיר שה-REDIRECTING התחיל
             }
         });
     }
