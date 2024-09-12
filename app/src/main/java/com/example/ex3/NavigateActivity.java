@@ -59,23 +59,22 @@ public class NavigateActivity extends AppCompatActivity {
         mImageView.setImage(ImageSource.resource(R.drawable.floor_1));
 
         // Center map on location every 5 seconds
-        Handler handler = new Handler();
-        Runnable centerRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    mImageView.centerOnLocation();
-                    if(route != null && !route.isEmpty()) {
-                        mImageView.setLocation(route.get(0));
-                        if(route != null && !route.isEmpty() && route.get(0).getFloor() != mImageView.getCurrentFloor()) {
-                            tabLayout.getTabAt(route.get(0).getFloor()).select();
-                            mImageView.setCurrentFloor(route.get(0).getFloor());
-                        }
-                    }
-                    handler.postDelayed(this, 5000); // חזור על הפעולה כל 5 שניות
-                }
-            };
-
-        handler.post(centerRunnable);
+        //Handler handler = new Handler();
+        //Runnable centerRunnable = new Runnable() {
+        //        @Override
+        //        public void run() {
+        //            mImageView.centerOnLocation();
+        //            if(route != null && !route.isEmpty()) {
+        //                mImageView.setLocation(route.get(0));
+        //                if(route != null && !route.isEmpty() && route.get(0).getFloor() != mImageView.getCurrentFloor()) {
+        //                    tabLayout.getTabAt(route.get(0).getFloor()).select();
+        //                    mImageView.setCurrentFloor(route.get(0).getFloor());
+        //                }
+        //            }
+        //            handler.postDelayed(this, 5000); // חזור על הפעולה כל 5 שניות
+        //        }
+        //    };
+        //handler.post(centerRunnable);
 
         // Set up the ViewTreeObserver to listen for when the mImageView is fully loaded
         mImageView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -100,6 +99,7 @@ public class NavigateActivity extends AppCompatActivity {
 
                     mImageView.setPath(route);
                     mImageView.setLocation(route.get(0));
+                    mImageView.centerOnLocation();
 
                     initialFloor.set(route.get(0).getFloor());
                 }
@@ -146,6 +146,7 @@ public class NavigateActivity extends AppCompatActivity {
             public void onChanged(GraphNode node) {
                 Log.d("NavigateActivity", "liveLocation: " + node);
                 mImageView.setLocation(node);
+                mImageView.centerOnLocation();
                 //If i want to change maps according to the location- may be annoying...
                 //if(node.getFloor() != mImageView.getCurrentFloor()) {
                 //    tabLayout.getTabAt(node.getFloor()).select();
