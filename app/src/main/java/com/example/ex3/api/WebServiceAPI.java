@@ -8,6 +8,7 @@ import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
 import com.example.ex3.objects.LocationAndPath;
 import com.example.ex3.objects.NameAndPassword;
+import com.example.ex3.objects.NodeAndPath;
 import com.example.ex3.objects.Paths;
 import com.example.ex3.objects.User;
 import com.example.ex3.objects.UserInfo;
@@ -83,6 +84,12 @@ public interface WebServiceAPI {
             @Header("Authorization") String token,
             @Query("mallname") String mallname,
             @Body LocationAndPath locationAndPath
+    );
+    @POST("Navigation/redirecting")
+    Call<List<GraphNode>> createRedirection(
+            @Header("Authorization") String token,
+            @Query("mallname") String mallname,
+            @Body NodeAndPath nodeAndPath
     );
     @POST("/api/wifi/live/stores")
     Call<List<Store>> getClosestStores(

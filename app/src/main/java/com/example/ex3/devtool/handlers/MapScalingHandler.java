@@ -11,7 +11,7 @@ public class MapScalingHandler implements SubsamplingScaleImageView.OnImageEvent
     }
     @Override
     public void onReady() {
-        imageView.setZoomEnabled(false);
+        imageView.setZoomEnabled(true);
         imageView.setScaleAndCenter(0.5f, new PointF(imageView.getWidth(), imageView.getHeight()));
     }
 

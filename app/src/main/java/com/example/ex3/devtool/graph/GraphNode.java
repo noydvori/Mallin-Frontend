@@ -79,11 +79,11 @@ public class GraphNode {
         return  this.y * 3.5f;
     }
     public float getXMultipliedForPath() {
-        return this.x * 2.6F;
+        return this.x * 2.6f;
     }
 
     public float getYMultipliedForPath() {
-        return this.y * 2.6F;
+        return this.y * 2.6f;
     }
     @Override
     public String toString() {
