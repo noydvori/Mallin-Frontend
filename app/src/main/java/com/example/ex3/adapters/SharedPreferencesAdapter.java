@@ -5,10 +5,10 @@ import android.content.SharedPreferences;
 
 public class SharedPreferencesAdapter {
 
-    private String DATA_BASE_NAME = "DEV_TOOL_SHARED_PREFRENCES";
-    private String IS_LOADED_DATA_BASE = "IS_LOADED_DATA_BASE";
+    private String DATA_BASE_NAME = "DEV_TOOL_SHARED_PREFRENCES10";
+    private String IS_LOADED_DATA_BASE = "IS_LOADED_DATA_BASE10";
 
-    private String NAME = "CLIENT_NAME";
+    private String NAME = "CLIENT_NAME10";
 
     private SharedPreferences mSharedPreferences;
     private static SharedPreferencesAdapter sharedPreferencesAdapter;
