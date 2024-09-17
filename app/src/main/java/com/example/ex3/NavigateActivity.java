@@ -303,9 +303,6 @@ public class NavigateActivity extends AppCompatActivity {
 
 
     private void setFloor(int i, CharSequence title) {
-        if (title != null) {
-            navigateViewModel.setTitle(title.toString());
-        }
         navigateViewModel.setSelectedFloor(i);
         navigateViewModel.setFloorImage(getFloorResource(i));
     }

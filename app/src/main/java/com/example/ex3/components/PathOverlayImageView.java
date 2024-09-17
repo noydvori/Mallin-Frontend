@@ -195,6 +195,10 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
         }
 
         if (deltaY > 0) {
+            if (deltaX > 0) {
+                // The second point is above the first, rotate by the calculated angle minus 90 degrees
+                return  -(float) Math.abs(Math.toDegrees(Math.atan2(deltaY, deltaX))) -90;
+            }
             // The first point is above the second, need to rotate by 270 degrees minus the calculated angle
             return (float) (270 - Math.abs(Math.toDegrees(Math.atan2(deltaY, deltaX))));
         } else {
@@ -284,10 +288,10 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             GraphNode nextNode1 = pathStores.get(0);
             // Calculate the angle to rotate the map
             float angle = calculateAngleBetweenNodes(closestNode, nextNode1);
-            if(angle > 180) {
+            while(angle > 180) {
                 angle -= 180;
             }
-            if(angle < -180 ) {
+            while(angle < -180 ) {
                 angle += 180;
             }
             // Rotate the canvas around the center of the screen

@@ -237,7 +237,7 @@ public class CurrentLocationActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 UserPreferencesUtils.setPaths(this, paths);
 
-                Intent intent = new Intent(CurrentLocationActivity.this, ConfirmPathActivity.class);
+                Intent intent = new Intent(CurrentLocationActivity.this, ConfirmPath.class);
                 startActivity(intent);
             });
         }).exceptionally(throwable -> {

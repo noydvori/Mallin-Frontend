@@ -25,7 +25,7 @@ public class LoginActivity extends AppCompatActivity {
         // Move to register screen
         Button toRegister = findViewById(R.id.toRegister);
         toRegister.setOnClickListener(view -> {
-            Intent i = new Intent(this, RegisterActivity.class);
+            Intent i = new Intent(this, Register.class);
             startActivity(i);
         });
         // Submit login button

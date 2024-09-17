@@ -23,7 +23,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.List;
 
-public class ConfirmPathActivity extends AppCompatActivity {
+public class ConfirmPath extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private ConfirmPathAdapter adapter;
@@ -74,7 +74,7 @@ public class ConfirmPathActivity extends AppCompatActivity {
                 chosenStores.clear();
                 chosenStores.addAll(UserPreferencesUtils.getStores(context));
                 adapter.notifyDataSetChanged();
-                Toast.makeText(ConfirmPathActivity.this, "Order reset to optimal", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ConfirmPath.this, "Order reset to optimal", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -85,14 +85,14 @@ public class ConfirmPathActivity extends AppCompatActivity {
             if(!toggleOptimal.isChecked()) {
                 fetchOrderedRout(UserPreferencesUtils.getLocation(), chosenStores);
             } else {
-                Intent intent = new Intent(ConfirmPathActivity.this, NavigateActivity.class);
+                Intent intent = new Intent(ConfirmPath.this, NavigateActivity.class);
                 startActivity(intent);
             }
         });
 
         Button buttonBack = findViewById(R.id.button_back);
         buttonBack.setOnClickListener(v -> {
-            Intent intent = new Intent(ConfirmPathActivity.this, CurrentLocationActivity.class);
+            Intent intent = new Intent(ConfirmPath.this, CurrentLocationActivity.class);
             startActivity(intent);
         });
 
@@ -104,11 +104,11 @@ public class ConfirmPathActivity extends AppCompatActivity {
                     case R.id.menu_home:
                         return true;
                     case R.id.menu_navigate:
-                        Intent navigateIntent = new Intent(ConfirmPathActivity.this, NavigateActivity.class);
+                        Intent navigateIntent = new Intent(ConfirmPath.this, NavigateActivity.class);
                         startActivity(navigateIntent);
                         return true;
                     case R.id.menu_favorites:
-                        Intent favoritesIntent = new Intent(ConfirmPathActivity.this, FavoritesActivity.class);
+                        Intent favoritesIntent = new Intent(ConfirmPath.this, FavoritesActivity.class);
                         startActivity(favoritesIntent);
                         return true;
                 }
@@ -121,7 +121,7 @@ public class ConfirmPathActivity extends AppCompatActivity {
         NavigationAPI.getInstance().createOrderedRout(token, store, stores).thenAccept(nodes -> {
             UserPreferencesUtils.setNodes(this, nodes);
             runOnUiThread(() -> {
-                Intent intent = new Intent(ConfirmPathActivity.this, NavigateActivity.class);
+                Intent intent = new Intent(ConfirmPath.this, NavigateActivity.class);
                 startActivity(intent);
             });
 
@@ -142,7 +142,7 @@ public class ConfirmPathActivity extends AppCompatActivity {
                 chosenStores.clear();
                 chosenStores.addAll(UserPreferencesUtils.getStores(context));
                 adapter.notifyDataSetChanged();
-                Toast.makeText(ConfirmPathActivity.this, "Order reset to optimal", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ConfirmPath.this, "Order reset to optimal", Toast.LENGTH_SHORT).show();
             }
         });
     }
