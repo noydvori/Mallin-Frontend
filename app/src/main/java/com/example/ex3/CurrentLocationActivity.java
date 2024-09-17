@@ -2,14 +2,11 @@ package com.example.ex3;
 
 import static com.example.ex3.MyApplication.context;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
@@ -19,10 +16,8 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import android.util.Log;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.Request;
@@ -45,13 +40,11 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.room.Room;
 
-public class CurrentLocation extends AppCompatActivity {
+public class CurrentLocationActivity extends AppCompatActivity {
 
     private Button buttonConfirm;
     private static final int REQUEST_CAMERA_PERMISSION = 100;
@@ -109,7 +102,7 @@ public class CurrentLocation extends AppCompatActivity {
                     AutoCompleteTextView actv = findViewById(R.id.autoCompleteTextView);
                     actv.setThreshold(1);
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                            CurrentLocation.this,
+                            CurrentLocationActivity.this,
                             android.R.layout.select_dialog_item,
                             stringsStoresList);
                     actv.setAdapter(adapter);
@@ -143,10 +136,10 @@ public class CurrentLocation extends AppCompatActivity {
 
 
                      suggestionsAdapter = new StoreAdapter(
-                            CurrentLocation.this,
+                            CurrentLocationActivity.this,
                             new ArrayList<>());
 
-                    mViewModel.getStores().observe(CurrentLocation.this, new Observer<List<Store>>() {
+                    mViewModel.getStores().observe(CurrentLocationActivity.this, new Observer<List<Store>>() {
                         @Override
                         public void onChanged(List<Store> stores) {
                             stores.forEach(store -> {
@@ -172,7 +165,7 @@ public class CurrentLocation extends AppCompatActivity {
                 });
             } else {
                 // Handle the case where no category was found
-                Toast.makeText(CurrentLocation.this, "No categories found", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CurrentLocationActivity.this, "No categories found", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -200,16 +193,16 @@ public class CurrentLocation extends AppCompatActivity {
                         fetchRout(location, chosenStores);
                     }
                 } else {
-                    Toast.makeText(CurrentLocation.this, "Store not found", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CurrentLocationActivity.this, "Store not found", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Toast.makeText(CurrentLocation.this, "Location is not correct", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CurrentLocationActivity.this, "Location is not correct", Toast.LENGTH_SHORT).show();
             }
         });
 
         Button buttonBack = findViewById(R.id.button_back);
         buttonBack.setOnClickListener(v -> {
-            Intent homeIntent = new Intent(CurrentLocation.this, Home.class);
+            Intent homeIntent = new Intent(CurrentLocationActivity.this, HomeActivity.class);
             homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(homeIntent);
         });
@@ -219,16 +212,16 @@ public class CurrentLocation extends AppCompatActivity {
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             switch (item.getItemId()) {
                 case R.id.menu_home:
-                    Intent homeIntent = new Intent(CurrentLocation.this, Home.class);
+                    Intent homeIntent = new Intent(CurrentLocationActivity.this, HomeActivity.class);
                     homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(homeIntent);
                     return true;
                 case R.id.menu_navigate:
-                    Intent navigateIntent = new Intent(CurrentLocation.this, NavigateActivity.class);
+                    Intent navigateIntent = new Intent(CurrentLocationActivity.this, NavigateActivity.class);
                     startActivity(navigateIntent);
                     return true;
                 case R.id.menu_favorites:
-                    Intent favoritesIntent = new Intent(CurrentLocation.this, Favorites.class);
+                    Intent favoritesIntent = new Intent(CurrentLocationActivity.this, FavoritesActivity.class);
                     startActivity(favoritesIntent);
                     return true;
             }
@@ -244,7 +237,7 @@ public class CurrentLocation extends AppCompatActivity {
             runOnUiThread(() -> {
                 UserPreferencesUtils.setPaths(this, paths);
 
-                Intent intent = new Intent(CurrentLocation.this, ConfirmPath.class);
+                Intent intent = new Intent(CurrentLocationActivity.this, ConfirmPath.class);
                 startActivity(intent);
             });
         }).exceptionally(throwable -> {
@@ -260,7 +253,7 @@ public class CurrentLocation extends AppCompatActivity {
         NavigationAPI.getInstance().createOrderedRout(token, store, stores).thenAccept(nodes -> {
             UserPreferencesUtils.setNodes(this, nodes);
             runOnUiThread(() -> {
-                Intent intent = new Intent(CurrentLocation.this, NavigateActivity.class);
+                Intent intent = new Intent(CurrentLocationActivity.this, NavigateActivity.class);
                 startActivity(intent);
             });
 

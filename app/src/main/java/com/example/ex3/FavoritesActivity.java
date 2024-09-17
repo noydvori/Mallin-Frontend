@@ -1,9 +1,5 @@
 package com.example.ex3;
 
-import static android.content.Context.MODE_PRIVATE;
-import static android.content.Intent.getIntent;
-import static androidx.core.content.ContextCompat.startActivity;
-
 import static com.example.ex3.MyApplication.context;
 
 import android.content.Context;
@@ -16,7 +12,6 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.SearchView;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -25,11 +20,9 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.ex3.adapters.CategoryAdapter;
 import com.example.ex3.adapters.ChosenStoresAdapter;
 import com.example.ex3.adapters.StoreItemAdapter;
 import com.example.ex3.api.FavoritesAPI;
-import com.example.ex3.entities.FavoriteStore;
 import com.example.ex3.entities.Store;
 import com.example.ex3.utils.UserPreferencesUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -37,7 +30,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Favorites extends AppCompatActivity{
+public class FavoritesActivity extends AppCompatActivity{
     private StoreItemAdapter StoreItemAdapter;
 
     BottomNavigationView bottomNavigationView;
@@ -133,14 +126,14 @@ public class Favorites extends AppCompatActivity{
                     case R.id.menu_home:
 
                         // Navigate to Home activity
-                        Intent homeIntent = new Intent(Favorites.this, Home.class);
+                        Intent homeIntent = new Intent(FavoritesActivity.this, HomeActivity.class);
                         setResult(RESULT_OK, homeIntent);
                         startActivity(homeIntent);
                         return true;
                     case R.id.menu_navigate:
                         // Navigate to NavigateActivity
                         // Navigate to Home activity
-                        Intent navIntent = new Intent(Favorites.this, NavigateActivity.class);
+                        Intent navIntent = new Intent(FavoritesActivity.this, NavigateActivity.class);
                         startActivity(navIntent);
                         return true;
                     case R.id.menu_favorites:
@@ -210,12 +203,12 @@ public class Favorites extends AppCompatActivity{
                 Intent intent;
                 switch (item.getItemId()) {
                     case R.id.menu_home:
-                        intent = new Intent(Favorites.this, Home.class);
+                        intent = new Intent(FavoritesActivity.this, HomeActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
                         return true;
                     case R.id.menu_navigate:
-                        intent = new Intent(Favorites.this, NavigateActivity.class);
+                        intent = new Intent(FavoritesActivity.this, NavigateActivity.class);
                         startActivity(intent);
                         return true;
                     case R.id.menu_favorites:
@@ -268,7 +261,7 @@ public class Favorites extends AppCompatActivity{
     @Override
     public void onBackPressed() {
         UserPreferencesUtils.setChosenStores(context, chosenStores); // Save the updated list
-        Intent intent = new Intent(Favorites.this, Home.class);
+        Intent intent = new Intent(FavoritesActivity.this, HomeActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
         }

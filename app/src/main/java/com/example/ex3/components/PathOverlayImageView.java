@@ -1,8 +1,6 @@
 package com.example.ex3.components;
-
 import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -12,34 +10,36 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.Toast;
-
+import android.view.animation.AccelerateDecelerateInterpolator;
 import androidx.fragment.app.FragmentActivity;
-
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
-import com.example.ex3.ConfirmPath;
-import com.example.ex3.CurrentLocation;
 import com.example.ex3.R;
 import com.example.ex3.RedirectingDialogFragment;
 import com.example.ex3.api.NavigationAPI;
 import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.entities.Store;
 import com.example.ex3.utils.UserPreferencesUtils;
-
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-
-import retrofit2.Callback;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PathOverlayImageView extends SubsamplingScaleImageView {
     private List<GraphNode> pathStores;
     private List<GraphNode> passed;
     private float currentAngle = 0;
     private GraphNode location;
-    private List<Store> destinations;
+    private HashSet<Store> destinations;
+    private Set<String> destinationsStrings;
     private int currentFloor;
     private boolean isRedirecting = false;
+
+
+    public static final int ICON_SCALE =  200;
+    public static final float TOLERANCE =  15.0f;
+    public static final int MAX_DISTANCE =  100;
+    public static final int PASSED_DISTANCE =  5;
 
 
     // Constructors to initialize the view
@@ -70,65 +70,48 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
 
     // Setter for the current location, triggers a redraw when changed
     public void setLocation(GraphNode location) {
-        // אם מתבצע כרגע REDIRECTING לא נעדכן מיקום
-        if (isRedirecting) {
-            return; // לא לעשות כלום אם מתבצע REDIRECTING
-        }
-        // הפעלת תהליך ה-Redirecting
         this.location = location;
+        if (isRedirecting) {
+            return; // do nothing
+        }
         if(pathStores != null && !pathStores.isEmpty()) {
             GraphNode first = pathStores.get(0);
-            if(distanceBetween(first, location) < 5){
+            if (distanceBetween(first, location) < PASSED_DISTANCE) {
                 passed.add(first);
                 pathStores.remove(first);
             }
-        if (distanceBetween(first, location) > 100) {
-            isRedirecting = true; // להגדיר שה-REDIRECTING התחיל
+            if (distanceBetween(first, location) > MAX_DISTANCE) {
+                isRedirecting = true; // Start redirecting
 
-            // Show the redirecting dialog
-            RedirectingDialogFragment dialog = new RedirectingDialogFragment();
-            dialog.show(((FragmentActivity) getContext()).getSupportFragmentManager(), "Redirecting");
-            List<Store> stores = new ArrayList<>();
-            for(GraphNode node: pathStores) {
-                for(Store destination : destinations) {
-                    if(Objects.equals(node.getName(), destination.getStoreName())) {
-                        stores.add(destination);
+                // Show the redirecting dialog
+                RedirectingDialogFragment dialog = new RedirectingDialogFragment();
+                dialog.show(((FragmentActivity) getContext()).getSupportFragmentManager(), "Redirecting");
+                List<Store> stores = new ArrayList<>();
+                for (GraphNode node : pathStores) {
+                    for (Store destination : destinations) {
+                        if (destinations.contains(node)) {
+                            stores.add(destination);
+                        }
                     }
                 }
+                // Fetch new path from server in the background
+                fetchRedirection(location, stores, () -> {
+                    // Code to execute when redirection is complete, e.g., dismissing the dialog
+                    dialog.dismiss();
+                    isRedirecting = false;
+                });
             }
-            // Fetch new path from server in the background (pseudo-code)
-            // Fetch new path from server in the background
-            fetchRedirection(location, stores, () -> {
-                // Code to execute when redirection is complete, e.g., dismissing the dialog
-                dialog.dismiss();
-                isRedirecting = false; // להגדיר שה-REDIRECTING התחיל
-            });
         }
-            }
-
         invalidate(); // Redraw the view when the location changes
     }
 
-    //private void fetchNewPathFromServer(Callback failedToReloadPath) {
-    //    String token = UserPreferencesUtils.getToken(getContext());
-    //    NavigationAPI.getInstance().createRout(token, location, UserPreferencesUtils.getStores(getContext())).thenAccept(paths -> {
-    //        UserPreferencesUtils.setPaths(this, paths);
-    //        runOnUiThread(() -> {
-    //            UserPreferencesUtils.setPaths(this, paths);
-    //            pathStores = paths;
-    //            passed = !!!!!!!!;
-    //        });
-    //    }).exceptionally(throwable -> {
-    //        runOnUiThread(() -> {
-    //            Toast.makeText(this, "Error fetching optimal route", Toast.LENGTH_SHORT).show();
-    //        });
-    //        return null;
-    //    });
-    //}
 
     // Setter for destination stores, triggers a redraw when changed
     public void setDestinations(List<Store> destinations) {
-        this.destinations = destinations;
+        this.destinations = new HashSet<>(destinations); // Convert the List to a HashSet
+        this.destinationsStrings = destinations.stream()
+                .map(Store::getStoreName) // Extract the store names
+                .collect(Collectors.toSet()); // Collect to a HashSet
         invalidate(); // Redraw the view when the destination list changes
     }
 
@@ -161,39 +144,25 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
         return (float) Math.sqrt(dx * dx + dy * dy);
     }
 
-    // Helper method to calculate the angle between two nodes
+    // Calculate the angle between two nodes for rotation logic
     private float calculateAngleBetweenNodes(GraphNode currentNode, GraphNode nextNode) {
-        if (currentNode == null || nextNode == null) {
-            return 0;
-        }
-
+        if (currentNode == null || nextNode == null) {return 0;}
         float deltaX = nextNode.getXMultipliedForPath() - currentNode.getXMultipliedForPath();
         float deltaY = nextNode.getYMultipliedForPath() - currentNode.getYMultipliedForPath();
-
-        // Tolerance is a small value defining what is considered 'almost' straight
-        float tolerance = 25.0f;
-
-        // If deltaX is smaller than the defined threshold, check deltaY
-        if (Math.abs(deltaX) < tolerance) {
-            if (deltaY > 0) {
-                // The first point is above the second, need to rotate by 180 degrees
-                return 180;
-            } else {
-                // The second point is above the first, no rotation needed
-                return 0;
-            }
+        // Check if deltaX or deltaY is almost zero (straight line cases)
+        if (Math.abs(deltaX) < TOLERANCE) {
+            return (deltaY > 0) ? 180 : 0;
         }
-
+        if (Math.abs(deltaY) < TOLERANCE) {
+            return (deltaX > 0) ? -90 : 90;
+        }
+        // Handle general angle cases with trigonometry
         if (deltaY > 0) {
-            // The first point is above the second, need to rotate by 270 degrees minus the calculated angle
-            return (float) (270 - Math.abs(Math.toDegrees(Math.atan2(deltaY, deltaX))));
+            return (deltaX > 0) ? -Math.abs((float) Math.toDegrees(Math.atan2(deltaY, deltaX))) - 90
+                    : 270 - Math.abs((float) Math.toDegrees(Math.atan2(deltaY, deltaX)));
         } else {
-            if (deltaX > 0) {
-                // The second point is above the first, rotate by the calculated angle minus 90 degrees
-                return (float) Math.abs(Math.toDegrees(Math.atan2(deltaY, deltaX))) - 90;
-            }
-            // The second point is above the first, rotate by the calculated angle
-            return (float) Math.abs(Math.toDegrees(Math.atan2(deltaY, deltaX)))-90;
+            return (deltaX > 0) ? Math.abs((float) Math.toDegrees(Math.atan2(deltaY, deltaX))) - 90
+                    : Math.abs((float) Math.toDegrees(Math.atan2(deltaY, deltaX))) + 90;
         }
     }
 
@@ -202,7 +171,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
         Drawable finishIcon = getResources().getDrawable(R.drawable.destination, null);
         if (finishIcon != null) {
             // Adjust the icon size by changing the scaling factor
-            int iconSize = (int) (200 * scale);
+            int iconSize = (int) (ICON_SCALE * scale);
             int left = (int) (point.x - (float) iconSize / 2);
             int top = (int) (point.y - iconSize);
             int right = (int) (point.x + (float) iconSize / 2);
@@ -228,7 +197,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
         Drawable finishIcon = getResources().getDrawable(R.drawable.finish_icon, null);
         if (finishIcon != null) {
             // Adjust the icon size by changing the scaling factor
-            int iconSize = (int) (200 * scale);
+            int iconSize = (int) (ICON_SCALE * scale);
             int left = (int) (point.x - (float) iconSize / 2);
             int top = (int) (point.y - iconSize);
             int right = (int) (point.x + (float) iconSize / 2);
@@ -248,79 +217,69 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             canvas.restore();
         }
     }
-    private void smoothRotateView(View view, float fromAngle, float toAngle) {
-        // ניצור אנימציה שמבצעת רוטציה מהזווית ההתחלתית לזווית הסופית
+    private void smoothRotateView(View view, float fromAngle, float toAngle, Runnable onEndCallback) {
+        // Create an animation that rotates the view from the starting angle to the final angle
         ObjectAnimator animator = ObjectAnimator.ofFloat(view, "rotation", fromAngle, toAngle);
-
-        // הגדר את משך הזמן של האנימציה (למשל, 500 מילישניות)
-        animator.setDuration(500); // משך הזמן הוא 500ms
-
-        // התחל את האנימציה
-        animator.start();
+        animator.setInterpolator(new AccelerateDecelerateInterpolator());
+        view.animate().rotation(toAngle).setDuration(500).setInterpolator(new AccelerateDecelerateInterpolator()).withEndAction(onEndCallback).start();
     }
+
     @Override
     public void draw(Canvas canvas) {
         canvas.save();
-
         float scale = getScale();
         Paint paint = new Paint();
         paint.setStrokeWidth(30 * scale);
-
-
-
+        // Rotate the screen
         if (passed != null && pathStores != null && !passed.isEmpty() && !pathStores.isEmpty()) {
             // Rotate only if the closest node and the next node exist
             GraphNode closestNode = passed.get(passed.size()-1);
             GraphNode nextNode1 = pathStores.get(0);
             // Calculate the angle to rotate the map
             float angle = calculateAngleBetweenNodes(closestNode, nextNode1);
-
+            while(angle > 180) {
+                angle -= 180;
+            }
+            while(angle < -180 ) {
+                angle += 180;
+            }
             // Rotate the canvas around the center of the screen
             PointF locationCenter = sourceToViewCoord(location.getXMultipliedForPath(), location.getYMultipliedForPath());
-
             if (location != null && locationCenter != null) {
-                smoothRotateView(this,currentAngle,angle);
-                currentAngle = angle;
-                //canvas.rotate(angle, locationCenter.x, locationCenter.y);
+                float finalAngle = angle;
+                smoothRotateView(this, currentAngle, angle, () -> {
+                    // Update currentAngle once the rotation animation is done
+                    currentAngle = finalAngle;
+                });
             }
         }
         super.draw(canvas);
+        // Draw passed path (gray color)
         if (passed != null && !passed.isEmpty()) {
             for (int i = 0; i < passed.size() - 1; i++) {
                 GraphNode node = passed.get(i);
                 GraphNode nextNode = passed.get(i + 1);
                 PointF center = sourceToViewCoord(node.getXMultipliedForPath(), node.getYMultipliedForPath());
                 PointF nextCenter = sourceToViewCoord(nextNode.getXMultipliedForPath(), nextNode.getYMultipliedForPath());
-
                 if (center != null && nextCenter != null && passed != null && !passed.isEmpty()) {
                     if (node.getFloor() == this.currentFloor) {
                         paint.setColor(Color.LTGRAY);
                         canvas.drawLine(center.x, center.y, nextCenter.x, nextCenter.y, paint);
-
                     }
-
                     if (isStoreChosenByName(node.getName()) && node.getFloor() == this.currentFloor) {
                         drawDestinationIcon(canvas, center, scale, (-1) * this.currentAngle);
                     }
                 }
             }
         }
-        if (location != null && pathStores != null && passed != null && !pathStores.isEmpty() && !passed.isEmpty()){
-            if(pathStores.get(0).getFloor() == this.currentFloor && passed.get(passed.size()-1).getFloor() == this.currentFloor && location.getFloor() == this.currentFloor) {
-                paint.setColor(Color.GRAY);
+        // Draw unvisited path (purple)
+        if (pathStores != null && !pathStores.isEmpty() && passed != null && !passed.isEmpty()) {
+            if(pathStores.get(0).getFloor() == passed.get(passed.size()-1).getFloor() && location.getFloor() == this.currentFloor) {
+                paint.setColor(Color.parseColor("#CD8055CD")); // Purple
                 PointF center = sourceToViewCoord(passed.get(passed.size()-1).getXMultipliedForPath(), passed.get(passed.size()-1).getYMultipliedForPath());
-                PointF nextCenter = sourceToViewCoord(location.getXMultipliedForPath(), location.getYMultipliedForPath());
+                PointF nextCenter = sourceToViewCoord(pathStores.get(0).getXMultipliedForPath(), pathStores.get(0).getYMultipliedForPath());
                 if(center != null && nextCenter !=null) {
                     canvas.drawLine(center.x, center.y, nextCenter.x, nextCenter.y, paint);
-
-                }
-            }
-            if(pathStores.get(0).getFloor() == this.currentFloor && location.getFloor() == this.currentFloor) {
-                paint.setColor(Color.parseColor("#CD8055CD")); // Purple
-                PointF center2 = sourceToViewCoord(location.getXMultipliedForPath(), location.getYMultipliedForPath());
-                PointF nextCenter2 = sourceToViewCoord(pathStores.get(0).getXMultipliedForPath(), pathStores.get(0).getYMultipliedForPath());
-                if(center2 != null && nextCenter2 !=null) {
-                    canvas.drawLine(center2.x, center2.y, nextCenter2.x, nextCenter2.y, paint);
                 }
             }
         }
@@ -331,7 +290,6 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
                 GraphNode nextNode = pathStores.get(i + 1);
                 PointF center = sourceToViewCoord(node.getXMultipliedForPath(), node.getYMultipliedForPath());
                 PointF nextCenter = sourceToViewCoord(nextNode.getXMultipliedForPath(), nextNode.getYMultipliedForPath());
-
                 if (center != null && nextCenter != null) {
                     if (node.getFloor() == this.currentFloor && node != pathStores.get(pathStores.size() - 1)) {
                         paint.setColor(Color.parseColor("#CD8055CD")); // Purple
@@ -367,6 +325,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
         }
         canvas.restore();
     }
+
     @Override
     public void onRestoreInstanceState(Parcelable state) {
         if (state instanceof Bundle) {
@@ -383,6 +342,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             super.onRestoreInstanceState(state);
         }
     }
+
     @Override
     public Parcelable onSaveInstanceState() {
         Bundle bundle = new Bundle();
@@ -394,23 +354,20 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
 
     // Helper method to check if a store is chosen based on its name
     private boolean isStoreChosenByName(String nodeName) {
-        for (Store store : destinations) {
-            if (store.getStoreName().equalsIgnoreCase(nodeName)) {
-                return true;
-            }
+        if (destinationsStrings.contains(nodeName)) {
+            return true;
         }
         return false;
     }
+
     private void fetchRedirection(GraphNode node, List<Store> stores, Runnable onComplete) {
         String token = UserPreferencesUtils.getToken(getContext());
         NavigationAPI.getInstance().createRedirection(token, node, stores).thenAccept(nodes -> {
             UserPreferencesUtils.setNodes(getContext(), nodes);
             setPath(nodes);
-
             // Execute the runnable task when redirection is complete
             if (onComplete != null) {
                 onComplete.run();
-                // הפעלת תהליך ה-Redirecting
             }
         });
     }

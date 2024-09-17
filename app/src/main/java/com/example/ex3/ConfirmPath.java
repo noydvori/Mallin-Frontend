@@ -21,7 +21,6 @@ import com.example.ex3.entities.Store;
 import com.example.ex3.utils.UserPreferencesUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ConfirmPath extends AppCompatActivity {
@@ -93,7 +92,7 @@ public class ConfirmPath extends AppCompatActivity {
 
         Button buttonBack = findViewById(R.id.button_back);
         buttonBack.setOnClickListener(v -> {
-            Intent intent = new Intent(ConfirmPath.this, CurrentLocation.class);
+            Intent intent = new Intent(ConfirmPath.this, CurrentLocationActivity.class);
             startActivity(intent);
         });
 
@@ -109,7 +108,7 @@ public class ConfirmPath extends AppCompatActivity {
                         startActivity(navigateIntent);
                         return true;
                     case R.id.menu_favorites:
-                        Intent favoritesIntent = new Intent(ConfirmPath.this, Favorites.class);
+                        Intent favoritesIntent = new Intent(ConfirmPath.this, FavoritesActivity.class);
                         startActivity(favoritesIntent);
                         return true;
                 }
