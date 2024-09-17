@@ -45,7 +45,6 @@ public class NavigateActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigate);
 
-
         // Initialize ViewModel
         navigateViewModel = new ViewModelProvider(this, new NavigateViewModelFactory(GraphDatabase.getDatabase(this)))
                 .get(NavigateViewModel.class);
@@ -91,26 +90,6 @@ public class NavigateActivity extends AppCompatActivity {
             });
         });
 
-        // Center map on location every 5 seconds
-        Handler handler = new Handler();
-        Runnable centerRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    mImageView.centerOnLocation();
-                    // remove
-                   if(route != null && !route.isEmpty()) {
-                       mImageView.setLocation(route.get(0));
-                       mImageView.centerOnLocation();
-                       if(route != null && !route.isEmpty() && route.get(0).getFloor() != mImageView.getCurrentFloor()) {
-                           tabLayout.getTabAt(route.get(0).getFloor()).select();
-                           mImageView.setCurrentFloor(route.get(0).getFloor());
-                       }
-                   }
-                    handler.postDelayed(this, 3000);
-                }
-            };
-        handler.post(centerRunnable);
-
         // Set up the ViewTreeObserver to listen for when the mImageView is fully loaded
         mImageView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -131,11 +110,9 @@ public class NavigateActivity extends AppCompatActivity {
 
                 if (route != null && !route.isEmpty()) {
                     mImageView.setCurrentFloor(route.get(0).getFloor());
-
                     mImageView.setPath(route);
                     mImageView.setLocation(route.get(0));
                     mImageView.centerOnLocation();
-
                     initialFloor.set(route.get(0).getFloor());
                 }
 
@@ -199,8 +176,6 @@ public class NavigateActivity extends AppCompatActivity {
         }
     }
 
-
-
     private void setupTabLayout(int initialFloor) {
         tabLayout.addTab(tabLayout.newTab().setText("Floor 0"));
         tabLayout.addTab(tabLayout.newTab().setText("Floor 1"));
@@ -255,7 +230,7 @@ public class NavigateActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 initializeWifiManager();
             } else {
-                // Handle permission denial - do nothing.
+                // do nothing.
             }
         }
     }
@@ -317,4 +292,6 @@ public class NavigateActivity extends AppCompatActivity {
                 return R.drawable.floor_2;
             default:
                 return R.drawable.floor_3;
-        }}}
+        }
+    }
+}
