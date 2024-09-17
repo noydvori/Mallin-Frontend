@@ -1,5 +1,7 @@
 package com.example.ex3.components;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +14,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Toast;
 
 import androidx.fragment.app.FragmentActivity;
@@ -27,8 +30,11 @@ import com.example.ex3.entities.Store;
 import com.example.ex3.utils.UserPreferencesUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import retrofit2.Callback;
 
@@ -37,7 +43,8 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
     private List<GraphNode> passed;
     private float currentAngle = 0;
     private GraphNode location;
-    private List<Store> destinations;
+    private HashSet<Store> destinations;
+    private Set<String> destinationsStrings;
     private int currentFloor;
     private boolean isRedirecting = false;
 
@@ -91,12 +98,11 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             List<Store> stores = new ArrayList<>();
             for(GraphNode node: pathStores) {
                 for(Store destination : destinations) {
-                    if(Objects.equals(node.getName(), destination.getStoreName())) {
+                    if(destinations.contains(node)) {
                         stores.add(destination);
                     }
                 }
             }
-            // Fetch new path from server in the background (pseudo-code)
             // Fetch new path from server in the background
             fetchRedirection(location, stores, () -> {
                 // Code to execute when redirection is complete, e.g., dismissing the dialog
@@ -128,7 +134,10 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
 
     // Setter for destination stores, triggers a redraw when changed
     public void setDestinations(List<Store> destinations) {
-        this.destinations = destinations;
+        this.destinations = new HashSet<>(destinations); // Convert the List to a HashSet
+        this.destinationsStrings = destinations.stream()
+                .map(Store::getStoreName) // Extract the store names
+                .collect(Collectors.toSet()); // Collect to a HashSet
         invalidate(); // Redraw the view when the destination list changes
     }
 
@@ -171,7 +180,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
         float deltaY = nextNode.getYMultipliedForPath() - currentNode.getYMultipliedForPath();
 
         // Tolerance is a small value defining what is considered 'almost' straight
-        float tolerance = 25.0f;
+        float tolerance = 15.0f;
 
         // If deltaX is smaller than the defined threshold, check deltaY
         if (Math.abs(deltaX) < tolerance) {
@@ -181,6 +190,16 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             } else {
                 // The second point is above the first, no rotation needed
                 return 0;
+            }
+        }
+        // If deltaX is smaller than the defined threshold, check deltaY
+        if (Math.abs(deltaY) < tolerance) {
+            if (deltaX > 0) {
+                // The first point is above the second, need to rotate by 180 degrees
+                return -90;
+            } else {
+                // The second point is above the first, no rotation needed
+                return 90;
             }
         }
 
@@ -193,7 +212,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
                 return (float) Math.abs(Math.toDegrees(Math.atan2(deltaY, deltaX))) - 90;
             }
             // The second point is above the first, rotate by the calculated angle
-            return (float) Math.abs(Math.toDegrees(Math.atan2(deltaY, deltaX)))-90;
+            return (float) Math.abs(Math.toDegrees(Math.atan2(deltaY, deltaX))) + 90;
         }
     }
 
@@ -248,15 +267,15 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             canvas.restore();
         }
     }
-    private void smoothRotateView(View view, float fromAngle, float toAngle) {
-        // ניצור אנימציה שמבצעת רוטציה מהזווית ההתחלתית לזווית הסופית
+    private void smoothRotateView(View view, float fromAngle, float toAngle, Runnable onEndCallback) {
+        // Create an animation that rotates the view from the starting angle to the final angle
+
         ObjectAnimator animator = ObjectAnimator.ofFloat(view, "rotation", fromAngle, toAngle);
 
-        // הגדר את משך הזמן של האנימציה (למשל, 500 מילישניות)
-        animator.setDuration(500); // משך הזמן הוא 500ms
+        animator.setInterpolator(new AccelerateDecelerateInterpolator());
+        view.animate().rotation(toAngle).setDuration(500).setInterpolator(new AccelerateDecelerateInterpolator()).withEndAction(onEndCallback).start();
 
-        // התחל את האנימציה
-        animator.start();
+
     }
     @Override
     public void draw(Canvas canvas) {
@@ -274,14 +293,21 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             GraphNode nextNode1 = pathStores.get(0);
             // Calculate the angle to rotate the map
             float angle = calculateAngleBetweenNodes(closestNode, nextNode1);
-
+            if(angle > 180) {
+                angle -= 180;
+            }
+            if(angle < -180 ) {
+                angle += 180;
+            }
             // Rotate the canvas around the center of the screen
             PointF locationCenter = sourceToViewCoord(location.getXMultipliedForPath(), location.getYMultipliedForPath());
 
             if (location != null && locationCenter != null) {
-                smoothRotateView(this,currentAngle,angle);
-                currentAngle = angle;
-                //canvas.rotate(angle, locationCenter.x, locationCenter.y);
+                float finalAngle = angle;
+                smoothRotateView(this, currentAngle, angle, () -> {
+                    // Update currentAngle once the rotation animation is done
+                    currentAngle = finalAngle;
+                });
             }
         }
         super.draw(canvas);
@@ -305,25 +331,18 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
                 }
             }
         }
-        if (location != null && pathStores != null && passed != null && !pathStores.isEmpty() && !passed.isEmpty()){
-            if(pathStores.get(0).getFloor() == this.currentFloor && passed.get(passed.size()-1).getFloor() == this.currentFloor && location.getFloor() == this.currentFloor) {
-                paint.setColor(Color.GRAY);
-                PointF center = sourceToViewCoord(passed.get(passed.size()-1).getXMultipliedForPath(), passed.get(passed.size()-1).getYMultipliedForPath());
-                PointF nextCenter = sourceToViewCoord(location.getXMultipliedForPath(), location.getYMultipliedForPath());
-                if(center != null && nextCenter !=null) {
-                    canvas.drawLine(center.x, center.y, nextCenter.x, nextCenter.y, paint);
+        if (pathStores != null && !pathStores.isEmpty() && passed != null && !passed.isEmpty()) {
+        if(pathStores.get(0).getFloor() == passed.get(passed.size()-1).getFloor() && location.getFloor() == this.currentFloor) {
+            paint.setColor(Color.parseColor("#CD8055CD")); // Purple
+            PointF center = sourceToViewCoord(passed.get(passed.size()-1).getXMultipliedForPath(), passed.get(passed.size()-1).getYMultipliedForPath());
+            PointF nextCenter = sourceToViewCoord(pathStores.get(0).getXMultipliedForPath(), pathStores.get(0).getYMultipliedForPath());
+            if(center != null && nextCenter !=null) {
+                canvas.drawLine(center.x, center.y, nextCenter.x, nextCenter.y, paint);
 
-                }
-            }
-            if(pathStores.get(0).getFloor() == this.currentFloor && location.getFloor() == this.currentFloor) {
-                paint.setColor(Color.parseColor("#CD8055CD")); // Purple
-                PointF center2 = sourceToViewCoord(location.getXMultipliedForPath(), location.getYMultipliedForPath());
-                PointF nextCenter2 = sourceToViewCoord(pathStores.get(0).getXMultipliedForPath(), pathStores.get(0).getYMultipliedForPath());
-                if(center2 != null && nextCenter2 !=null) {
-                    canvas.drawLine(center2.x, center2.y, nextCenter2.x, nextCenter2.y, paint);
-                }
             }
         }
+        }
+
         // Draw the path connecting nodes on the current floor
         if (pathStores != null && !pathStores.isEmpty()) {
             for (int i = 0; i < pathStores.size() - 1; i++) {
@@ -394,11 +413,9 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
 
     // Helper method to check if a store is chosen based on its name
     private boolean isStoreChosenByName(String nodeName) {
-        for (Store store : destinations) {
-            if (store.getStoreName().equalsIgnoreCase(nodeName)) {
+            if (destinationsStrings.contains(nodeName)) {
                 return true;
             }
-        }
         return false;
     }
     private void fetchRedirection(GraphNode node, List<Store> stores, Runnable onComplete) {

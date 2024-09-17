@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:configChanges="orientation|screenSize"
     android:layout_height="match_parent"
+    android:hardwareAccelerated="true"
     android:clipChildren="false"
     tools:context=".NavigateActivity">
     <com.google.android.material.bottomnavigation.BottomNavigationView
