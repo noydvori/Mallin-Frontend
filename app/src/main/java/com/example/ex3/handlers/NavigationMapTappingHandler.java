@@ -15,10 +15,11 @@ import java.util.function.BiFunction;
 
 public class NavigationMapTappingHandler implements View.OnTouchListener {
     private PathOverlayImageView mImageView;
-    private NavigateViewModel viewModel; // Define a threshold for what constitutes a tap
+    private NavigateViewModel viewModel;
+
     public NavigationMapTappingHandler(PathOverlayImageView imageView, NavigateViewModel viewModel) {
         this.mImageView = imageView;
-        this.viewModel=viewModel;
+        this.viewModel = viewModel;
     }
 
     @Override
