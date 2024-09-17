@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Register extends AppCompatActivity {
+public class RegisterActivity extends AppCompatActivity {
 
     private EditText usernameEditText;
     private EditText passwordEditText;
@@ -36,7 +36,7 @@ public class Register extends AppCompatActivity {
 
         // Move to login screen button
         loginBtn.setOnClickListener(view -> {
-            Intent i = new Intent(this, Login.class);
+            Intent i = new Intent(this, LoginActivity.class);
             startActivity(i);
         });
 
@@ -124,7 +124,7 @@ public class Register extends AppCompatActivity {
 
     // Navigate to login screen
     private void navigateToLogin() {
-        Intent intent = new Intent(Register.this, Login.class);
+        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
         startActivity(intent);
         finish();
     }

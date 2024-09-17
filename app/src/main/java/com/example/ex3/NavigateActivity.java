@@ -154,14 +154,14 @@ public class NavigateActivity extends AppCompatActivity {
             Intent intent;
             switch (item.getItemId()) {
                 case R.id.menu_home:
-                    intent = new Intent(NavigateActivity.this, Home.class);
+                    intent = new Intent(NavigateActivity.this, HomeActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
                     return true;
                 case R.id.menu_navigate:
                     return true;
                 case R.id.menu_favorites:
-                    intent = new Intent(NavigateActivity.this, Favorites.class);
+                    intent = new Intent(NavigateActivity.this, FavoritesActivity.class);
                     startActivity(intent);
                     return true;
                 default:

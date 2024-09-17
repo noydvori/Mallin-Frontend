@@ -1,10 +1,7 @@
 package com.example.ex3.components;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -15,13 +12,10 @@ import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.Toast;
 
 import androidx.fragment.app.FragmentActivity;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
-import com.example.ex3.ConfirmPath;
-import com.example.ex3.CurrentLocation;
 import com.example.ex3.R;
 import com.example.ex3.RedirectingDialogFragment;
 import com.example.ex3.api.NavigationAPI;
@@ -32,11 +26,8 @@ import com.example.ex3.utils.UserPreferencesUtils;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import retrofit2.Callback;
 
 public class PathOverlayImageView extends SubsamplingScaleImageView {
     private List<GraphNode> pathStores;

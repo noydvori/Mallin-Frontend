@@ -13,7 +13,7 @@ import com.example.ex3.utils.UserPreferencesUtils;
 import com.google.android.material.snackbar.Snackbar;
 import java.util.concurrent.CompletableFuture;
 
-public class Login extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity {
     private EditText usernameEditText;
     private EditText passwordEditText;
 
@@ -25,7 +25,7 @@ public class Login extends AppCompatActivity {
         // Move to register screen
         Button toRegister = findViewById(R.id.toRegister);
         toRegister.setOnClickListener(view -> {
-            Intent i = new Intent(this, Register.class);
+            Intent i = new Intent(this, RegisterActivity.class);
             startActivity(i);
         });
         // Submit login button
@@ -71,7 +71,7 @@ public class Login extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Intent intent = new Intent(Login.this, Home.class);
+                Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                 UserPreferencesUtils.setToken(context, token);
                 startActivity(intent);
             }

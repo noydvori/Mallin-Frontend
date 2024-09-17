@@ -12,10 +12,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.ex3.Favorites;
-import com.example.ex3.Home;
+import com.example.ex3.FavoritesActivity;
+import com.example.ex3.HomeActivity;
 import com.example.ex3.R;
-import com.example.ex3.entities.FavoriteStore;
 import com.example.ex3.entities.Store;
 import com.example.ex3.utils.UserPreferencesUtils;
 import com.squareup.picasso.Picasso;
@@ -29,14 +28,14 @@ public class ChosenStoresAdapter extends RecyclerView.Adapter<ChosenStoresAdapte
     public ChosenStoresAdapter(List<Store> stores) {
         this.stores = stores;
     }
-    private Home homeActivity;  // Reference to the Home activity
-    private Favorites favActivity;
+    private HomeActivity homeActivity;  // Reference to the Home activity
+    private FavoritesActivity favActivity;
 
-    public ChosenStoresAdapter(Home homeActivity, List<Store> stores) {
+    public ChosenStoresAdapter(HomeActivity homeActivity, List<Store> stores) {
         this.homeActivity = homeActivity;
         this.stores = stores;
     }
-    public ChosenStoresAdapter(Favorites favActivity, List<Store> stores) {
+    public ChosenStoresAdapter(FavoritesActivity favActivity, List<Store> stores) {
         this.favActivity = favActivity;
         this.stores = stores;
     }

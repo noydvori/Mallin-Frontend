@@ -1,6 +1,5 @@
 package com.example.ex3;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -29,13 +28,10 @@ import com.example.ex3.adapters.TagsAdapter;
 import com.example.ex3.api.CategoryAPI;
 import com.example.ex3.api.FavoritesAPI;
 import com.example.ex3.api.TagAPI;
-import com.example.ex3.NavigateActivity;
 import com.example.ex3.daos.CategoryDao;
-import com.example.ex3.daos.StoreDao;
 import com.example.ex3.entities.Category;
 import com.example.ex3.entities.Store;
 import com.example.ex3.localDB.AppDB;
-import com.example.ex3.managers.StoresWifiManager;
 import com.example.ex3.utils.UserPreferencesUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -52,7 +48,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class Home extends AppCompatActivity{
+public class HomeActivity extends AppCompatActivity{
 
     private static final int REQUEST_CODE_NAVIGATE = 2;
     private static final int REQUEST_CODE_FAVORITES = 1;
@@ -218,7 +214,7 @@ public class Home extends AppCompatActivity{
     private void initializeListeners() {
         findViewById(R.id.locationIcon).setOnClickListener(v -> toggleDrawer());
         findViewById(R.id.favorites_icon).setOnClickListener(v -> {
-            Intent intent = new Intent(Home.this, Favorites.class);
+            Intent intent = new Intent(HomeActivity.this, FavoritesActivity.class);
             startActivityForResult(intent, REQUEST_CODE_FAVORITES);});
 
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
@@ -227,11 +223,11 @@ public class Home extends AppCompatActivity{
                         case R.id.menu_home:
                             return true;
                         case R.id.menu_navigate:
-                            intent = new Intent(Home.this, NavigateActivity.class);
+                            intent = new Intent(HomeActivity.this, NavigateActivity.class);
                             startActivityForResult(intent, REQUEST_CODE_NAVIGATE);
                             return true;
                         case R.id.menu_favorites:
-                            intent = new Intent(Home.this, Favorites.class);
+                            intent = new Intent(HomeActivity.this, FavoritesActivity.class);
                             startActivityForResult(intent, REQUEST_CODE_FAVORITES);
                             return true;
                         default:
@@ -373,7 +369,7 @@ public class Home extends AppCompatActivity{
 
     private void handleNavigateButtonClick() {
         if (!UserPreferencesUtils.getChosenStores(this).isEmpty()) {
-            Intent homeIntent = new Intent(Home.this, CurrentLocation.class);
+            Intent homeIntent = new Intent(HomeActivity.this, CurrentLocationActivity.class);
             setResult(RESULT_OK, homeIntent);
             startActivity(homeIntent);
         } else {
@@ -405,7 +401,7 @@ public class Home extends AppCompatActivity{
                 categoryAdapter.updateFavoriteStores(favoriteStores);
             });
         }).exceptionally(throwable -> {
-            runOnUiThread(() -> Toast.makeText(Home.this, "Failed to fetch favorites", Toast.LENGTH_SHORT).show());
+            runOnUiThread(() -> Toast.makeText(HomeActivity.this, "Failed to fetch favorites", Toast.LENGTH_SHORT).show());
             return null;
         });
     }
