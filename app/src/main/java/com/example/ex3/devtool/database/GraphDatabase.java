@@ -35,7 +35,7 @@ public abstract class GraphDatabase extends RoomDatabase {
             synchronized (GraphDatabase.class) {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
-                                    GraphDatabase.class, "graph_database22")
+                                    GraphDatabase.class, "graph_database23")
                             .build();
                 }
             }
