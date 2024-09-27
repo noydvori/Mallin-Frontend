@@ -86,7 +86,6 @@ public class NavigateActivity extends AppCompatActivity {
                 public void onImageLoadError(Exception e) {
                     // Handle error if the image fails to load
                     super.onImageLoadError(e);
-                    Log.e("NavigateActivity", "Image failed to load", e);
                 }
             });
         });
@@ -125,7 +124,6 @@ public class NavigateActivity extends AppCompatActivity {
                 setupTabLayout(initialFloor.get());
             }
         });
-
         // Bottom Navigation Menu setup (unchanged)
         bottomNavigationView.getMenu().findItem(R.id.menu_navigate).setChecked(true);
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {

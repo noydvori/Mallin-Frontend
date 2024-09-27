@@ -39,7 +39,7 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
     public static final int ICON_SCALE =  200;
     public static final float TOLERANCE =  15.0f;
     public static final float MAX_DISTANCE = 200;
-    public static final float PASSED_DISTANCE =  5;
+    public static final float PASSED_DISTANCE =  2;
 
 
     // Constructors to initialize the view
@@ -75,14 +75,12 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
             return;
         }
         if(pathStores != null && !pathStores.isEmpty()) {
-            int pos = findClosestNodeWithinDistance(UserPreferencesUtils.getNodes(this.getContext()),location);
-            if (pos != -1) {
-                for(int i = 0; i <= pos; i++) {
-                    GraphNode node = pathStores.get(i);
-                    passed.add(node);
-                    pathStores.remove(node);
-                }
+            GraphNode first = pathStores.get(0);
+            if (distanceBetween(first, location) < PASSED_DISTANCE) {
+                passed.add(first);
+                pathStores.remove(first);
             }
+
             int distance = (int) minDistance(UserPreferencesUtils.getNodes(this.getContext()),location);
             if (distance > MAX_DISTANCE) {
                 isRedirecting = true; // Start redirecting
@@ -171,20 +169,6 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
         return min;
     }
 
-    private int findClosestNodeWithinDistance(List<GraphNode> nodeList, GraphNode target) {
-        int closestIndex = -1;
-
-        for (int i = 0; i < nodeList.size(); i++) {
-            GraphNode node = nodeList.get(i);
-            float distance = distanceBetween(node, target);
-
-            if (distance < PASSED_DISTANCE) {
-                closestIndex = i;
-                break;
-            }
-        }
-        return closestIndex;
-    }
 
     // Calculate the angle between two nodes for rotation logic
     private float calculateAngleBetweenNodes(GraphNode currentNode, GraphNode nextNode) {
