@@ -73,6 +73,13 @@ public class UserPreferencesUtils {
         editor.putString(NODES_PATH_KEY, json1);
         editor.apply();
     }
+    public static void setStores(List<Store> nodes) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        String json1 = gson.toJson(nodes);
+        editor.putString(STORES_PATH_KEY, json1);
+        editor.apply();
+    }
     public static List<Store> getStores(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String json = prefs.getString(STORES_PATH_KEY, null);
@@ -254,6 +261,6 @@ public class UserPreferencesUtils {
         SharedPreferences.Editor editor = prefs.edit();
         editor.remove(CLOSEST_STORES_KEY);
         editor.apply();
-    }
+        }
 
 }

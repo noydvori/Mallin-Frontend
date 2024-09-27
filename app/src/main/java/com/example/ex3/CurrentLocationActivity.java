@@ -135,7 +135,7 @@ public class CurrentLocationActivity extends AppCompatActivity {
 //                    }
 
 
-                     suggestionsAdapter = new StoreAdapter(
+                    suggestionsAdapter = new StoreAdapter(
                             CurrentLocationActivity.this,
                             new ArrayList<>());
 
@@ -174,7 +174,7 @@ public class CurrentLocationActivity extends AppCompatActivity {
     private void initializeViews() {
         buttonConfirm = findViewById(R.id.button_confirm);
         buttonConfirm.setEnabled(false);
-       suggestionsList = findViewById(R.id.suggestions_list);
+        suggestionsList = findViewById(R.id.suggestions_list);
     }
 
     private void setupListeners() {
@@ -188,6 +188,7 @@ public class CurrentLocationActivity extends AppCompatActivity {
                 if (location != null) {
                     currentLocationWifiManager.stopScan();
                     if (chosenStores.size() == 1) {
+                        UserPreferencesUtils.setStores(chosenStores);
                         fetchOrderedRout(location, chosenStores);
                     } else {
                         fetchRout(location, chosenStores);

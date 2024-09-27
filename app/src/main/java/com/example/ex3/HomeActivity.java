@@ -86,12 +86,7 @@ public class HomeActivity extends AppCompatActivity{
         AppDB database = Room.databaseBuilder(getApplicationContext(), AppDB.class, "DB")
                 .fallbackToDestructiveMigration()
                 .build();
-        Executor executor = Executors.newSingleThreadExecutor();
-
-        executor.execute(() -> {
-            categoryDao = database.categoryDao();
-            categoryDao.deleteAll();
-        });
+        categoryDao = database.categoryDao();
     }
 
     private void initializeUI() {
@@ -164,8 +159,6 @@ public class HomeActivity extends AppCompatActivity{
         categoriesList.setLayoutManager(new LinearLayoutManager(this));
         categoryAdapter = new CategoryAdapter(this, categories, chosenStores, favoriteStores, badgeTextView);
         categoriesList.setAdapter(categoryAdapter);
-
-
         bottomNavigationView = findViewById(R.id.bottom_nav_menu);
         bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
     }
@@ -180,6 +173,7 @@ public class HomeActivity extends AppCompatActivity{
                 if (storeList != null && !storeList.isEmpty()) {
                     if (categories.isEmpty()) {
                         categories.add(new Category(storeType, storeList));
+                        categoryAdapter.notifyDataSetChanged();
                     } else {
                         categories.get(0).getStoresList().addAll(storeList);
                     }
@@ -206,17 +200,15 @@ public class HomeActivity extends AppCompatActivity{
         // Notify the CategoryAdapter to update the UI
         int index = categories.get(0).getStoresList().indexOf(store);
         categoryAdapter.notifyOneStore(index);
-        // Optionally, update the badge or other UI elements
+        // Update the badge or other UI elements
         updateBadge();
     }
-
 
     private void initializeListeners() {
         findViewById(R.id.locationIcon).setOnClickListener(v -> toggleDrawer());
         findViewById(R.id.favorites_icon).setOnClickListener(v -> {
             Intent intent = new Intent(HomeActivity.this, FavoritesActivity.class);
             startActivityForResult(intent, REQUEST_CODE_FAVORITES);});
-
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
                     Intent intent;
                     switch (item.getItemId()) {
@@ -234,9 +226,7 @@ public class HomeActivity extends AppCompatActivity{
                     return false;
             }
         });
-
         tagsAdapter.setOnTagClickListener(tag -> fetchCategoryForTag(tag));
-
     }
 
     @Override

@@ -72,12 +72,13 @@ public class NavigateActivity extends AppCompatActivity {
 
                     // Additional logic you want to execute after the image is loaded
                     if (route != null && !route.isEmpty()) {
-                        mImageView.setCurrentFloor(route.get(0).getFloor());
+                        GraphNode firstNode = route.get(0);
+                        mImageView.setCurrentFloor(firstNode.getFloor());
                         mImageView.setPath(route);
-                        mImageView.setLocation(route.get(0));
+                        mImageView.setLocation(firstNode);
                         mImageView.centerOnLocation();
-                        setFloor(route.get(0).getFloor(), "Floor " + route.get(0).getFloor());
-                        showFloorSnackbar(route.get(0).getFloor());
+                        setFloor(firstNode.getFloor(), "Floor " + firstNode.getFloor());
+                        showFloorSnackbar(firstNode.getFloor());
                     }
                 }
 
@@ -156,10 +157,9 @@ public class NavigateActivity extends AppCompatActivity {
         navigateViewModel.getCurrentLocation().observe(this, new Observer<GraphNode>() {
             @Override
             public void onChanged(GraphNode node) {
-                Log.d("NavigateActivity", "liveLocation: " + node);
                 mImageView.setLocation(node);
                 mImageView.centerOnLocation();
-                //If i want to change maps according to the location- may be annoying...
+                // Change maps according to the location
                 if(node.getFloor() != mImageView.getCurrentFloor()) {
                     tabLayout.getTabAt(node.getFloor()).select();
                     mImageView.setCurrentFloor(node.getFloor());
