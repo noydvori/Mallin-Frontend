@@ -191,7 +191,6 @@ public class NavigateActivity extends AppCompatActivity {
                 mImageView.setCurrentFloor(position);
                 setFloor(position, "Floor " + position);
                 showFloorSnackbar(position);
-                new Handler().postDelayed(() -> mImageView.centerOnLocation(), 1000);
             }
 
             @Override

@@ -9,7 +9,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import androidx.fragment.app.FragmentActivity;
@@ -21,7 +20,6 @@ import com.example.ex3.devtool.graph.GraphNode;
 import com.example.ex3.entities.Store;
 import com.example.ex3.utils.UserPreferencesUtils;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -68,49 +66,6 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
         invalidate(); // Redraw the view when the path changes
     }
 
-    // Setter for the current location, triggers a redraw when changed
-    public void setLocation(GraphNode location) {
-        this.location = location;
-        if(isRedirecting) {
-            return;
-        }
-        if(pathStores != null && !pathStores.isEmpty()) {
-            GraphNode first = pathStores.get(0);
-            if (distanceBetween(first, location) < PASSED_DISTANCE) {
-                passed.add(first);
-                pathStores.remove(first);
-            }
-
-            int distance = (int) minDistance(UserPreferencesUtils.getNodes(this.getContext()),location);
-            if (distance > MAX_DISTANCE) {
-                isRedirecting = true; // Start redirecting
-                // Show the redirecting dialog
-                RedirectingDialogFragment dialog = new RedirectingDialogFragment();
-                dialog.show(((FragmentActivity) getContext()).getSupportFragmentManager(), "Redirecting");
-                List<Store> stores = new ArrayList<>();
-                for (GraphNode node : pathStores) {
-                    if(destinationsStrings.contains(node.getName())) {
-                        for(Store store : UserPreferencesUtils.getStores(this.getContext())) {
-                            if(store.getStoreName().equals(node.getName())) {
-                                stores.add(store);
-                                break;
-                            }
-                        }
-                    }
-                }
-                UserPreferencesUtils.setStores(stores);
-                // Fetch new path from server in the background
-                fetchRedirection(location, stores, () -> {
-                    // Code to execute when redirection is complete, e.g., dismissing the dialog
-                    dialog.dismiss();
-                    isRedirecting = false;
-                });
-            }
-        }
-
-        invalidate(); // Redraw the view when the location changes
-    }
-
 
     public void setDestinations(List<Store> destinations) {
         if (destinations == null || destinations.isEmpty()) {
@@ -120,124 +75,6 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
                 .map(Store::getStoreName) // Extract the store names
                 .collect(Collectors.toSet()); // Collect to a HashSet
         invalidate(); // Redraw the view when the destination list changes
-    }
-
-    // Method to center the view on the current location
-
-    // Method to center the view on the current location
-    public void centerOnLocation() {
-        if (location != null) {
-            // Calculate the adjusted center point, slightly lower than the middle
-            PointF locationCenter = new PointF(location.getXMultipliedForPath(), location.getYMultipliedForPath());
-
-            // Attempt to create the animation builder
-            AnimationBuilder animationBuilder = animateScaleAndCenter(getScale(), locationCenter);
-
-            // Check if the animationBuilder is not null before starting the animation
-            if (animationBuilder != null) {
-                animationBuilder.withDuration(1000) // Duration of 1 second for the animation
-                        .start();
-            } else {
-                // Fallback to immediate centering if animation is not possible
-                setScaleAndCenter(getScale(), locationCenter);
-            }
-        }
-    }
-
-    // Helper method to calculate the distance between two nodes
-    private float distanceBetween(GraphNode node1, GraphNode node2) {
-        float dx = node1.getXMultipliedForPath() - node2.getXMultipliedForPath();
-        float dy = node1.getYMultipliedForPath() - node2.getYMultipliedForPath();
-
-        // Square the differences
-        float dxSquared = dx * dx;
-        float dySquared = dy * dy;
-
-        // Return the square root of the sum of the squared differences
-        return (float) Math.sqrt(dxSquared + dySquared);
-    }
-
-
-    private float minDistance(List<GraphNode> nodeList, GraphNode target) {
-        float min =Integer.MAX_VALUE;
-        for(GraphNode node : nodeList){
-            float distance = distanceBetween(node, target);
-            if(distance < min) {
-                min = distance;
-            }
-        }
-        return min;
-    }
-
-
-    // Calculate the angle between two nodes for rotation logic
-    private float calculateAngleBetweenNodes(GraphNode currentNode, GraphNode nextNode) {
-        if (currentNode == null || nextNode == null) {return 0;}
-        float deltaX = nextNode.getXMultipliedForPath() - currentNode.getXMultipliedForPath();
-        float deltaY = nextNode.getYMultipliedForPath() - currentNode.getYMultipliedForPath();
-        // Check if deltaX or deltaY is almost zero (straight line cases)
-        if (Math.abs(deltaX) < TOLERANCE) {
-            return (deltaY > 0) ? 180 : 0;
-        }
-        if (Math.abs(deltaY) < TOLERANCE) {
-            return (deltaX > 0) ? -90 : 90;
-        }
-        // Handle general angle cases with trigonometry
-        if (deltaY > 0) {
-            return (deltaX > 0) ? - Math.abs((float) Math.toDegrees(Math.atan2(deltaY, deltaX))) - 90
-                    : 270 - Math.abs((float) Math.toDegrees(Math.atan2(deltaY, deltaX)));
-        } else {
-            return (deltaX > 0) ? Math.abs((float) Math.toDegrees(Math.atan2(deltaY, deltaX))) - 90
-                    : Math.abs((float) Math.toDegrees(Math.atan2(deltaY, deltaX))) + 90;
-        }
-    }
-
-    // Method to draw the destination icon at a specific point on the canvas
-    private void drawDestinationIcon(Canvas canvas, PointF point, float scale, float angle) {
-        Drawable finishIcon = getResources().getDrawable(R.drawable.destination, null);
-        if (finishIcon != null) {
-            // Adjust the icon size by changing the scaling factor
-            int iconSize = (int) (ICON_SCALE * scale);
-            int left = (int) (point.x - (float) iconSize / 2);
-            int top = (int) (point.y - iconSize);
-            int right = (int) (point.x + (float) iconSize / 2);
-            int bottom = (int) (point.y);
-            canvas.save();
-            // Rotate the canvas around the center of the icon
-            canvas.rotate(angle, point.x, point.y);
-            // Set bounds and draw the icon on the canvas
-            finishIcon.setBounds(left, top, right, bottom);
-            finishIcon.draw(canvas);
-            // Restore the canvas to its original state
-            canvas.restore();
-        }
-    }
-
-    // Method to draw the finish icon at a specific point on the canvas
-    private void drawFinishIcon(Canvas canvas, PointF point, float scale, float angle) {
-        Drawable finishIcon = getResources().getDrawable(R.drawable.finish_icon, null);
-        if (finishIcon != null) {
-            // Adjust the icon size by changing the scaling factor
-            int iconSize = (int) (ICON_SCALE * scale);
-            int left = (int) (point.x - (float) iconSize / 2);
-            int top = (int) (point.y - iconSize);
-            int right = (int) (point.x + (float) iconSize / 2);
-            int bottom = (int) (point.y);
-            canvas.save();
-            // Rotate the canvas around the center of the icon
-            canvas.rotate(angle, point.x, point.y);
-            // Set bounds and draw the icon on the canvas
-            finishIcon.setBounds(left, top, right, bottom);
-            finishIcon.draw(canvas);
-            // Restore the canvas to its original state
-            canvas.restore();
-        }
-    }
-    private void smoothRotateView(View view, float fromAngle, float toAngle, Runnable onEndCallback) {
-        // Create an animation that rotates the view from the starting angle to the final angle
-        ObjectAnimator animator = ObjectAnimator.ofFloat(view, "rotation", fromAngle, toAngle);
-        animator.setInterpolator(new AccelerateDecelerateInterpolator());
-        view.animate().rotation(toAngle).setDuration(500).setInterpolator(new AccelerateDecelerateInterpolator()).withEndAction(onEndCallback).start();
     }
 
     @Override
@@ -340,6 +177,176 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
         }
         canvas.restore();
     }
+    // Setter for the current location, triggers a redraw when changed
+    public void setLocation(GraphNode location) {
+        this.location = location;
+        if(isRedirecting) {
+            return;
+        }
+        if(pathStores != null && !pathStores.isEmpty()) {
+            GraphNode first = pathStores.get(0);
+            if (distanceBetween(first, location) < PASSED_DISTANCE) {
+                passed.add(first);
+                pathStores.remove(first);
+            }
+
+            int distance = (int) minDistance(UserPreferencesUtils.getNodes(this.getContext()),location);
+            if (distance > MAX_DISTANCE) {
+                isRedirecting = true; // Start redirecting
+                // Show the redirecting dialog
+                RedirectingDialogFragment dialog = new RedirectingDialogFragment();
+                dialog.show(((FragmentActivity) getContext()).getSupportFragmentManager(), "Redirecting");
+                List<Store> stores = new ArrayList<>();
+                for (GraphNode node : pathStores) {
+                    if(destinationsStrings.contains(node.getName())) {
+                        for(Store store : UserPreferencesUtils.getStores(this.getContext())) {
+                            if(store.getStoreName().equals(node.getName())) {
+                                stores.add(store);
+                                break;
+                            }
+                        }
+                    }
+                }
+                UserPreferencesUtils.setStores(stores);
+                // Fetch new path from server in the background
+                fetchRedirection(location, stores, () -> {
+                    // Code to execute when redirection is complete, e.g., dismissing the dialog
+                    dialog.dismiss();
+                    isRedirecting = false;
+                });
+            }
+        }
+
+        invalidate(); // Redraw the view when the location changes
+    }
+
+    // Method to center the view on the current location
+    public void centerOnLocation() {
+        if (location != null) {
+            // Calculate the adjusted center point, slightly lower than the middle
+            PointF locationCenter = new PointF(location.getXMultipliedForPath(), location.getYMultipliedForPath());
+
+            // Attempt to create the animation builder
+            AnimationBuilder animationBuilder = animateScaleAndCenter(getScale(), locationCenter);
+
+            // Check if the animationBuilder is not null before starting the animation
+            if (animationBuilder != null) {
+                animationBuilder.withDuration(1000) // Duration of 1 second for the animation
+                        .start();
+            } else {
+                // Fallback to immediate centering if animation is not possible
+                setScaleAndCenter(getScale(), locationCenter);
+            }
+        }
+    }
+
+
+    // Calculate the angle between two nodes for rotation logic
+    private float calculateAngleBetweenNodes(GraphNode currentNode, GraphNode nextNode) {
+        if (currentNode == null || nextNode == null) {return 0;}
+        float deltaX = nextNode.getXMultipliedForPath() - currentNode.getXMultipliedForPath();
+        float deltaY = nextNode.getYMultipliedForPath() - currentNode.getYMultipliedForPath();
+        // Check if deltaX or deltaY is almost zero (straight line cases)
+        if (Math.abs(deltaX) < TOLERANCE) {
+            return (deltaY > 0) ? 180 : 0;
+        }
+        if (Math.abs(deltaY) < TOLERANCE) {
+            return (deltaX > 0) ? -90 : 90;
+        }
+        // Handle general angle cases with trigonometry
+        if (deltaY > 0) {
+            return (deltaX > 0) ? - Math.abs((float) Math.toDegrees(Math.atan2(deltaY, deltaX))) - 90
+                    : 270 - Math.abs((float) Math.toDegrees(Math.atan2(deltaY, deltaX)));
+        } else {
+            return (deltaX > 0) ? Math.abs((float) Math.toDegrees(Math.atan2(deltaY, deltaX))) - 90
+                    : Math.abs((float) Math.toDegrees(Math.atan2(deltaY, deltaX))) + 90;
+        }
+    }
+
+    // Method to draw the destination icon at a specific point on the canvas
+    private void drawDestinationIcon(Canvas canvas, PointF point, float scale, float angle) {
+        Drawable finishIcon = getResources().getDrawable(R.drawable.destination, null);
+        if (finishIcon != null) {
+            // Adjust the icon size by changing the scaling factor
+            int iconSize = (int) (ICON_SCALE * scale);
+            int left = (int) (point.x - (float) iconSize / 2);
+            int top = (int) (point.y - iconSize);
+            int right = (int) (point.x + (float) iconSize / 2);
+            int bottom = (int) (point.y);
+            canvas.save();
+            // Rotate the canvas around the center of the icon
+            canvas.rotate(angle, point.x, point.y);
+            // Set bounds and draw the icon on the canvas
+            finishIcon.setBounds(left, top, right, bottom);
+            finishIcon.draw(canvas);
+            // Restore the canvas to its original state
+            canvas.restore();
+        }
+    }
+
+    // Method to draw the finish icon at a specific point on the canvas
+    private void drawFinishIcon(Canvas canvas, PointF point, float scale, float angle) {
+        Drawable finishIcon = getResources().getDrawable(R.drawable.finish_icon, null);
+        if (finishIcon != null) {
+            // Adjust the icon size by changing the scaling factor
+            int iconSize = (int) (ICON_SCALE * scale);
+            int left = (int) (point.x - (float) iconSize / 2);
+            int top = (int) (point.y - iconSize);
+            int right = (int) (point.x + (float) iconSize / 2);
+            int bottom = (int) (point.y);
+            canvas.save();
+            // Rotate the canvas around the center of the icon
+            canvas.rotate(angle, point.x, point.y);
+            // Set bounds and draw the icon on the canvas
+            finishIcon.setBounds(left, top, right, bottom);
+            finishIcon.draw(canvas);
+            // Restore the canvas to its original state
+            canvas.restore();
+        }
+    }
+    private void smoothRotateView(View view, float fromAngle, float toAngle, Runnable onEndCallback) {
+        // Create an animation that rotates the view from the starting angle to the final angle
+        ObjectAnimator animator = ObjectAnimator.ofFloat(view, "rotation", fromAngle, toAngle);
+        animator.setInterpolator(new AccelerateDecelerateInterpolator());
+        view.animate().rotation(toAngle).setDuration(500).setInterpolator(new AccelerateDecelerateInterpolator()).withEndAction(onEndCallback).start();
+    }
+
+    private void fetchRedirection(GraphNode node, List<Store> stores, Runnable onComplete) {
+        String token = UserPreferencesUtils.getToken(getContext());
+        NavigationAPI.getInstance().createRedirection(token, node, stores).thenAccept(nodes -> {
+            UserPreferencesUtils.setNodes(getContext(), nodes);
+            setPath(nodes);
+            invalidate();
+            // Execute the runnable task when redirection is complete
+            if (onComplete != null) {
+                onComplete.run();
+            }
+        });
+    }
+
+    private float minDistance(List<GraphNode> nodeList, GraphNode target) {
+        float min = Integer.MAX_VALUE;
+        for(GraphNode node : nodeList){
+            float distance = distanceBetween(node, target);
+            if(distance < min) {
+                min = distance;
+            }
+        }
+        return min;
+    }
+
+    // Helper method to calculate the distance between two nodes
+    private float distanceBetween(GraphNode node1, GraphNode node2) {
+        float dx = node1.getXMultipliedForPath() - node2.getXMultipliedForPath();
+        float dy = node1.getYMultipliedForPath() - node2.getYMultipliedForPath();
+
+        // Square the differences
+        float dxSquared = dx * dx;
+        float dySquared = dy * dy;
+
+        // Return the square root of the sum of the squared differences
+        return (float) Math.sqrt(dxSquared + dySquared);
+    }
 
     @Override
     public void onRestoreInstanceState(Parcelable state) {
@@ -369,18 +376,5 @@ public class PathOverlayImageView extends SubsamplingScaleImageView {
     // Helper method to check if a store is chosen based on its name
     private boolean isStoreChosenByName(String nodeName) {
         return destinationsStrings.contains(nodeName);
-    }
-
-    private void fetchRedirection(GraphNode node, List<Store> stores, Runnable onComplete) {
-        String token = UserPreferencesUtils.getToken(getContext());
-        NavigationAPI.getInstance().createRedirection(token, node, stores).thenAccept(nodes -> {
-            UserPreferencesUtils.setNodes(getContext(), nodes);
-            setPath(nodes);
-            invalidate();
-            // Execute the runnable task when redirection is complete
-            if (onComplete != null) {
-                onComplete.run();
-            }
-        });
     }
 }
