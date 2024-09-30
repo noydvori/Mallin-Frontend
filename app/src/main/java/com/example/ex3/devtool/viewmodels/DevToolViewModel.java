@@ -56,7 +56,6 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
     private GraphNode savedNode;
     public DevToolViewModel(GraphDatabase database, String name) {
         mDataBase = database;
-        selectedFloor.setValue(3);
         LiveData<List<GraphNode>> graphNodes0 = database.graphNodeDao().getNodesByFloor(0);
         LiveData<List<GraphNode>> graphNodes1 = database.graphNodeDao().getNodesByFloor(1);
         LiveData<List<GraphNode>> graphNodes2 = database.graphNodeDao().getNodesByFloor(2);
@@ -70,6 +69,8 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
         isScanLocked.setValue(false);
         title.setValue("Floor 0");
         mName = name;
+        selectedFloor.setValue(2);
+
 
     }
 
@@ -176,12 +177,15 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
     @Override
     public void onWifiCallBack(List<android.net.wifi.ScanResult> wifiScanResults) {
         ArrayList<Wifi> wifiList = new ArrayList<>();
-        resultsArrived.setValue(true);
-        wifiScanResults.forEach(result -> wifiList.add(new Wifi("fillming",result.SSID, result.BSSID, result.level,savedNode.getId())));
-        String logString = "";
-        new Thread(() -> {
-            mDataBase.wifiDao().insertAll(wifiList);
-        }).start();
+        if(savedNode != null) {
+            resultsArrived.setValue(true);
+            wifiScanResults.forEach(result -> wifiList.add(new Wifi("fillming",result.SSID, result.BSSID, result.level,savedNode.getId())));
+            String logString = "";
+            new Thread(() -> {
+                mDataBase.wifiDao().insertAll(wifiList);
+            }).start();
+        }
+
     }
 
     @Override
@@ -253,10 +257,6 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
         List<List<Wifi>> batches = new ArrayList<>();
         int totalSize = wifiList.size();
         Log.d("DEVTOOL" , "total size: "  + totalSize);
-//        for (int i = 0; i < totalSize; i += batchSize) {
-//            int end = Math.min(totalSize, i + batchSize);
-//            batches.add(wifiList.subList(i, end));
-//        }
 
         return batches;
     }

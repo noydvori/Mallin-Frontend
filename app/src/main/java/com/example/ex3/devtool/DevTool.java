@@ -59,9 +59,7 @@ public class DevTool extends AppCompatActivity {
     private Button mSaveButton;
     private Button mDeleteButton;
     private GraphOverlayImageView mImageView;
-    private CustomBluetoothManager customBluetoothManager;
     private CustomMagneticFieldManager customMagneticFieldManager;
-    private CustomAccelerometerManager customAccelerometerManager;
 
     private MapTappingHandler mMapTappingHandler;
 
@@ -83,7 +81,6 @@ public class DevTool extends AppCompatActivity {
         mImageView.setImage(ImageSource.resource(R.drawable.floor_1));
         Log.d(mapActivity, "start this app");
         customMagneticFieldManager = new CustomMagneticFieldManager(this,devToolViewModel);
-        customAccelerometerManager = new CustomAccelerometerManager(this);
 
         initiateBottomSheet();
 
@@ -113,7 +110,6 @@ public class DevTool extends AppCompatActivity {
                     tvNodeName.setText(graphNode.getName());
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 } else {
-                    Log.d("DEVTOOL", "trying to collaps bottom sheet");
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
                 }
                 mImageView.invalidate();
@@ -123,8 +119,6 @@ public class DevTool extends AppCompatActivity {
         devToolViewModel.getFloorImage().observe(this, new Observer<Integer>() {
             @Override
             public void onChanged(Integer integer) {
-              //  mMapTappingHandler = new  MapTappingHandler(imageView, devToolViewModel);
-
                 mImageView.setImage(ImageSource.resource(integer));
                 mImageView.setOnImageEventListener(new MapScalingHandler(mImageView));
                 mImageView.setOnTouchListener(mMapTappingHandler);
@@ -132,22 +126,12 @@ public class DevTool extends AppCompatActivity {
             }
         });
 
-
         graphChangedListeners(mImageView);
-
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
         } else {
             initializeWifiManager();
-        }
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
-        } else {
-            initializeBluetoothManager();
         }
 
         devToolViewModel.getIsScanLocked().observe(this, new Observer<Boolean>() {
@@ -164,11 +148,13 @@ public class DevTool extends AppCompatActivity {
             }
         });
         // Register broadcast receiver to get scan results
-        setFloor(2, "Floor 3");
+        setFloor(2, "Floor 2");
     }
 
     private void graphChangedListeners(GraphOverlayImageView imageView) {
+
         devToolViewModel.getSelectedFloor().observe(this, new Observer<Integer>() {
+
             @Override
             public void onChanged(Integer integer) {
                 if(devToolViewModel.getGraphs().get(integer).getValue()!=null) {
@@ -185,7 +171,6 @@ public class DevTool extends AppCompatActivity {
         devToolViewModel.getGraphs().get(0).observe(this, new Observer<List<GraphNode>>() {
             @Override
             public void onChanged(List<GraphNode> graphNodes) {
-         //       graphNodes.forEach(node->Log.d("Test", " node: " +node.getName()));
                 if(devToolViewModel.getSelectedFloor().getValue() == 0) {
                     Graph graph = new Graph(devToolViewModel.getGraphs().get(0).getValue());
                     mMapTappingHandler.setGraph(graph);
@@ -232,6 +217,8 @@ public class DevTool extends AppCompatActivity {
 
             }
         });
+
+
     }
 
     @Override
@@ -240,9 +227,7 @@ public class DevTool extends AppCompatActivity {
         if (requestCode == 2) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 initializeWifiManager();
-                initializeBluetoothManager();
             } else {
-                // Handle the case where the user denies the permission
             }
         }
     }
@@ -250,10 +235,6 @@ public class DevTool extends AppCompatActivity {
 
     private void initializeWifiManager() {
         customWifiManager = new CustomWifiManager(this, devToolViewModel);
-    }
-
-    private void initializeBluetoothManager() {
-//        customBluetoothManager = new CustomBluetoothManager(this,devToolViewModel);
     }
 
     private void initiateBottomSheet() {
@@ -286,15 +267,12 @@ public class DevTool extends AppCompatActivity {
         mDeleteButton = bottomSheet.findViewById(R.id.button_delete);
         mSaveButton.setOnClickListener(view -> {
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-          //  progressDialog.show(getSupportFragmentManager(), "progress_dialog");
             showProgressDialog(R.string.saving_data_please_wait_were_you_are_standing);
             initiateFullScan();
         });
 
         mDeleteButton.setOnClickListener(view -> {
-         //   bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
             devToolViewModel.deleteSelectedNodeData(mImageView);
-
         });
     }
 
@@ -304,12 +282,10 @@ public class DevTool extends AppCompatActivity {
         devToolViewModel.setAllScanLocked(true);
          new Thread(() -> {
              devToolViewModel.updateSelectedNodeStatus(NodeStatus.selected);
-         //    customBluetoothManager.startScan();
              if(customWifiManager == null) {
                  customWifiManager = new CustomWifiManager(getApplicationContext(),devToolViewModel);
              }
              customWifiManager.startScan();
-         ///    customMagneticFieldManager.startInitialScan();
          }).start();
 
         handler.postDelayed(()->{
@@ -330,16 +306,13 @@ public class DevTool extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.devtool_app_menu, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle toolbar item clicks here
         int id = item.getItemId();
-
         if (id == R.id.action_toggle_lock) {
             devToolViewModel.setIsLocked(!devToolViewModel.isLocked());
             invalidateMenu();
