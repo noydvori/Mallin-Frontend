@@ -179,7 +179,7 @@ public class DevToolViewModel extends ViewModel implements WifiCallBack, Bluetoo
         ArrayList<Wifi> wifiList = new ArrayList<>();
         if(savedNode != null) {
             resultsArrived.setValue(true);
-            wifiScanResults.forEach(result -> wifiList.add(new Wifi("fillming",result.SSID, result.BSSID, result.level,savedNode.getId())));
+            wifiScanResults.forEach(result -> wifiList.add(new Wifi("lioz123",result.SSID, result.BSSID, result.level,savedNode.getId())));
             String logString = "";
             new Thread(() -> {
                 mDataBase.wifiDao().insertAll(wifiList);
